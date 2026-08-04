@@ -39,13 +39,13 @@
   display: flex; flex-direction: column;
   padding: 20px 0 14px;
 }
-#app .brand { padding: 0 18px 22px; }
-#app .brand-mark {
-  display: block; font-family: var(--disp); font-weight: 700;
-  font-size: 30px; letter-spacing: .14em; color: var(--hiviz); line-height: 1;
+#app .brand { padding: 0 14px 20px; }
+#app .brand-logo {
+  display: block; width: 100%; max-width: 150px; height: auto;
+  background: #fff; padding: 7px 8px; border-radius: 2px;
 }
 #app .brand-sub {
-  display: block; margin-top: 5px; font-size: 10px; letter-spacing: .18em;
+  display: block; margin-top: 8px; font-size: 10px; letter-spacing: .18em;
   text-transform: uppercase; color: #7A828F;
 }
 #app nav { display: flex; flex-direction: column; }
@@ -292,13 +292,41 @@
   #app *, #app *::before, #app *::after { transition: none !important; }
 }
 
+
+/* ---------- doublons ---------- */
+#app .dup { display: none; background: #fff; border: 1px solid var(--line); border-left: 3px solid var(--orange); border-radius: 3px; padding: 12px 14px; margin-bottom: 16px; }
+#app .dup.on { display: block; }
+#app .dup-i { margin: 0 0 10px; font-size: 12px; color: var(--ink-2); }
+#app .dup-l { list-style: none; margin: 0; padding: 0; max-height: 230px; overflow-y: auto; }
+#app .dup-l li { display: flex; align-items: center; gap: 10px; padding: 6px 0; border-top: 1px solid var(--paper-2); font-size: 13px; flex-wrap: wrap; }
+#app .dup-l li:first-child { border-top: 0; }
+#app .dup-a { font-weight: 500; }
+#app .dup-x { color: var(--ink-2); font-family: var(--mono); font-size: 11px; }
+#app .dup-l .btn { margin-left: auto; }
+
+/* ---------- actions fiche ---------- */
+#app .acts { display: flex; gap: 8px; margin-left: auto; }
+#app .merge {
+  display: none; margin: 12px 0 0; padding: 12px 14px; background: #fff;
+  border: 1px solid var(--line); border-left: 3px solid var(--steel-2); border-radius: 3px;
+  align-items: center; gap: 10px; flex-wrap: wrap;
+}
+#app .merge.on { display: flex; }
+#app .merge span { font-size: 13px; color: var(--ink-2); }
+
+#app .btn.mini2 {
+  font-size: 12px; padding: 4px 10px; border-color: var(--line); color: var(--ink-2);
+}
+#app .btn.mini2:hover { background: var(--steel); border-color: var(--steel); color: var(--paper); }
+#app .detail-h { align-items: center; }
+
 </style>
 
 <div id="app">
   <aside class="rail">
     <div class="brand">
-      <span class="brand-mark">EPI</span>
-      <span class="brand-sub">Dotation RSL</span>
+      <img class="brand-logo" src="data:image/png;base64,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" alt="STV — Sur le terrain pour demain">
+      <span class="brand-sub">Dotation EPI</span>
     </div>
     <nav>
       <button class="nav on" data-view="stock"><span class="k">01</span>Stock</button>
@@ -418,6 +446,11 @@
       <div class="bar">
         <input id="empSearch" class="in" placeholder="Rechercher un salarié…">
         <select id="empAct" class="in sel"></select>
+        <button class="btn" id="dupToggle">Doublons possibles <span class="tag" id="dupCount">0</span></button>
+      </div>
+      <div id="dupPanel" class="dup">
+        <p class="dup-i">Rapprochements repérés automatiquement. Vérifiez avant de fusionner : certains sont deux personnes différentes.</p>
+        <ul id="dupList" class="dup-l"></ul>
       </div>
       <div class="split-emp">
         <ul id="empList" class="list"></ul>
@@ -484,8 +517,21 @@ const DB = {"noms":[["","Nidal"],["","Tysan"],["ADJADJA","Nidal"],["ADJAJDA",""]
   var STOCK = [];               // [{e, t, q, seuil}]
   var STOCK_KEY = 'epi:stock:v1';
   var MOVE_KEY = 'epi:moves:v1';
+  var NAME_KEY = 'epi:noms:v1';
+  var RENAME = {};              // idx -> [nom, prenom]
+  var MERGE = {};               // idx absorbe -> idx conserve
 
-  function nomOf(i) { var n = NOMS[i]; return (n[0] + ' ' + (n[1] || '')).trim(); }
+  function resolve(i) {
+    var seen = {}, k = i;
+    while (MERGE[k] != null && !seen[k]) { seen[k] = 1; k = MERGE[k]; }
+    return k;
+  }
+  function nomOf(i) {
+    i = resolve(i);
+    var n = RENAME[i] || NOMS[i];
+    if (!n) return '—';
+    return (n[0] + ' ' + (n[1] || '')).trim();
+  }
   function famOf(ei) { return (ei >= 0 && FAMS[EPIFAM[ei]]) || 'AUTRE'; }
   function key(e, t) { return e + '|' + (t || ''); }
   function esc(s) {
@@ -510,6 +556,7 @@ const DB = {"noms":[["","Nidal"],["","Tysan"],["ADJADJA","Nidal"],["ADJAJDA",""]
     try {
       window.storage.set(STOCK_KEY, JSON.stringify(STOCK));
       window.storage.set(MOVE_KEY, JSON.stringify(LOCAL));
+      window.storage.set(NAME_KEY, JSON.stringify({ r: RENAME, m: MERGE }));
     } catch (e) { /* stockage indisponible : la session reste utilisable */ }
   }
   async function load() {
@@ -521,6 +568,10 @@ const DB = {"noms":[["","Nidal"],["","Tysan"],["ADJADJA","Nidal"],["ADJAJDA",""]
       var m = await window.storage.get(MOVE_KEY);
       if (m && m.value) LOCAL = JSON.parse(m.value);
     } catch (e) { LOCAL = []; }
+    try {
+      var n = await window.storage.get(NAME_KEY);
+      if (n && n.value) { var o = JSON.parse(n.value); RENAME = o.r || {}; MERGE = o.m || {}; }
+    } catch (e) { RENAME = {}; MERGE = {}; }
   }
 
   /* ---------------- stock ---------------- */
@@ -646,7 +697,7 @@ const DB = {"noms":[["","Nidal"],["","Tysan"],["ADJADJA","Nidal"],["ADJAJDA",""]
   function taillesDe(ni) {
     var byFam = {};
     allMoves().forEach(function (m) {
-      if (m.ni !== ni || !m.t) return;
+      if (resolve(m.ni) !== ni || !m.t) return;
       var f = famOf(m.ei);
       if (!byFam[f] || (m.date || '') > (byFam[f].date || '')) byFam[f] = { t: m.t, date: m.date };
     });
@@ -682,10 +733,15 @@ const DB = {"noms":[["","Nidal"],["","Tysan"],["ADJADJA","Nidal"],["ADJAJDA",""]
   }
 
   /* ---------------- remise ---------------- */
+  function refreshNames() {
+    var el = document.getElementById('dlNoms'); if (!el) return;
+    el.innerHTML = NOMS.map(function (n, i) { return i; })
+      .filter(function (i) { return resolve(i) === i; })
+      .map(function (i) { return '<option value="' + esc(nomOf(i)) + '">'; }).join('');
+  }
+
   function bindRemise() {
-    $('#dlNoms').innerHTML = NOMS.map(function (n, i) {
-      return '<option value="' + esc(nomOf(i)) + '">';
-    }).join('');
+    refreshNames();
     $('#dlEpis').innerHTML = EPIS.map(function (e) {
       return '<option value="' + esc(e) + '">';
     }).join('');
@@ -696,7 +752,7 @@ const DB = {"noms":[["","Nidal"],["","Tysan"],["ADJADJA","Nidal"],["ADJAJDA",""]
 
     function findNi(v) {
       v = (v || '').trim().toLowerCase();
-      for (var i = 0; i < NOMS.length; i++) if (nomOf(i).toLowerCase() === v) return i;
+      for (var i = 0; i < NOMS.length; i++) if (resolve(i) === i && nomOf(i).toLowerCase() === v) return i;
       return -1;
     }
 
@@ -767,7 +823,7 @@ const DB = {"noms":[["","Nidal"],["","Tysan"],["ADJADJA","Nidal"],["ADJAJDA",""]
   var selNi = -1;
   function actOf(ni) {
     var c = {};
-    allMoves().forEach(function (m) { if (m.ni === ni && ACTS[m.ai]) c[ACTS[m.ai]] = (c[ACTS[m.ai]] || 0) + 1; });
+    allMoves().forEach(function (m) { var r = resolve(m.ni); if (r === ni && ACTS[m.ai]) c[ACTS[m.ai]] = (c[ACTS[m.ai]] || 0) + 1; });
     var best = '', n = 0;
     Object.keys(c).forEach(function (k) { if (c[k] > n) { n = c[k]; best = k; } });
     return best;
@@ -776,9 +832,10 @@ const DB = {"noms":[["","Nidal"],["","Tysan"],["ADJADJA","Nidal"],["ADJAJDA",""]
     var q = ($('#empSearch').value || '').toLowerCase();
     var fa = $('#empAct').value;
     var cnt = {};
-    allMoves().forEach(function (m) { cnt[m.ni] = (cnt[m.ni] || 0) + 1; });
+    allMoves().forEach(function (m) { var r = resolve(m.ni); cnt[r] = (cnt[r] || 0) + 1; });
 
     var idx = NOMS.map(function (_, i) { return i; }).filter(function (i) {
+      if (resolve(i) !== i) return false;
       if (!cnt[i]) return false;
       if (q && nomOf(i).toLowerCase().indexOf(q) < 0) return false;
       if (fa && actOf(i) !== fa) return false;
@@ -794,14 +851,30 @@ const DB = {"noms":[["","Nidal"],["","Tysan"],["ADJADJA","Nidal"],["ADJAJDA",""]
   }
   function renderEmpDetail() {
     if (selNi < 0) { $('#empDetail').innerHTML = '<p class="muted">Sélectionnez un salarié dans la liste.</p>'; return; }
-    var mv = allMoves().filter(function (m) { return m.ni === selNi; })
+    var mv = allMoves().filter(function (m) { return resolve(m.ni) === selNi; })
       .sort(function (a, b) { return (b.date || '').localeCompare(a.date || ''); });
     var total = mv.reduce(function (s, m) { return s + m.q; }, 0);
+
+    var others = NOMS.map(function (_, i) { return i; })
+      .filter(function (i) { return resolve(i) === i && i !== selNi; })
+      .sort(function (a, b) { return nomOf(a).localeCompare(nomOf(b)); });
 
     $('#empDetail').innerHTML =
       '<div class="detail-h"><h2>' + esc(nomOf(selNi)) + '</h2>' +
       '<span class="tag">' + esc(actOf(selNi) || 'activité inconnue') + '</span>' +
-      '<span class="muted">' + mv.length + ' remises · ' + total + ' pièces</span></div>' +
+      '<span class="muted">' + mv.length + ' remises · ' + total + ' pièces</span>' +
+      '<span class="acts">' +
+        '<button class="btn mini2" id="btnRename">Renommer</button>' +
+        '<button class="btn mini2" id="btnMerge">Fusionner…</button>' +
+      '</span></div>' +
+      '<div class="merge" id="mergePanel">' +
+        '<span>Rattacher cette fiche à&nbsp;:</span>' +
+        '<select class="in sel" id="mergeSel">' +
+          others.map(function (i) { return '<option value="' + i + '">' + esc(nomOf(i)) + '</option>'; }).join('') +
+        '</select>' +
+        '<button class="btn primary" id="mergeGo">Fusionner</button>' +
+        '<button class="btn" id="mergeCancel">Annuler</button>' +
+      '</div>' +
       '<div class="grid2"><div>' + ficheHTML(selNi) + '</div>' +
       '<div><table class="tbl"><thead><tr><th>Date</th><th>Article</th><th>Taille</th><th class="num">Qté</th></tr></thead><tbody>' +
       mv.map(function (m) {
@@ -811,7 +884,100 @@ const DB = {"noms":[["","Nidal"],["","Tysan"],["ADJADJA","Nidal"],["ADJAJDA",""]
           '<td class="num">' + m.q + '</td></tr>';
       }).join('') + '</tbody></table></div></div>';
   }
+  function doRename(i) {
+    var cur = RENAME[i] || NOMS[i];
+    var nom = prompt('Nom de famille :', cur[0]);
+    if (nom === null) return;
+    var pre = prompt('Prénom (laisser vide si inconnu) :', cur[1] || '');
+    if (pre === null) return;
+    nom = nom.trim(); pre = pre.trim();
+    if (!nom) { toast('Le nom ne peut pas être vide'); return; }
+    RENAME[i] = [nom, pre];
+    save(); refreshNames(); renderEmpList(); renderEmpDetail(); renderHist(); renderRecent(); renderDup();
+    toast('Salarié renommé');
+  }
+
+  function doMerge(from, to) {
+    if (from === to) return;
+    MERGE[from] = to;
+    if (selNi === from) selNi = to;
+    save(); refreshNames(); renderEmpList(); renderEmpDetail(); renderHist(); renderRecent(); renderDup();
+    var p = Object.keys(MERGE).length;
+    $('#railPeople').textContent = countPeople();
+    toast('Fiches fusionnées (' + p + ' au total)');
+  }
+
+  function countPeople() {
+    var people = {};
+    allMoves().forEach(function (m) { people[resolve(m.ni)] = 1; });
+    return Object.keys(people).length;
+  }
+
+  /* --- doublons probables --- */
+  function lev(a, b) {
+    var m = a.length, n = b.length, d = [], i, j;
+    for (i = 0; i <= m; i++) d[i] = [i];
+    for (j = 0; j <= n; j++) d[0][j] = j;
+    for (i = 1; i <= m; i++) for (j = 1; j <= n; j++)
+      d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    return d[m][n];
+  }
+  function flat(s) {
+    return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase().replace(/[^A-Z ]/g, '');
+  }
+  function dupPairs() {
+    var cnt = {};
+    allMoves().forEach(function (m) { var r = resolve(m.ni); cnt[r] = (cnt[r] || 0) + 1; });
+    var used = Object.keys(cnt).map(Number).filter(function (i) { return resolve(i) === i; });
+    var out = [];
+    for (var i = 0; i < used.length; i++) {
+      for (var j = i + 1; j < used.length; j++) {
+        var a = flat(nomOf(used[i])), b = flat(nomOf(used[j]));
+        if (!a || !b) continue;
+        var d = lev(a, b);
+        var sa = a.replace(/ /g, '').split('').sort().join('');
+        var sb = b.replace(/ /g, '').split('').sort().join('');
+        if (d <= 2 || (sa === sb && a !== b)) {
+          out.push({ a: used[i], b: used[j], d: d, na: cnt[used[i]], nb: cnt[used[j]] });
+        }
+      }
+    }
+    return out.sort(function (x, y) { return x.d - y.d; });
+  }
+  function renderDup() {
+    var p = dupPairs();
+    $('#dupCount').textContent = p.length;
+    $('#dupList').innerHTML = p.length ? p.map(function (x, k) {
+      return '<li data-k="' + k + '">' +
+        '<span class="dup-a">' + esc(nomOf(x.a)) + '</span><span class="dup-x">' + x.na + '</span>' +
+        '<span class="dup-x">↔</span>' +
+        '<span class="dup-a">' + esc(nomOf(x.b)) + '</span><span class="dup-x">' + x.nb + '</span>' +
+        '<button class="btn mini2" data-mg="' + x.b + ':' + x.a + '">Fusionner</button></li>';
+    }).join('') : '<li class="muted">Plus aucun rapprochement à examiner.</li>';
+    $('#dupList')._pairs = p;
+  }
+
   function bindEmp() {
+    $('#dupToggle').addEventListener('click', function () { $('#dupPanel').classList.toggle('on'); });
+    $('#dupList').addEventListener('click', function (ev) {
+      var b = ev.target.closest('button[data-mg]'); if (!b) return;
+      var p = b.getAttribute('data-mg').split(':');
+      var from = parseInt(p[0], 10), to = parseInt(p[1], 10);
+      if (!confirm('Rattacher « ' + nomOf(from) + ' » à « ' + nomOf(to) + ' » ?\nLes remises des deux fiches seront regroupées.')) return;
+      doMerge(from, to);
+    });
+    $('#empDetail').addEventListener('click', function (ev) {
+      var b = ev.target.closest('button'); if (!b) return;
+      if (b.id === 'btnRename') doRename(selNi);
+      if (b.id === 'btnMerge') $('#mergePanel').classList.add('on');
+      if (b.id === 'mergeCancel') $('#mergePanel').classList.remove('on');
+      if (b.id === 'mergeGo') {
+        var to = parseInt($('#mergeSel').value, 10);
+        if (isNaN(to)) return;
+        if (!confirm('Rattacher « ' + nomOf(selNi) + ' » à « ' + nomOf(to) + ' » ?')) return;
+        doMerge(selNi, to);
+      }
+    });
     $('#empList').addEventListener('click', function (ev) {
       var li = ev.target.closest('li[data-ni]'); if (!li) return;
       selNi = parseInt(li.getAttribute('data-ni'), 10);
@@ -913,13 +1079,13 @@ const DB = {"noms":[["","Nidal"],["","Tysan"],["ADJADJA","Nidal"],["ADJAJDA",""]
       Object.keys(acts).sort().map(function (a) { return '<option>' + esc(a) + '</option>'; }).join('');
 
     var people = {};
-    allMoves().forEach(function (m) { people[m.ni] = 1; });
+    allMoves().forEach(function (m) { people[resolve(m.ni)] = 1; });
     $('#railPeople').textContent = Object.keys(people).length;
     $('#railMoves').textContent = allMoves().length;
 
     bindNav(); bindStock(); bindRemise(); bindEmp(); bindHist();
     renderStock(); renderReappro(); renderDemandes();
-    renderEmpList(); renderEmpDetail(); renderHist(true); renderRecent();
+    renderEmpList(); renderEmpDetail(); renderDup(); renderHist(true); renderRecent();
   })();
 })();
 
