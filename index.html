@@ -1,0 +1,926 @@
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@500;600&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; }
+
+#app {
+  --graphite: #191C22;
+  --steel: #262B35;
+  --steel-2: #333A47;
+  --paper: #F4F3EF;
+  --paper-2: #EAE8E1;
+  --ink: #16181D;
+  --ink-2: #5C616C;
+  --hiviz: #D8E021;
+  --orange: #E0651A;
+  --red: #BE2E22;
+  --green: #3E7A4E;
+  --line: #D8D5CC;
+
+  --disp: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  --body: 'Inter', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  display: flex;
+  min-height: 620px;
+  font-family: var(--body);
+  color: var(--ink);
+  background: var(--paper);
+  font-size: 14px;
+  line-height: 1.5;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* ---------- rail ---------- */
+#app .rail {
+  width: 178px; flex: 0 0 178px;
+  background: var(--graphite);
+  display: flex; flex-direction: column;
+  padding: 20px 0 14px;
+}
+#app .brand { padding: 0 18px 22px; }
+#app .brand-mark {
+  display: block; font-family: var(--disp); font-weight: 700;
+  font-size: 30px; letter-spacing: .14em; color: var(--hiviz); line-height: 1;
+}
+#app .brand-sub {
+  display: block; margin-top: 5px; font-size: 10px; letter-spacing: .18em;
+  text-transform: uppercase; color: #7A828F;
+}
+#app nav { display: flex; flex-direction: column; }
+#app .nav {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 18px; border: 0; background: none; cursor: pointer;
+  font-family: var(--disp); font-size: 17px; font-weight: 500;
+  letter-spacing: .04em; text-transform: uppercase;
+  color: #9AA1AC; text-align: left; width: 100%;
+  border-left: 3px solid transparent; transition: color .12s, background .12s;
+}
+#app .nav:hover { color: #E7E9EC; background: #1F232B; }
+#app .nav.on { color: var(--paper); border-left-color: var(--hiviz); background: #21252D; }
+#app .nav .k { font-family: var(--mono); font-size: 10px; color: #59606B; }
+#app .nav.on .k { color: var(--hiviz); }
+#app .rail-foot { margin-top: auto; padding: 0 18px; display: flex; flex-direction: column; gap: 10px; }
+#app .stat { font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: #6C737E; }
+#app .stat b {
+  display: block; font-family: var(--disp); font-size: 22px; font-weight: 600;
+  letter-spacing: 0; color: var(--paper);
+}
+
+/* ---------- main ---------- */
+#app .main { flex: 1; min-width: 0; padding: 26px 30px 40px; overflow-x: auto; position: relative; }
+#app .view { display: none; }
+#app .view.on { display: block; }
+#app .head { margin-bottom: 20px; }
+#app .head h1 {
+  margin: 0; font-family: var(--disp); font-weight: 600; font-size: 30px;
+  letter-spacing: .01em; text-transform: uppercase;
+}
+#app .head p { margin: 3px 0 0; color: var(--ink-2); font-size: 13px; }
+#app .sec {
+  margin: 30px 0 10px; font-family: var(--disp); font-size: 19px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: .04em;
+  display: flex; align-items: center; gap: 8px;
+}
+
+/* ---------- cards ---------- */
+#app .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+#app .card {
+  background: #fff; border: 1px solid var(--line); border-radius: 3px;
+  padding: 12px 14px; border-left: 3px solid var(--steel-2);
+}
+#app .card b {
+  display: block; font-family: var(--disp); font-size: 30px; font-weight: 600; line-height: 1;
+}
+#app .card span {
+  display: block; margin-top: 4px; font-size: 10px; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--ink-2);
+}
+#app .card:nth-child(1) { border-left-color: var(--red); }
+#app .card:nth-child(2) { border-left-color: var(--orange); }
+#app .card:nth-child(3) { border-left-color: var(--line); }
+#app .card:nth-child(4) { border-left-color: var(--green); }
+
+/* ---------- controls ---------- */
+#app .bar { display: flex; gap: 8px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+#app .in {
+  font-family: var(--body); font-size: 13px; color: var(--ink);
+  padding: 7px 10px; border: 1px solid var(--line); border-radius: 3px;
+  background: #fff; min-width: 180px;
+}
+#app .in:focus { outline: 2px solid var(--steel-2); outline-offset: -1px; border-color: var(--steel-2); }
+#app .sel { min-width: 150px; cursor: pointer; }
+#app .chk { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--ink-2); cursor: pointer; }
+#app .count { font-family: var(--mono); font-size: 12px; color: var(--ink-2); margin-left: auto; }
+#app .btn {
+  font-family: var(--disp); font-size: 15px; font-weight: 600; letter-spacing: .05em;
+  text-transform: uppercase; padding: 8px 15px; border: 1px solid var(--steel);
+  border-radius: 3px; background: #fff; color: var(--steel); cursor: pointer;
+  transition: background .12s, color .12s;
+}
+#app .btn:hover { background: var(--steel); color: var(--paper); }
+#app .btn.primary { background: var(--graphite); color: var(--paper); border-color: var(--graphite); }
+#app .btn.primary:hover { background: var(--steel-2); }
+#app .btn.lg { padding: 11px 22px; font-size: 17px; align-self: flex-start; }
+#app .btn.mini {
+  font-size: 12px; padding: 4px 9px; border-color: var(--line); color: var(--ink-2);
+}
+#app .btn.mini:hover { background: var(--red); border-color: var(--red); color: #fff; }
+#app #hMore { margin-top: 14px; }
+
+/* ---------- table ---------- */
+#app .tbl { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--line); }
+#app .tbl th {
+  text-align: left; font-family: var(--disp); font-size: 12px; font-weight: 600;
+  letter-spacing: .12em; text-transform: uppercase; color: var(--paper);
+  background: var(--steel); padding: 8px 12px; white-space: nowrap;
+}
+#app .tbl td { padding: 7px 12px; border-top: 1px solid var(--paper-2); vertical-align: middle; }
+#app .tbl tbody tr:hover { background: #FAFAF7; }
+#app .tbl .num { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+#app .tbl th.num { text-align: right; }
+#app .art { font-weight: 500; }
+#app .sz {
+  display: inline-block; font-family: var(--mono); font-size: 12px; font-weight: 600;
+  background: var(--paper-2); padding: 1px 7px; border-radius: 2px;
+}
+#app .qin {
+  width: 62px; font-family: var(--mono); font-size: 13px; text-align: right;
+  padding: 4px 7px; border: 1px solid var(--line); border-radius: 3px; background: #fff;
+}
+#app .qin:focus { outline: 2px solid var(--steel-2); outline-offset: -1px; }
+
+/* ---------- badges ---------- */
+#app .bdg {
+  display: inline-block; font-family: var(--disp); font-size: 12px; font-weight: 600;
+  letter-spacing: .09em; text-transform: uppercase; padding: 2px 8px; border-radius: 2px;
+  white-space: nowrap;
+}
+#app .bdg.ok { background: #E4EDE6; color: var(--green); }
+#app .bdg.low { background: #FBE9D9; color: var(--orange); }
+#app .bdg.out { background: #F7DFDD; color: var(--red); }
+#app .bdg.nc { background: var(--paper-2); color: var(--ink-2); }
+#app .tag {
+  font-family: var(--mono); font-size: 11px; font-weight: 600; background: var(--paper-2);
+  color: var(--ink-2); padding: 2px 7px; border-radius: 2px; letter-spacing: 0;
+}
+
+/* ---------- empty ---------- */
+#app .empty {
+  display: none; text-align: center; padding: 46px 20px; background: #fff;
+  border: 1px dashed var(--line); border-radius: 3px;
+}
+#app .empty h3 { margin: 0 0 6px; font-family: var(--disp); font-size: 21px; text-transform: uppercase; }
+#app .empty p { margin: 0 0 16px; color: var(--ink-2); font-size: 13px; }
+#app .muted { color: var(--ink-2); font-size: 13px; }
+#app .pad { padding: 14px 2px; display: none; }
+
+/* ---------- remise ---------- */
+#app .split { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: 26px; align-items: start; }
+#app .form { display: flex; flex-direction: column; gap: 14px; }
+#app .fld { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 0; }
+#app .fld > span {
+  font-family: var(--disp); font-size: 13px; font-weight: 600; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--ink-2);
+}
+#app .fld-row { display: flex; gap: 10px; }
+#app .fld.sm { flex: 0 0 110px; } #app .fld.sm .in { min-width: 0; }
+#app .fld.xs { flex: 0 0 74px; } #app .fld.xs .in { min-width: 0; }
+#app .fld .in { width: 100%; }
+#app .hint { font-size: 13px; color: var(--ink-2); min-height: 20px; }
+#app .hint b { font-family: var(--mono); color: var(--ink); }
+#app .hint.warn { color: var(--red); }
+#app .side { border-left: 1px solid var(--line); padding-left: 24px; }
+#app .side-t {
+  margin: 0 0 10px; font-family: var(--disp); font-size: 15px; font-weight: 600;
+  letter-spacing: .1em; text-transform: uppercase; color: var(--ink-2);
+}
+#app .side-t + * { margin-bottom: 26px; }
+#app .feed { list-style: none; margin: 0; padding: 0; }
+#app .feed li { padding: 7px 0; border-top: 1px solid var(--paper-2); font-size: 13px; }
+#app .feed li:first-child { border-top: 0; }
+#app .feed .w { font-weight: 500; }
+#app .feed .d { font-family: var(--mono); font-size: 11px; color: var(--ink-2); }
+
+/* ---------- fiche taille : l'etiquette cousue ---------- */
+#app .fiche {
+  background: #fff; border: 1px solid var(--steel); border-radius: 2px;
+  padding: 0; overflow: hidden; max-width: 260px;
+  box-shadow: 3px 3px 0 var(--paper-2);
+}
+#app .fiche-h {
+  background: var(--steel); color: var(--paper); padding: 7px 12px;
+  font-family: var(--disp); font-size: 14px; font-weight: 600;
+  letter-spacing: .12em; text-transform: uppercase;
+  display: flex; justify-content: space-between; align-items: baseline; gap: 8px;
+}
+#app .fiche-h em { font-style: normal; font-family: var(--mono); font-size: 10px; color: var(--hiviz); letter-spacing: .06em; }
+#app .fiche-b { padding: 4px 12px 10px; }
+#app .fiche-r {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  padding: 6px 0; border-bottom: 1px dotted var(--line);
+}
+#app .fiche-r:last-child { border-bottom: 0; }
+#app .fiche-r span {
+  font-family: var(--disp); font-size: 13px; letter-spacing: .09em;
+  text-transform: uppercase; color: var(--ink-2);
+}
+#app .fiche-r b { font-family: var(--mono); font-size: 15px; font-weight: 600; }
+#app .fiche-r.guess b { color: var(--ink-2); }
+#app .fiche-r.guess b::after { content: ' ?'; color: var(--orange); }
+#app .fiche-note { font-size: 11px; color: var(--ink-2); margin: 8px 0 0; max-width: 260px; }
+
+/* ---------- salaries ---------- */
+#app .split-emp { display: grid; grid-template-columns: 262px minmax(0, 1fr); gap: 22px; align-items: start; }
+#app .list {
+  list-style: none; margin: 0; padding: 0; max-height: 520px; overflow-y: auto;
+  border: 1px solid var(--line); background: #fff; border-radius: 3px;
+}
+#app .list li {
+  padding: 8px 12px; border-top: 1px solid var(--paper-2); cursor: pointer;
+  display: flex; justify-content: space-between; align-items: center; gap: 8px;
+}
+#app .list li:first-child { border-top: 0; }
+#app .list li:hover { background: #FAFAF7; }
+#app .list li.on { background: var(--graphite); color: var(--paper); }
+#app .list li.on .n { color: var(--hiviz); }
+#app .list .who { min-width: 0; }
+#app .list .nm { font-weight: 500; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+#app .list .ac { font-size: 11px; color: var(--ink-2); letter-spacing: .06em; text-transform: uppercase; }
+#app .list li.on .ac { color: #9AA1AC; }
+#app .list .n { font-family: var(--mono); font-size: 11px; color: var(--ink-2); }
+#app .detail { min-height: 200px; }
+#app .detail-h { display: flex; align-items: baseline; gap: 12px; margin-bottom: 14px; flex-wrap: wrap; }
+#app .detail-h h2 {
+  margin: 0; font-family: var(--disp); font-size: 25px; font-weight: 600; text-transform: uppercase;
+}
+#app .grid2 { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 24px; align-items: start; }
+
+/* ---------- toast ---------- */
+#app .toast {
+  position: absolute; top: 18px; right: 30px; z-index: 20;
+  background: var(--graphite); color: var(--paper); padding: 10px 16px;
+  border-left: 3px solid var(--hiviz); border-radius: 2px; font-size: 13px;
+  opacity: 0; transform: translateY(-8px); pointer-events: none;
+  transition: opacity .18s, transform .18s;
+}
+#app .toast.on { opacity: 1; transform: none; }
+
+/* ---------- notice ---------- */
+#app .notice {
+  background: #FBF1E4; border: 1px solid #E8C89A; border-left: 3px solid var(--orange);
+  padding: 10px 14px; border-radius: 3px; font-size: 13px; margin-bottom: 16px;
+}
+#app .notice b { font-weight: 600; }
+
+@media (max-width: 900px) {
+  #app { flex-direction: column; }
+  #app .rail { width: 100%; flex: none; flex-direction: row; align-items: center; padding: 10px; gap: 12px; overflow-x: auto; }
+  #app .brand { padding: 0 8px 0 6px; } #app .brand-mark { font-size: 20px; } #app .brand-sub { display: none; }
+  #app nav { flex-direction: row; }
+  #app .nav { width: auto; white-space: nowrap; border-left: 0; border-bottom: 3px solid transparent; padding: 6px 10px; }
+  #app .nav.on { border-left: 0; border-bottom-color: var(--hiviz); }
+  #app .rail-foot { display: none; }
+  #app .main { padding: 18px 14px 30px; }
+  #app .cards { grid-template-columns: repeat(2, 1fr); }
+  #app .split, #app .split-emp, #app .grid2 { grid-template-columns: 1fr; }
+  #app .side { border-left: 0; padding-left: 0; border-top: 1px solid var(--line); padding-top: 18px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #app *, #app *::before, #app *::after { transition: none !important; }
+}
+
+</style>
+
+<div id="app">
+  <aside class="rail">
+    <div class="brand">
+      <span class="brand-mark">EPI</span>
+      <span class="brand-sub">Dotation RSL</span>
+    </div>
+    <nav>
+      <button class="nav on" data-view="stock"><span class="k">01</span>Stock</button>
+      <button class="nav" data-view="remise"><span class="k">02</span>Remise</button>
+      <button class="nav" data-view="salaries"><span class="k">03</span>Salariés</button>
+      <button class="nav" data-view="commander"><span class="k">04</span>À commander</button>
+      <button class="nav" data-view="historique"><span class="k">05</span>Historique</button>
+    </nav>
+    <div class="rail-foot">
+      <div class="stat"><b id="railPeople">—</b>salariés</div>
+      <div class="stat"><b id="railMoves">—</b>remises</div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div id="toast" class="toast"></div>
+
+    <!-- ================= STOCK ================= -->
+    <section class="view on" id="v-stock">
+      <header class="head">
+        <h1>Stock disponible</h1>
+        <p>Une ligne par article et par taille. Le stock diminue à chaque remise saisie.</p>
+      </header>
+
+      <div class="cards">
+        <div class="card"><b id="cRupture">0</b><span>en rupture</span></div>
+        <div class="card"><b id="cBas">0</b><span>sous le seuil</span></div>
+        <div class="card"><b id="cRef">0</b><span>à inventorier</span></div>
+        <div class="card"><b id="cPieces">0</b><span>pièces en magasin</span></div>
+      </div>
+
+      <div class="bar">
+        <input id="stockSearch" class="in" placeholder="Filtrer un article ou une taille…">
+        <select id="stockFam" class="in sel"></select>
+        <label class="chk"><input type="checkbox" id="stockOnlyAlert"> Alertes uniquement</label>
+        <button class="btn" id="addRef">+ Référence</button>
+      </div>
+
+      <div id="stockEmpty" class="empty">
+        <h3>Aucune référence en stock</h3>
+        <p>Ajoutez vos articles un par un, ou partez des références déjà distribuées par le passé.</p>
+        <button class="btn primary" id="seedStock">Créer les références depuis l'historique</button>
+      </div>
+
+      <table class="tbl" id="stockTbl">
+        <thead><tr>
+          <th>Article</th><th>Taille</th><th class="num">En stock</th>
+          <th class="num">Seuil</th><th>État</th><th class="num">Ajuster</th><th></th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- ================= REMISE ================= -->
+    <section class="view" id="v-remise">
+      <header class="head">
+        <h1>Remettre un EPI</h1>
+        <p>La remise est enregistrée et déduite du stock.</p>
+      </header>
+
+      <div class="split">
+        <form class="form" id="formRemise" autocomplete="off">
+          <label class="fld">
+            <span>Salarié</span>
+            <input class="in" id="rNom" list="dlNoms" placeholder="Nom ou prénom" required>
+            <datalist id="dlNoms"></datalist>
+          </label>
+
+          <div class="fld-row">
+            <label class="fld">
+              <span>Article</span>
+              <input class="in" id="rEpi" list="dlEpis" placeholder="Ex. PANTALON" required>
+              <datalist id="dlEpis"></datalist>
+            </label>
+            <label class="fld sm">
+              <span>Taille</span>
+              <input class="in" id="rTaille" placeholder="42 / L">
+            </label>
+            <label class="fld xs">
+              <span>Qté</span>
+              <input class="in" id="rQte" type="number" min="1" value="1" required>
+            </label>
+          </div>
+
+          <div class="fld-row">
+            <label class="fld">
+              <span>Activité</span>
+              <select class="in sel" id="rAct"></select>
+            </label>
+            <label class="fld">
+              <span>Date</span>
+              <input class="in" id="rDate" type="date" required>
+            </label>
+          </div>
+
+          <div id="rStockInfo" class="hint"></div>
+          <button class="btn primary lg" type="submit">Enregistrer la remise</button>
+        </form>
+
+        <div class="side">
+          <h3 class="side-t">Tailles connues</h3>
+          <div id="rFiche" class="fiche-slot">
+            <p class="muted">Saisissez un salarié pour voir ses tailles habituelles.</p>
+          </div>
+          <h3 class="side-t">Dernières remises</h3>
+          <ul id="rRecent" class="feed"><li class="muted">Aucune remise saisie ici pour l'instant.</li></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SALARIES ================= -->
+    <section class="view" id="v-salaries">
+      <header class="head">
+        <h1>Salariés</h1>
+        <p>Tailles habituelles et dotation reçue, reprises de votre fichier.</p>
+      </header>
+      <div class="bar">
+        <input id="empSearch" class="in" placeholder="Rechercher un salarié…">
+        <select id="empAct" class="in sel"></select>
+      </div>
+      <div class="split-emp">
+        <ul id="empList" class="list"></ul>
+        <div id="empDetail" class="detail">
+          <p class="muted">Sélectionnez un salarié dans la liste.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= A COMMANDER ================= -->
+    <section class="view" id="v-commander">
+      <header class="head">
+        <h1>À commander</h1>
+        <p>Les articles sous le seuil, et les demandes reprises de votre fichier.</p>
+      </header>
+      <h2 class="sec">Réapprovisionnement du stock</h2>
+      <table class="tbl" id="reappro">
+        <thead><tr><th>Article</th><th>Taille</th><th class="num">Stock</th><th class="num">Seuil</th><th class="num">À commander</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <p id="reapproVide" class="muted pad">Aucun article sous le seuil.</p>
+
+      <h2 class="sec">Demandes en attente <span class="tag" id="demCount"></span></h2>
+      <table class="tbl" id="demTbl">
+        <thead><tr><th>Année</th><th>Demandeur</th><th>Article</th><th>Taille</th><th class="num">Nombre</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <!-- ================= HISTORIQUE ================= -->
+    <section class="view" id="v-historique">
+      <header class="head">
+        <h1>Historique des dotations</h1>
+        <p>Toutes les remises du fichier, plus celles saisies ici.</p>
+      </header>
+      <div class="bar">
+        <input id="hSearch" class="in" placeholder="Salarié, article, taille…">
+        <select id="hAnnee" class="in sel"></select>
+        <select id="hFam" class="in sel"></select>
+        <span class="count" id="hCount"></span>
+      </div>
+      <table class="tbl" id="histTbl">
+        <thead><tr><th>Date</th><th>Salarié</th><th>Activité</th><th>Article</th><th>Taille</th><th class="num">Qté</th></tr></thead>
+        <tbody></tbody>
+      </table>
+      <button class="btn" id="hMore">Afficher 100 de plus</button>
+    </section>
+  </main>
+</div>
+
+
+<script>
+const DB = {"noms":[["","Nidal"],["","Tysan"],["ADJADJA","Nidal"],["ADJAJDA",""],["ADJAJDA","Nidal"],["AKILITOA","Taofifenua"],["ALBERJO","Jihad"],["AMBLARD",""],["AMBLARD","ARNAUD"],["AMBLARD","Alban"],["AMBLARD","Alexandre"],["AMBLARD","Amurtha"],["AMBLARD","Arnaud"],["AMBLARD","Aurélien"],["AMBLARD","Benoit"],["AMBLARD","Brandon"],["AMBLARD","Bruno"],["AMBLARD","CHARLES"],["AMBLARD","Charles"],["AMBLARD","Charlotte"],["AMBLARD","Christophe"],["AMBLARD","Christopher"],["AMBLARD","Clément"],["AMBLARD","Cédric"],["AMBLARD","David"],["AMBLARD","Denis"],["AMBLARD","Fabien"],["AMBLARD","Franck"],["AMBLARD","François"],["AMBLARD","Gaetan"],["AMBLARD","Glodi"],["AMBLARD","Hervé"],["AMBLARD","J-Jacques"],["AMBLARD","Jean-Luc"],["AMBLARD","Jihad"],["AMBLARD","Jonathan"],["AMBLARD","Jordan"],["AMBLARD","Jérome"],["AMBLARD","Jérémy"],["AMBLARD","Jérôme"],["AMBLARD","Kelly"],["AMBLARD","Killian"],["AMBLARD","Lorenzo"],["AMBLARD","Luigi"],["AMBLARD","Mickaël"],["AMBLARD","Mikeul"],["AMBLARD","Mouad"],["AMBLARD","Nicolas"],["AMBLARD","Olivier"],["AMBLARD","Patrick"],["AMBLARD","Pio"],["AMBLARD","Quentin"],["AMBLARD","Sandrine"],["AMBLARD","Steven"],["AMBLARD","Stéphane"],["AMBLARD","Sébastien"],["AMBLARD","Tamatéa"],["AMBLARD","Thibaut"],["AMBLARD","Thierry"],["AMBLARD","Thiery"],["AMBLARD","Tom"],["AMBLARD","Tony"],["AMBLARD","Vincent"],["AMBLARD","Yanis"],["AMBLARD","nidal"],["AMBLARD T",""],["ANANIA","Tamatéa"],["ANTOINE","Valentin"],["BARZETTI","Lorenzo"],["BASTIEN","Christopher"],["BAUER","Christophe"],["BAZIN","Loagn"],["BAZIN","Logan"],["BODAINE",""],["BODAINE","Arnaud"],["BOIZET","Jean Luc"],["BOIZET","Jean-Luc"],["BONGARD",""],["BOUCHAHDA","Stéphane"],["BOURGER","Killian"],["BOURGER","Kyllian"],["BULET",""],["BULET","Sylvain"],["CANTE","Matthieu"],["CERVELLE","Romain"],["CLERC","Dimitri"],["COLIN",""],["COLIN","Denis Victor"],["COLIN","Jérôme"],["CONTNSSOT","Julien"],["COUDEYRAS","Sebastien"],["COUDEYRAS","Sébastien"],["DAL MARTELLO","Quentin"],["DARTOIS","Vincent"],["DEDENON",""],["DESPLEBIN",""],["DESPLEBIN","Benjamin"],["DI GENNI","Antoni"],["DORIDAT","Maxime"],["DUMAS","Mickael"],["ELEKAN","Alban"],["ETIENNE",""],["ETIENNE","Frédéric"],["ETIENNE","Jordan"],["FABER","Charlotte"],["FASSON","Nathanael"],["FERRON","Dylan"],["FINOEL","Jean-Claude"],["FOURNERAT","Remy"],["FOURNERAT","Rémi"],["GARNIER","Erwann"],["GEDOR","Jonathan"],["GEDOR","Kylian"],["GEDOR","Kyllian"],["GEDOR","Michael"],["GEDOR","Mickaël"],["GEDOR M",""],["GIRARD","Sébastien"],["GONZALEZ",""],["GROSJEAN",""],["GROSJEAN","Jérôme"],["GULER","Tayfun"],["HAIU","Franckie"],["HERRMANN","Nathan"],["HINDELANG","Hervé"],["KUBLER","Jean-Philippe"],["LAFFRANCHINI",""],["LAFFRANCHINI","Arnaud"],["LAVUIA","Pio"],["LECLERC",""],["LECLERC","Lilian"],["LEFOUR","Tyson"],["LINCK","Antonin"],["LIPOBO MINGONDZA","Sarah-Anne"],["LOUIS","Patrick"],["LUYEYE NSINGI","Glodi"],["MADEZO","Alexis"],["MAIRE",""],["MARTIN","Sébastien"],["MATHIEU","Pascal"],["MATHIEU","Tristan"],["MERTZ","Guillaume"],["MESSMER","Aaron"],["MICHAUT","David"],["MILLION",""],["MILLION","David"],["MOPA","Nadège"],["MOREAU","Mathéo"],["OCZLIK",""],["OSWALD","Romain"],["PIERSON","Franck"],["POIROT","Celestin"],["POIROT","Célestin"],["REBOUCHE",""],["REMON",""],["REVEILLEZ","Bruno"],["REVEILLEZ","Kelly"],["ROSES","Clément"],["RUFFENACH","Benoit"],["RUFFENACH","Benoît"],["SCHULTZ","Alexandre"],["SCHULTZ","Yanis"],["SITTE","Luigi"],["SOUALMIA",""],["SWAELUS","Gaetan"],["Stagiaire",""],["Stagiaire","NOLANN"],["THESE","Kris"],["THUOT","Benoit"],["TOUBLANC","Antoine"],["TRITHARDT","Aurélien"],["Trousse de secours",""],["VALLEE",""],["VALLEE","Charles"],["VAUTHIEU","Nicolas"],["VINDEZ",""],["VINDEZ","Franck"],["VOLCKAERT","Michael"],["VOLCKAERT","Mickael"],["WEBER","Ethan"],["WOLFF","Cédric"],["WOLKE","Steve"]],"epis":["BANDES","BANDES EXTENSIBLES","BASKET","BAUDRIER","BLOUSE","BONNET","BOTTES","BOTTES CAOUTCHOUC","BOTTES D'HIVER","BOTTES FOURREES","BOTTES FOURRÉS","BOUCHON D'OREILLE","CASQUE","CASQUE + COQUILLES","CASQUE + COQUILLES + PORTE CARTE","CASQUE ANTI BRUIT","CASQUE INTEGRAL","CASQUES INTÉGRAL","CHAUSSURE ENROBES","CHAUSSURES","CHAUSSURES (OCASSION)","CHAUSSURES BASSES","CHAUSSURES ENROBES","CHAUSSURES HAUTES","CHAUSSURES PPV","COMBINAISON","COMPRESSES","COQUILLES","COTE DE TRAVAIL","DESINFECTANT","FEUILLE A4","GANT ANTI COUPURES","GANTS","GANTS BLEU PIQUETS","GANTS PIQUETS","GANTS VINYLES","GILET RAFRAICHISSANT","GILET ÉTÉ","JUGULAIRE CASQUE","LUNETTES","LUNETTES EN MOUSSES","LUNETTES INTEGRALES","MASQUE","MASQUE FFP3","PANSEMENT","PANSEMENTS ADHÉSIFS","PANTALON","PANTALON GRIS","PAPIER TOILETTE","PARKA","PARKA OCCASION","PINCE À ÉCHARDES","POCHETTE BTP","PRODUIT ENTRETIEN","PULL","PULL ECO","RECHANGE CASQUE","SOFTSHELL","SOFTSHELL GRISE","SPARADRAP","T-SHIRT","T-SHIRT FLUO","TENUE PLUIE","VESTE","VESTE DE TRAVAIL","VESTE ECO","VESTE FINE","VESTE OCCAS","VESTE ORANGE","VESTE SOFTSHELL","VESTE SOFTSHELL (OCCASION)","VETEMENT DE PLUIE"],"epifam":[14,14,5,1,6,2,3,3,3,3,3,9,4,4,4,4,4,4,5,5,5,5,5,5,5,6,14,4,6,14,0,7,7,7,7,7,2,2,4,8,8,8,9,9,14,14,10,10,0,11,11,14,0,0,13,13,4,15,15,14,16,16,12,17,17,17,17,17,17,15,15,12],"fams":["AUTRE","BAUDRIER","BONNET","BOTTES","CASQUE","CHAUSSURES","COMBINAISON","GANTS","LUNETTES","MASQUE","PANTALON","PARKA","PLUIE","PULL","SECOURS","SOFTSHELL","T-SHIRT","VESTE"],"acts":["BETON","Carrière","ECO","MECA","STV","Synergie","TP","TRANSP","tp"],"dist":[[2023,"2023-10-01",3,60,"L",2,3],[2023,"2023-10-01",4,46,"44",1,3],[2023,"2023-10-01",65,46,"40",1,6],[2023,"2023-10-01",65,60,"M",2,6],[2023,"2023-10-01",73,57,"XXL",1,7],[2023,"2023-10-01",77,25,"4",1,4],[2023,"2023-10-01",94,60,"XL",2,3],[2023,"2023-10-01",95,50,"L",1,6],[2023,"2023-10-01",101,19,"46",1,6],[2023,"2023-10-01",101,60,"L",2,6],[2023,"2023-10-01",117,60,"M",2,3],[2023,"2023-10-01",118,60,"XXL",2,3],[2023,"2023-10-01",129,60,"L",2,3],[2023,"2023-10-01",148,50,"M",1,6],[2023,"2023-10-01",153,50,"XL",1,6],[2023,"2023-10-01",175,60,"XL",2,3],[2023,"2023-11-01",116,60,"L",2,6],[2023,"2023-11-01",116,57,"XL",1,6],[2023,"2023-11-08",154,46,"46",2,3],[2023,"2023-11-08",154,60,"L",2,3],[2023,"2023-11-08",154,57,"XXL",1,3],[2023,"2023-11-08",163,46,"48",2,3],[2023,"2023-11-08",163,60,"L",2,3],[2023,"2023-11-08",163,57,"L",1,3],[2023,"2023-11-08",163,19,"43",1,3],[2023,"2023-11-08",154,19,"44",1,3],[2023,"2023-11-09",137,57,"XL",1,3],[2023,"2023-11-09",175,19,"46",1,3],[2023,"2023-11-10",86,19,"43",1,6],[2023,"2023-11-10",116,60,"L",2,6],[2023,"2023-11-10",116,19,"43",1,6],[2023,"2023-11-10",126,19,"46",1,6],[2023,"2023-11-16",78,46,"44",2,2],[2023,"2023-11-25",119,19,"44",1,6],[2023,"2023-11-25",172,19,"42",1,6],[2023,"2023-11-25",172,57,"L",1,6],[2023,"2023-12-01",81,57,"XXL",1,4],[2023,"2023-12-07",144,46,"40",2,6],[2023,"2023-12-08",38,46,"40",2,6],[2023,"2023-12-08",38,49,"L",1,6],[2023,"2023-12-08",38,3,"L",1,6],[2023,"2023-12-08",38,60,"M",2,6],[2023,"2023-12-08",38,19,"40",1,6],[2023,"2023-12-15",7,46,"44",1,4],[2023,"2023-12-15",7,57,"3XL",1,4],[2023,"2023-12-15",7,60,"XL",2,4],[2023,"2023-12-15",7,19,"44",1,4],[2024,"2024-01-08",7,19,"42",1,6],[2024,"2024-01-15",10,46,"54/56",2,7],[2024,"2024-01-15",10,19,"43",1,7],[2024,"2024-01-18",36,46,"46",2,6],[2024,"2024-01-18",36,19,"42",1,6],[2024,"2024-01-18",7,46,"48",1,6],[2024,"2024-01-18",7,19,"43",1,4],[2024,"2024-01-22",7,19,"42",1,2],[2024,"2024-01-22",9,46,"46",1,7],[2024,"2024-01-30",7,46,"40",2,7],[2024,"2024-01-30",7,60,"L",2,7],[2024,"2024-01-30",7,46,"42",2,3],[2024,"2024-01-30",7,60,"XL",2,3],[2024,"2024-01-30",7,57,"2XL",1,3],[2024,"2024-01-30",7,19,"43",1,3],[2024,"2024-02-06",7,46,"40",1,6],[2024,"2024-02-08",7,19,"46",1,7],[2024,"2024-02-08",7,19,"42",1,6],[2024,"2024-02-22",7,6,"43",1,6],[2024,"2024-02-27",7,57,"L",1,6],[2024,"2024-02-27",7,57,"L",1,6],[2024,"2024-02-27",7,5,"",1,6],[2024,"2024-03-01",7,57,"L",1,6],[2024,"2024-03-01",7,57,"M",1,6],[2024,"2024-03-15",33,55,"2XL",2,2],[2024,"2024-03-15",33,65,"4",1,2],[2024,"2024-03-15",54,55,"XL",2,2],[2024,"2024-03-15",54,65,"5",1,2],[2024,"2024-03-15",19,55,"XL",2,2],[2024,"2024-03-15",19,65,"3",1,2],[2024,"2024-03-15",26,55,"5XL",1,2],[2024,"2024-03-15",26,65,"10",1,2],[2024,"2024-03-15",16,55,"XL",1,2],[2024,"2024-03-15",43,65,"3",1,2],[2024,"2024-03-15",43,55,"L",1,2],[2024,"2024-03-15",60,55,"M",2,2],[2024,"2024-03-15",60,65,"4",1,2],[2024,"2024-03-21",7,46,"42",1,6],[2024,"2024-03-21",7,46,"40",1,6],[2024,"2024-03-22",7,57,"L",1,0],[2024,"2024-03-22",7,46,"48",2,4],[2024,"2024-03-22",7,60,"XL",2,4],[2024,"2024-03-22",7,57,"M",1,6],[2024,"2024-03-22",7,46,"40",1,6],[2024,"2024-03-22",7,19,"43",1,6],[2024,"2024-03-27",7,57,"3XL",1,5],[2024,"2024-03-27",7,46,"52",1,5],[2024,"2024-03-27",33,31,"",1,2],[2024,"2024-03-27",7,19,"43",1,6],[2024,"2024-03-28",7,46,"52",2,2],[2024,"2024-04-02",53,46,"40",2,7],[2024,"2024-04-02",53,19,"45",1,7],[2024,"2024-04-02",53,3,"L",1,7],[2024,"2024-04-02",53,57,"M",1,7],[2024,"2024-04-15",29,65,"3",1,2],[2024,"2024-04-15",11,19,"46",1,5],[2024,"2024-04-15",55,19,"47",1,4],[2024,"2024-04-24",56,19,"49",1,5],[2024,"2024-04-25",7,60,"XL",2,4],[2024,"2024-04-25",7,46,"44",1,4],[2024,"2024-04-26",48,57,"XL",1,5],[2024,"2024-04-29",38,19,"40",1,6],[2024,"2024-04-29",58,46,"40",1,6],[2024,"2024-04-29",58,19,"40",1,6],[2024,"2024-04-29",36,60,"L",2,6],[2024,"2024-04-29",36,19,"46",1,6],[2024,"2024-04-29",41,60,"M",1,6],[2024,"2024-04-29",41,57,"M",1,6],[2024,"2024-04-29",23,60,"M",1,6],[2024,"2024-04-29",23,57,"M",1,6],[2024,"2024-04-29",23,46,"38",1,6],[2024,"2024-04-29",23,19,"39",1,6],[2024,"2024-04-29",33,48,"",1,2],[2024,"2024-05-02",20,60,"L",2,0],[2024,"2024-05-02",20,46,"42",1,0],[2024,"2024-05-02",20,19,"46",1,0],[2024,"2024-05-03",43,19,"41",1,2],[2024,"2024-05-03",54,19,"43",1,2],[2024,"2024-05-03",33,60,"XL",2,2],[2024,"2024-05-03",33,57,"XXL",1,2],[2024,"2024-05-03",54,60,"XL",2,2],[2024,"2024-05-03",26,19,"43",1,2],[2024,"2024-05-03",62,60,"M",2,2],[2024,"2024-05-03",62,57,"M",1,2],[2024,"2024-05-03",19,60,"XL",2,2],[2024,"2024-05-03",27,12,"",1,6],[2024,"2024-05-03",43,60,"M",2,2],[2024,"2024-05-03",29,60,"L",2,2],[2024,"2024-05-03",29,5,"",1,2],[2024,"2024-05-03",29,55,"L",1,2],[2024,"2024-05-03",62,19,"44",1,2],[2024,"2024-05-03",33,31,"",1,2],[2024,"2024-05-15",40,60,"M",2,2],[2024,"2024-05-15",40,57,"M",1,2],[2024,"2024-05-15",29,57,"L",1,2],[2024,"2024-05-15",29,19,"44",1,2],[2024,"2024-05-24",36,46,"48",2,6],[2024,"2024-05-24",49,57,"3XL",1,2],[2024,"2024-05-24",49,57,"3XL",1,2],[2024,"2024-05-27",25,3,"XL",1,0],[2024,"2024-05-28",40,19,"37",1,2],[2024,"2024-05-28",16,19,"40",1,2],[2024,"2024-05-31",44,19,"43",1,5],[2024,"2024-05-31",44,60,"L",2,5],[2024,"2024-05-31",44,57,"L",1,5],[2024,"2024-05-31",44,46,"42",2,5],[2024,"2024-05-31",44,3,"L",1,5],[2024,"2024-05-31",54,46,"42",2,2],[2024,"2024-05-31",39,60,"XL",2,6],[2024,"2024-05-31",39,46,"42",1,6],[2024,"2024-05-31",35,60,"XL",2,6],[2024,"2024-05-31",35,57,"XL",1,6],[2024,"2024-05-31",35,46,"42",2,6],[2024,"2024-05-31",35,19,"45",1,6],[2024,"2024-05-31",35,3,"XL",1,6],[2024,"2024-05-31",35,32,"",1,6],[2024,"2024-05-31",35,6,"45",1,6],[2024,"2024-05-31",44,60,"L",2,6],[2024,"2024-05-31",44,46,"42",2,6],[2024,"2024-05-31",44,19,"42",1,6],[2024,"2024-05-31",44,3,"L",1,6],[2024,"2024-05-31",44,32,"9",1,6],[2024,"2024-05-31",40,32,"6",1,2],[2024,"2024-05-31",40,55,"M",1,2],[2024,"2024-05-31",18,60,"L",1,6],[2024,"2024-05-31",18,57,"M",1,6],[2024,"2024-05-31",18,46,"40",2,6],[2024,"2024-05-31",15,46,"42",1,6],[2024,"2024-05-31",56,60,"2XL",2,5],[2024,"2024-05-31",56,46,"52",1,5],[2024,"2024-06-01",56,3,"2XL",1,5],[2024,"2024-06-05",31,60,"XL",2,6],[2024,"2024-06-05",31,46,"44",2,6],[2024,"2024-06-05",31,19,"44",1,6],[2024,"2024-06-10",11,19,"44",1,5],[2024,"2024-06-10",30,46,"46",1,4],[2024,"2024-06-10",36,19,"43",1,6],[2024,"2024-06-11",33,19,"46",1,2],[2024,"2024-06-12",37,60,"XL",2,6],[2024,"2024-06-12",37,46,"46",1,6],[2024,"2024-06-12",37,19,"44",1,6],[2024,"2024-06-12",37,3,"XL",1,6],[2024,"2024-06-14",58,19,"43",1,5],[2024,"2024-06-14",58,60,"XL",2,5],[2024,"2024-06-14",58,57,"XL",1,5],[2024,"2024-06-14",58,46,"44",1,5],[2024,"2024-06-14",51,46,"40",1,6],[2024,"2024-06-14",51,19,"43",1,6],[2024,"2024-06-14",51,3,"L",1,6],[2024,"2024-06-18",28,19,"43",1,2],[2024,"2024-06-18",28,60,"L",2,2],[2024,"2024-06-18",28,46,"42",1,2],[2024,"2024-06-20",27,60,"XL",3,5],[2024,"2024-06-28",45,60,"L",2,7],[2024,"2024-06-28",7,48,"",1,2],[2024,"2024-06-28",7,29,"",1,2],[2024,"2024-06-28",7,26,"",1,2],[2024,"2024-06-28",7,59,"",1,2],[2024,"2024-06-28",7,44,"",1,2],[2024,"2024-06-28",7,0,"",1,2],[2024,"2024-06-28",7,30,"",1,2],[2024,"2024-07-01",17,19,"42",1,6],[2024,"2024-07-03",44,60,"L",3,5],[2024,"2024-07-03",56,60,"2XL",2,5],[2024,"2024-07-03",56,46,"52",2,5],[2024,"2024-07-04",57,60,"L",3,6],[2024,"2024-07-04",57,46,"42",1,6],[2024,"2024-07-04",57,3,"L",1,6],[2024,"2024-07-04",57,12,"U",1,6],[2024,"2024-07-04",61,46,"38",1,2],[2024,"2024-07-04",61,19,"42",1,2],[2024,"2024-07-05",42,60,"L",2,6],[2024,"2024-07-05",42,57,"L",1,6],[2024,"2024-07-05",42,14,"U",1,6],[2024,"2024-07-10",8,46,"56",1,7],[2024,"2024-07-10",63,37,"M",1,6],[2024,"2024-07-16",7,19,"",1,6],[2024,"2024-07-18",46,12,"U",1,4],[2024,"2024-07-23",52,4,"U",1,4],[2024,"2024-07-25",38,27,"U",1,6],[2024,"2024-07-25",64,46,"44",1,5],[2024,"2024-07-25",21,46,"44",1,7],[2024,"2024-07-25",21,19,"45",1,7],[2024,"2024-07-25",21,3,"M",1,7],[2024,"2024-07-25",50,60,"4XL",2,5],[2024,"2024-07-25",50,3,"3XL",1,5],[2024,"2024-07-25",56,60,"2XL",2,5],[2024,"2024-07-25",56,46,"52",1,5],[2024,"2024-07-25",38,61,"S",2,6],[2024,"2024-07-26",63,60,"M",2,6],[2024,"2024-07-26",36,38,"",1,6],[2024,"2024-07-26",23,38,"",1,6],[2024,"2024-08-09",8,60,"4XL",2,7],[2024,"2024-08-09",42,46,"44",1,6],[2024,"2024-08-09",42,3,"L",1,6],[2024,"2024-08-09",42,60,"L",2,6],[2024,"2024-08-23",32,60,"L",2,2],[2024,"2024-08-23",32,46,"42",1,2],[2024,"2024-08-23",32,3,"L",1,2],[2024,"2024-08-23",32,32,"1",1,2],[2024,"2024-08-23",32,15,"1",1,2],[2024,"2024-08-23",13,60,"XL",2,6],[2024,"2024-08-23",13,46,"48",1,6],[2024,"2024-08-23",13,19,"46",1,6],[2024,"2024-08-23",13,3,"XL",1,6],[2024,"2024-08-23",13,57,"2XL",1,6],[2024,"2024-08-26",34,57,"XL",1,4],[2024,"2024-08-28",27,3,"XL",1,6],[2024,"2024-09-04",37,18,"44",1,6],[2024,"2024-09-04",47,60,"M",2,6],[2024,"2024-09-04",47,46,"38",2,6],[2024,"2024-09-04",47,19,"42",1,6],[2024,"2024-09-04",47,3,"L",1,6],[2024,"2024-09-06",50,60,"4XL",2,5],[2024,"2024-09-06",33,60,"2XL",2,2],[2024,"2024-09-06",33,31,"10",1,2],[2024,"2024-09-06",16,60,"2XL",2,2],[2024,"2024-09-06",16,46,"42",2,2],[2024,"2024-09-06",16,65,"XL",1,2],[2024,"2024-09-11",24,60,"L",3,6],[2024,"2024-09-11",24,57,"L",1,6],[2024,"2024-09-11",24,19,"42",1,6],[2024,"2024-09-16",12,57,"2XL",1,6],[2024,"2024-09-23",39,46,"42",1,6],[2024,"2024-09-23",39,19,"43",1,6],[2024,"2024-09-23",39,6,"43",1,6],[2024,"2024-09-26",33,34,"10",2,2],[2024,"2024-09-27",42,19,"43",1,6],[2024,"2024-09-27",42,6,"43",1,6],[2024,"2024-09-27",42,5,"U",1,6],[2024,"2024-09-28",14,57,"2XL",1,4],[2024,"2024-09-28",14,19,"44",1,4],[2024,"2024-10-03",22,60,"XL",2,7],[2024,"2024-10-03",22,46,"50",1,7],[2024,"2024-10-03",22,19,"45",1,7],[2024,"2024-10-03",22,3,"2XL",1,7],[2024,"2024-10-03",22,12,"U",1,7],[2024,"2024-10-04",45,57,"L",1,7],[2024,"2024-10-04",45,46,"38",1,7],[2024,"2024-10-04",38,19,"40",1,6],[2024,"2024-10-04",170,46,"48",1,6],[2024,"2024-10-04",170,57,"2XL",1,6],[2024,"2024-10-07",70,60,"L",2,0],[2024,"2024-10-07",70,46,"42",2,0],[2024,"2024-10-11",92,18,"43",1,6],[2024,"2024-10-11",92,27,"U",1,6],[2024,"2024-10-11",92,56,"U",1,6],[2024,"2024-10-11",66,24,"49",1,5],[2024,"2024-10-11",99,24,"46",1,5],[2024,"2024-10-11",176,24,"43",1,5],[2024,"2024-10-18",161,60,"M",2,6],[2024,"2024-10-18",161,57,"M",1,6],[2024,"2024-10-18",161,46,"38",2,6],[2024,"2024-10-20",161,19,"42",1,6],[2024,"2024-10-21",93,60,"M",2,2],[2024,"2024-10-21",93,46,"36",2,2],[2024,"2024-10-25",4,60,"XL",2,5],[2024,"2024-10-29",160,60,"2XL",1,7],[2024,"2024-10-29",160,57,"3XL",1,7],[2024,"2024-10-29",160,46,"52",2,7],[2024,"2024-11-12",96,46,"42",1,6],[2024,"2024-11-12",84,19,"43",1,6],[2024,"2024-11-12",84,12,"U",1,6],[2024,"2024-11-12",84,27,"U",1,6],[2024,"2024-11-20",160,19,"43",1,7],[2024,"2024-11-20",93,19,"44",1,2],[2024,"2024-11-20",140,19,"43",1,6],[2024,"2024-11-20",140,60,"L",2,6],[2024,"2024-11-20",140,57,"XL",1,6],[2024,"2024-11-20",100,19,"44",1,7],[2024,"2024-11-20",68,46,"44",1,6],[2024,"2024-11-21",84,46,"38",1,6],[2024,"2024-11-21",106,46,"40",1,6],[2024,"2024-11-21",103,60,"L",2,6],[2024,"2024-11-21",103,46,"40",1,6],[2024,"2024-11-21",103,5,"U",1,6],[2024,"2024-11-21",38,46,"38",1,6],[2024,"2024-11-21",174,57,"M",1,6],[2024,"2024-11-21",111,60,"XL",2,6],[2024,"2024-11-22",38,9,"40",1,6],[2024,"2024-11-22",111,5,"U",1,6],[2024,"2024-11-22",166,19,"42",1,6],[2024,"2024-11-22",180,61,"M",2,6],[2024,"2024-11-22",180,57,"M",1,6],[2024,"2024-11-22",180,46,"38",2,6],[2024,"2024-11-22",180,19,"38",1,6],[2024,"2024-11-22",180,9,"39",1,6],[2024,"2024-11-25",107,57,"L",1,7],[2024,"2024-11-25",107,60,"L",2,7],[2024,"2024-11-25",107,46,"40",2,7],[2024,"2024-12-02",135,46,"48",2,4],[2024,"2024-12-06",87,60,"XL",2,5],[2024,"2024-12-06",87,57,"XL",1,5],[2024,"2024-12-06",87,46,"46",1,5],[2024,"2024-12-06",87,19,"43",1,5],[2024,"2024-12-06",87,25,"4",1,5],[2024,"2024-12-06",173,19,"42",1,6],[2024,"2024-12-13",69,57,"L",1,7],[2024,"2024-12-13",69,46,"42",1,7],[2024,"2024-12-13",69,19,"44",1,7],[2024,"2024-12-20",74,60,"4XL",2,7],[2024,"2024-12-20",70,57,"L",1,0],[2024,"2025-01-09",170,12,"U",1,6],[2024,"2025-01-09",170,57,"2XL",1,6],[2024,"2025-01-09",170,9,"46",1,6],[2024,"2025-01-10",173,57,"M",1,6],[2024,"2025-01-10",155,57,"XL",1,2],[2024,"2025-01-10",155,32,"10",2,2],[2024,"2025-01-10",76,57,"2XL",1,2],[2024,"2025-01-10",76,32,"10",1,2],[2024,"2025-01-10",76,57,"2XL",1,2],[2024,"2025-01-16",159,57,"L",1,6],[2024,"2025-01-16",159,3,"XL",1,6],[2024,"2025-01-16",159,32,"9",1,6],[2024,"2025-01-16",159,12,"U",1,6],[2024,"2025-01-23",58,19,"40",1,6],[2024,"2025-01-23",93,46,"38",1,6],[2024,"2025-01-24",115,60,"L",2,6],[2024,"2025-01-24",115,57,"XL",1,6],[2024,"2025-01-24",115,46,"42",1,6],[2024,"2025-01-24",174,19,"42",1,6],[2025,"2025-01-31",76,25,"6",1,2],[2025,"2025-01-31",145,60,"XL",3,6],[2025,"2025-01-31",145,46,"44",2,6],[2025,"2025-01-31",145,7,"42",1,6],[2025,"2025-02-05",84,60,"M",2,6],[2025,"2025-02-05",84,57,"L",1,6],[2025,"2025-02-05",84,46,"38",1,6],[2025,"2025-02-05",84,3,"M",1,6],[2025,"2025-02-06",38,60,"M",1,6],[2025,"2025-02-06",38,19,"40",1,6],[2025,"2025-02-06",38,5,"U",1,6],[2025,"2025-02-07",120,60,"XL",1,6],[2025,"2025-02-07",120,46,"46",2,6],[2025,"2025-02-07",120,19,"44",1,6],[2025,"2025-02-18",85,60,"2XL",3,0],[2025,"2025-02-18",85,57,"2XL",1,0],[2025,"2025-02-18",85,46,"46",1,0],[2025,"2025-02-18",170,19,"46",1,6],[2025,"2025-02-20",92,46,"40",2,6],[2025,"2025-03-01",168,60,"XL",3,4],[2025,"2025-03-01",168,39,"",1,4],[2025,"2025-03-01",168,27,"",1,4],[2025,"2025-04-10",122,46,"50",2,5],[2025,"2025-04-10",68,46,"44",1,6],[2025,"2025-04-10",68,19,"43",1,6],[2025,"2025-04-10",140,46,"44",2,6],[2025,"2025-04-15",82,57,"XL",1,4],[2025,"2025-04-15",82,46,"48",1,4],[2025,"2025-04-15",82,19,"43",1,4],[2025,"2025-04-16",102,57,"2XL",1,7],[2025,"2025-04-16",102,46,"48",1,7],[2025,"2025-04-18",160,60,"3XL",2,7],[2025,"2025-04-18",131,3,"XL",1,6],[2025,"2025-04-22",112,60,"L",1,2],[2025,"2025-04-22",112,19,"43",1,2],[2025,"2025-04-22",112,46,"42",1,2],[2025,"2025-04-22",112,67,"L",1,2],[2025,"2025-04-23",103,3,"L",1,6],[2025,"2025-04-25",108,19,"42",1,5],[2025,"2025-04-25",139,19,"44",1,7],[2025,"2025-04-25",139,46,"42",2,7],[2025,"2025-04-25",139,60,"XL",3,7],[2025,"2025-04-25",139,57,"XL",1,7],[2025,"2025-04-28",170,60,"3XL",1,6],[2025,"2025-04-28",170,46,"3XL",2,6],[2025,"2025-04-29",127,46,"52",2,6],[2025,"2025-04-30",136,60,"XXL",2,4],[2025,"2025-04-30",136,57,"XXL",1,4],[2025,"2025-04-30",136,46,"48",2,4],[2025,"2025-04-30",136,19,"42",1,4],[2025,"2025-04-30",136,3,"XXL",1,4],[2025,"2025-04-30",136,32,"10",1,4],[2025,"2025-04-30",85,60,"XL",2,0],[2025,"2025-04-30",85,32,"9",2,0],[2025,"2025-04-30",97,60,"M + L",3,0],[2025,"2025-04-30",97,46,"40",2,0],[2025,"2025-05-14",5,60,"2XL",2,4],[2025,"2025-05-14",5,57,"2XL",1,4],[2025,"2025-05-14",5,46,"50",1,4],[2025,"2025-05-14",5,3,"3XL",1,4],[2025,"2025-05-14",5,27,"U",1,4],[2025,"2025-05-14",141,57,"2XL",1,6],[2025,"2025-05-14",80,3,"L",1,6],[2025,"2025-05-14",157,27,"U",1,6],[2025,"2025-05-15",69,60,"L",2,7],[2025,"2025-05-15",69,46,"42",1,7],[2025,"2025-05-15",69,3,"L",1,7],[2025,"2025-05-15",98,60,"M + L",2,6],[2025,"2025-05-15",98,46,"40",2,6],[2025,"2025-05-15",98,19,"44",1,6],[2025,"2025-05-15",98,3,"L",1,6],[2025,"2025-05-20",6,19,"45",1,4],[2025,"2025-05-20",6,57,"XL",1,4],[2025,"2025-05-23",113,15,"",1,2],[2025,"2025-05-23",113,39,"",1,2],[2025,"2025-05-23",113,32,"8",1,2],[2025,"2025-05-23",155,32,"10",2,2],[2025,"2025-05-23",76,32,"10",2,2],[2025,"2025-06-04",143,68,"L",1,4],[2025,"2025-06-04",143,2,"44",1,4],[2025,"2025-06-06",90,62,"3XL",1,4],[2025,"2025-06-06",136,62,"2XL",1,6],[2025,"2025-06-06",78,62,"2XL",1,2],[2025,"2025-06-06",70,60,"L",2,0],[2025,"2025-06-06",70,62,"L",1,0],[2025,"2025-06-10",165,3,"2XL",1,4],[2025,"2025-06-10",165,3,"XL",1,4],[2025,"2025-06-10",168,3,"2XL",1,4],[2025,"2025-06-10",168,46,"44",2,4],[2025,"2025-06-10",168,62,"XL",1,4],[2025,"2025-06-12",145,19,"42",1,6],[2025,"2025-06-12",168,3,"2XL",1,4],[2025,"2025-06-13",70,39,"",1,0],[2025,"2025-06-13",91,39,"",1,0],[2025,"2025-06-13",136,39,"",1,6],[2025,"2025-06-13",78,39,"",1,2],[2025,"2025-06-13",6,39,"",1,4],[2025,"2025-06-13",70,19,"45",1,0],[2025,"2025-06-16",66,60,"2XL",5,5],[2025,"2025-06-16",111,46,"42",1,6],[2025,"2025-06-16",111,19,"46",1,6],[2025,"2025-06-16",141,3,"2XL",1,6],[2025,"2025-06-16",68,3,"2XL",1,6],[2025,"2025-06-16",122,60,"3XL",1,5],[2025,"2025-06-16",128,60,"5XL",1,5],[2025,"2025-06-17",66,46,"52",3,5],[2025,"2025-06-18",74,2,"46",1,7],[2025,"2025-06-18",136,60,"2XL",4,6],[2025,"2025-06-18",136,63,"4",1,6],[2025,"2025-06-18",136,46,"48",2,6],[2025,"2025-06-18",136,19,"42",1,6],[2025,"2025-06-20",76,60,"2XL",4,6],[2025,"2025-06-20",155,60,"XL",4,6],[2025,"2025-06-26",92,27,"",1,8],[2025,"2025-06-27",38,19,"40",1,6],[2025,"2025-06-27",38,22,"40",1,6],[2025,"2025-06-27",111,52,"",1,6],[2025,"2025-06-27",98,36,"L/XL",1,6],[2025,"2025-06-27",79,36,"L/XL",1,6],[2025,"2025-06-27",111,36,"L/XL",1,6],[2025,"2025-06-27",120,19,"44",1,6],[2025,"2025-06-27",92,19,"43",1,6],[2025,"2025-06-27",127,3,"2XL",1,6],[2025,"2025-06-27",88,3,"L",1,6],[2025,"2025-06-27",1,3,"L",1,6],[2025,"2025-06-27",145,12,"",1,6],[2025,"2025-06-30",112,36,"L/XL",1,2],[2025,"2025-06-30",112,32,"9",1,2],[2025,"2025-07-03",97,19,"42",1,0],[2025,"2025-07-03",124,19,"43",1,6],[2025,"2025-07-03",124,60,"XL",3,6],[2025,"2025-07-11",155,19,"40",1,2],[2025,"2025-07-15",141,7,"44",1,6],[2025,"2025-07-16",130,60,"M",2,5],[2025,"2025-07-16",130,46,"38",1,5],[2025,"2025-07-16",130,19,"42",1,5],[2025,"2025-07-21",5,62,"2XL",1,4],[2025,"2025-07-21",5,60,"2XL",4,4],[2025,"2025-07-21",5,46,"50",1,4],[2025,"2025-07-21",5,60,"2XL",4,6],[2025,"2025-07-21",5,46,"50",1,5],[2025,"2025-07-21",5,62,"2XL",1,5],[2025,"2025-07-24",83,39,"U",1,6],[2025,"2025-07-24",83,43,"U",4,6],[2025,"2025-07-24",134,39,"U",1,2],[2025,"2025-07-24",134,43,"U",1,2],[2025,"2025-07-24",134,38,"U",1,2],[2025,"2025-07-24",134,3,"3XL",1,2],[2025,"2025-07-30",140,60,"L",2,6],[2025,"2025-07-30",140,19,"43",1,6],[2025,"2025-07-30",58,46,"38",1,6],[2025,"2025-07-30",38,46,"38",1,6],[2025,"2025-07-30",38,19,"39",1,6],[2025,"2025-07-30",103,60,"L",2,6],[2025,"2025-07-30",135,7,"46",1,4],[2025,"2025-08-04",88,60,"XL",2,6],[2025,"2025-08-04",88,46,"42",2,6],[2025,"2025-08-04",88,19,"43",1,6],[2025,"2025-08-04",88,13,"U",1,6],[2025,"2025-08-29",170,19,"47",1,6],[2025,"2025-08-29",5,19,"47",1,6],[2025,"2025-09-03",58,19,"40",1,6],[2025,"2025-09-03",103,19,"46",1,6],[2025,"2025-09-03",127,19,"46",1,6],[2025,"2025-09-05",173,60,"M",2,6],[2025,"2025-09-05",173,57,"M",1,6],[2025,"2025-09-05",173,46,"40",1,6],[2025,"2025-09-08",147,60,"XL",2,2],[2025,"2025-09-08",147,63,"4",1,2],[2025,"2025-09-08",147,46,"46",2,2],[2025,"2025-09-08",120,3,"L",1,6],[2025,"",150,19,"42",1,2],[2025,"2025-02-05",84,60,"L",2,6],[2025,"2025-02-05",84,57,"L",1,6],[2025,"2025-02-05",84,46,"40",1,6],[2025,"2025-02-05",84,9,"43",1,6],[2025,"2025-02-05",84,3,"L",1,6],[2025,"",93,46,"36",2,2],[2025,"",104,46,"40",1,2],[2025,"",156,46,"40",1,2],[2025,"",162,46,"40",2,2],[2025,"",164,46,"L",2,2],[2025,"",150,60,"M",2,2],[2025,"",150,57,"M",1,2],[2025,"",104,57,"M",1,2],[2025,"",124,53,"",1,6],[2025,"",69,46,"44",1,7],[2025,"",69,19,"45",1,7],[2025,"",69,3,"M",1,7],[2025,"2025-09-01",142,46,"38",1,6],[2025,"2025-09-01",142,57,"M",1,6],[2025,"2025-09-01",142,60,"M",3,6],[2025,"2025-09-01",142,12,"U",1,6],[2025,"2025-09-01",142,19,"42",1,6],[2025,"2025-09-09",108,41,"U",2,5],[2025,"2025-09-05",149,57,"XL",1,6],[2025,"2025-09-05",149,46,"44-46",1,6],[2025,"2025-09-05",149,3,"L",1,6],[2025,"2025-09-05",149,19,"46",1,6],[2025,"2025-09-17",170,3,"XL",1,6],[2025,"2025-09-10",140,57,"L",1,6],[2025,"2025-09-11",68,60,"L",2,6],[2025,"2025-09-11",68,46,"46",2,6],[2025,"2025-09-22",82,62,"XL",1,1],[2025,"2025-09-25",160,46,"54",1,7],[2025,"2025-09-25",160,19,"42",1,7],[2025,"2025-09-26",78,60,"XL",2,2],[2025,"2025-09-26",78,57,"XL",1,2],[2025,"2025-09-26",78,46,"44",2,2],[2025,"2025-09-26",78,19,"43",1,2],[2025,"2025-09-26",78,32,"10",2,2],[2025,"2025-09-19",155,46,"42",1,2],[2025,"2025-09-19",155,32,"9",1,2],[2025,"2025-10-01",179,60,"M",3,5],[2025,"2025-10-01",179,64,"4",1,5],[2025,"2025-10-01",179,46,"40/42",2,5],[2025,"2025-10-01",179,19,"45",1,5],[2025,"2025-10-01",179,40,"U",1,5],[2025,"2025-10-08",135,46,"50",1,4],[2025,"2025-10-01",158,32,"",1,6],[2025,"2025-10-01",158,63,"XL",1,6],[2025,"2025-10-01",158,6,"43",1,6],[2025,"2025-10-09",121,60,"L",2,6],[2025,"2025-10-09",121,70,"L",1,6],[2025,"2025-10-09",121,20,"43",1,6],[2025,"2025-10-09",121,46,"50",2,6],[2025,"2025-10-09",121,16,"U",1,6],[2025,"2025-10-10",171,59,"U",1,2],[2025,"2025-10-10",171,26,"U",1,2],[2025,"2025-10-10",171,1,"U",3,2],[2025,"2025-10-10",171,45,"U",3,2],[2025,"2025-10-10",110,13,"U",1,6],[2025,"2025-10-10",110,19,"42",1,6],[2025,"2025-10-10",110,46,"42",2,6],[2025,"2025-10-10",110,57,"L",1,6],[2025,"2025-10-10",110,3,"L",1,6],[2025,"2025-10-10",110,60,"L",3,6],[2025,"2025-10-08",106,13,"U",1,6],[2025,"2025-10-13",106,60,"L",2,6],[2025,"2025-10-13",106,57,"XL",1,6],[2025,"2025-10-13",106,46,"42",2,6],[2025,"2025-10-13",106,9,"43",1,6],[2025,"2025-10-15",142,6,"43",1,6],[2025,"2025-10-15",178,6,"42",1,6],[2025,"2025-10-20",97,62,"L",1,0],[2025,"2025-10-08",135,46,"50",1,4],[2025,"2025-10-20",97,62,"L",1,0],[2025,"2025-10-20",127,9,"47",1,6],[2025,"2025-10-31",149,9,"46",1,6],[2025,"2025-10-31",5,60,"2XL",2,6],[2025,"2025-10-31",5,57,"2XL",1,6],[2025,"2025-10-31",5,46,"50",1,6],[2025,"2025-11-03",72,46,"38",1,6],[2025,"2025-10-31",5,15,"U",1,6],[2025,"2025-11-04",105,46,"46",1,6],[2025,"2025-11-04",130,57,"L",1,5],[2025,"2025-11-12",179,60,"M",2,5],[2025,"2025-11-12",179,57,"M",1,5],[2025,"2025-11-12",179,46,"42",1,5],[2025,"2025-11-12",141,19,"44",1,6],[2025,"2025-11-13",133,66,"M",1,1],[2025,"2025-11-13",133,33,"M",1,1],[2025,"2025-11-14",92,46,"40",2,6],[2025,"2025-11-14",92,19,"43",1,6],[2025,"2025-11-14",142,46,"38",2,6],[2025,"2025-11-14",132,57,"M",1,2],[2025,"2025-11-14",132,46,"38",2,2],[2025,"2025-11-14",132,19,"46",1,2],[2025,"2025-11-14",132,32,"",1,2],[2025,"2025-11-14",132,15,"U",1,2],[2025,"2025-11-14",132,16,"U",1,2],[2025,"2025-11-19",170,60,"XL",2,6],[2025,"2025-11-19",170,57,"XXL",1,6],[2025,"2025-11-25",123,19,"45",1,5],[2025,"2025-11-27",82,9,"43",1,1],[2025,"2025-11-29",168,60,"XL",2,1],[2025,"2025-11-29",168,46,"44",2,1],[2025,"2025-11-29",168,8,"45",1,1],[2025,"2025-11-29",168,57,"XL",1,1],[2025,"2025-12-01",177,19,"43",1,6],[2025,"2025-12-01",177,46,"42",2,6],[2025,"2025-12-01",177,63,"L",1,6],[2025,"2025-12-03",179,6,"46",1,5],[2025,"2025-12-03",179,62,"M",1,5],[2025,"2025-12-05",100,46,"46",2,7],[2025,"2025-12-03",69,60,"L",2,7],[2025,"2025-12-03",69,46,"42",2,7],[2025,"2025-12-03",69,6,"45",1,7],[2025,"2025-12-05",5,46,"52",2,6],[2025,"2025-12-05",5,19,"47",1,6],[2025,"2025-12-06",111,46,"42",2,6],[2025,"2025-12-06",111,3,"XL",1,6],[2025,"2025-12-18",120,19,"44",1,6],[2025,"2025-11-13",74,46,"56",1,7],[2025,"2025-07-24",0,19,"43",1,3],[2026,"2026-01-06",38,19,"40",1,6],[2026,"2026-01-06",145,9,"42",1,6],[2026,"2026-01-09",167,19,"43",1,6],[2026,"2026-01-11",100,25,"5",1,3],[2026,"2026-01-13",108,57,"2",1,3],[2026,"2026-01-13",108,46,"38",2,3],[2026,"2026-01-13",108,19,"42",1,3],[2026,"2026-01-16",100,58,"4",1,3],[2026,"2026-01-16",100,47,"46",1,3],[2026,"2026-01-16",100,21,"44",1,3],[2026,"2026-01-16",2,58,"4",1,3],[2026,"2026-01-16",2,47,"42",1,3],[2026,"2026-01-16",2,21,"43",1,3],[2026,"2026-01-16",2,60,"XL",2,3],[2026,"2026-01-16",117,58,"3",1,3],[2026,"2026-01-16",130,58,"2",1,3],[2026,"2026-01-16",130,47,"38",1,3],[2026,"2026-01-16",130,9,"42",1,3],[2026,"2026-01-16",130,60,"M",1,3],[2026,"2026-01-16",74,19,"46",1,7],[2026,"2026-01-16",179,58,"4",1,3],[2026,"2026-01-16",179,47,"42",1,3],[2026,"2026-01-16",87,60,"XL",2,3],[2026,"2026-01-16",87,19,"43",1,3],[2026,"2026-01-16",87,58,"4",1,3],[2026,"2026-01-16",87,47,"46",1,3],[2026,"2026-01-16",123,58,"2",1,3],[2026,"2026-01-16",123,47,"38",1,3],[2026,"2026-01-16",151,58,"2",1,3],[2026,"2026-01-16",151,47,"42",1,3],[2026,"2026-01-22",169,19,"43",1,4],[2026,"2026-01-19",179,60,"M",2,3],[2026,"2026-01-22",76,19,"46",1,2],[2026,"2026-01-26",117,46,"SPEC",1,3],[2026,"2026-01-28",98,57,"L",1,6],[2026,"2026-01-28",98,9,"46",1,6],[2026,"2026-01-28",98,19,"46",1,6],[2026,"2026-01-28",98,60,"M",4,6],[2026,"2026-01-29",2,46,"44",1,3],[2026,"2026-01-29",87,46,"46",1,3],[2026,"2026-01-29",130,46,"38",1,3],[2026,"2026-01-29",179,46,"42",1,3],[2026,"2026-01-29",123,46,"38",1,3],[2026,"2026-01-29",152,46,"42",1,3],[2026,"2026-01-29",100,46,"46",1,3],[2026,"2026-02-03",135,9,"45",1,4],[2026,"2026-02-13",123,60,"L",3,5],[2026,"2026-02-13",123,6,"46",1,5],[2026,"2026-01-23",132,19,"46",1,2],[2026,"2026-01-22",124,9,"43",1,6],[2026,"2026-01-22",78,9,"43",1,2],[2026,"2026-02-06",69,57,"L",1,7],[2026,"2026-02-06",69,46,"42",1,7],[2026,"2026-01-23",179,25,"3",1,3],[2026,"2026-02-13",140,46,"44",2,6],[2026,"2026-02-18",179,57,"M",1,3],[2026,"2026-02-18",179,46,"40",1,3],[2026,"2026-02-18",142,12,"U",1,6],[2026,"2026-02-16",75,57,"2XL",1,2],[2026,"2026-02-16",155,57,"XL",1,2],[2026,"2026-02-16",146,60,"L",5,5],[2026,"2026-02-16",146,57,"M",1,5],[2026,"2026-02-16",146,46,"42",2,5],[2026,"2026-02-16",146,19,"40",1,5],[2026,"2026-02-18",114,60,"L",2,6],[2026,"2026-02-18",114,57,"XL",1,6],[2026,"2026-02-18",114,46,"42",1,6],[2026,"2026-02-18",114,19,"42",1,6],[2026,"2026-02-18",114,71,"42",1,6],[2026,"2026-02-18",88,60,"XL",2,6],[2026,"2026-02-18",88,57,"L",1,6],[2026,"2026-02-18",88,19,"43",1,6],[2026,"2026-02-18",74,57,"3XL",1,7],[2026,"2026-02-19",170,46,"46",2,6],[2026,"2026-02-19",152,46,"XL",1,5],[2026,"2026-02-19",130,46,"3",1,5],[2026,"2026-02-19",2,28,"4",1,5],[2026,"2026-02-26",89,39,"U",1,6],[2026,"2026-02-26",89,42,"U",1,6],[2026,"2026-02-26",89,17,"U",1,6],[2026,"2026-02-19",2,6,"43",1,5],[2026,"2026-03-06",149,46,"46",1,6],[2026,"2026-03-06",149,46,"45",1,6],[2026,"2026-03-06",149,46,"U",1,6],[2026,"2026-03-06",120,69,"L",1,6],[2026,"2026-03-06",120,46,"46",1,6],[2026,"2026-03-06",68,60,"L",2,1],[2026,"2026-03-06",68,46,"48",1,1],[2026,"2026-03-18",161,46,"38",2,1],[2026,"2026-03-18",161,46,"41",1,1],[2026,"2026-03-25",138,46,"XXL",1,7],[2026,"2026-03-25",138,46,"50",1,7],[2026,"2026-03-25",138,3,"XL",1,7],[2026,"2026-03-25",138,32,"10",1,7],[2026,"2026-03-25",138,39,"U",1,7],[2026,"2026-03-27",170,19,"45",1,6],[2026,"2026-04-02",179,60,"S",2,5],[2026,"2026-04-08",181,3,"L",1,6],[2026,"2026-04-08",181,32,"",1,6],[2026,"2026-04-08",181,42,"U",1,6],[2026,"2026-04-09",159,19,"43",1,1],[2026,"2026-04-13",67,69,"L",1,5],[2026,"2026-04-13",67,46,"40",1,5],[2026,"2026-04-23",120,19,"44",1,6],[2026,"2026-04-24",140,19,"43",1,6],[2026,"2026-04-24",38,19,"40",1,6],[2026,"2026-04-24",38,3,"M",1,6],[2026,"2026-04-24",38,32,"5",1,6],[2026,"2026-05-11",107,54,"L",1,7],[2026,"2026-05-15",103,60,"L",2,6],[2026,"2026-05-15",103,3,"L",1,6],[2026,"2026-05-18",68,60,"XL",2,1],[2026,"2026-05-18",68,46,"48",1,1],[2026,"2026-05-18",121,46,"43",1,6],[2026,"2026-05-18",121,46,"43",1,6],[2026,"2026-05-18",82,60,"XXL",2,1],[2026,"2026-05-18",82,46,"50",2,1],[2026,"2026-05-18",82,46,"43",1,1],[2026,"2026-05-18",92,46,"43",1,6],[2026,"2026-05-20",5,46,"48",2,6],[2026,"2026-05-20",111,46,"42",2,6],[2026,"2026-05-22",59,19,"40",1,6],[2026,"2026-05-28",179,60,"L",2,5],[2026,"2026-06-02",104,32,"9",1,2],[2026,"2026-06-02",122,60,"2XL",2,5],[2026,"2026-06-02",122,46,"50",2,5],[2026,"2026-06-02",122,39,"U",1,5],[2026,"2026-06-02",122,11,"U",2,5],[2026,"2026-06-03",85,60,"XL",2,0],[2026,"2026-06-03",85,46,"44",1,0],[2026,"2026-06-04",99,60,"L",2,5],[2026,"2026-06-04",99,69,"L",1,5],[2026,"2026-06-04",99,46,"40",2,5],[2026,"2026-06-04",99,39,"U",1,5],[2026,"2026-06-04",99,15,"U",1,5],[2026,"2026-06-10",68,69,"XL",1,1],[2026,"2026-06-10",161,60,"M",2,1],[2026,"2026-06-10",161,69,"M",1,1],[2026,"2026-06-15",117,46,"40",1,5],[2026,"2026-06-15",179,19,"46",1,5],[2026,"2026-06-15",179,60,"M",3,5],[2026,"2026-06-15",109,60,"M",4,5],[2026,"2026-05-22",170,60,"XL",2,6],[2026,"2026-06-26",149,60,"XL",1,6],[2026,"2026-06-26",149,46,"46",1,6],[2026,"2026-06-30",125,60,"XL",3,7],[2026,"2026-06-30",125,46,"48",2,7],[2026,"2026-06-30",125,3,"XL",1,7],[2026,"2026-07-03",67,39,"U",1,5],[2026,"2026-07-03",67,15,"U",1,5],[2026,"2026-07-05",140,60,"L",3,6],[2026,"2026-07-07",123,60,"L",1,5],[2026,"2026-07-08",92,15,"U",1,6],[2026,"2026-07-15",104,60,"XL",3,2],[2026,"2026-07-21",71,19,"41",1,2],[2026,"2026-07-24",120,60,"XL",2,6]],"dem":[["2024","","STOCK","STOCK",19,"43","LOT",1],["2024","","STOCK","STOCK",19,"46","LOT",1],["2024","","STOCK","STOCK",46,"52","5",1],["2024","","STOCK","STOCK",46,"38","5",1],["2024","","STOCK","STOCK",57,"2XL","LOT",1],["2024","","STOCK","STOCK",57,"3/4XL","2 ou 3",1],["2024","","STOCK","STOCK",60,"M","LOT",1],["2024","","STOCK","STOCK",60,"XL","LOT",1],["2024","","STOCK","STOCK",60,"2XL","LOT",1],["S","","STOCK","STOCK",60,"3XL","LOT",1],["2024","","STOCK","STOCK",60,"4XL","LOT",1],["2025","2025-04-10","ANANIA","Tamatea",24,"49","1",0],["2025","2025-04-10","HAIU","Franckie",60,"3XL","5",0],["2025","2025-04-10","","",57,"3XL","1",0],["2025","2025-04-10","","",24,"47","1",0],["2025","2025-10-10","Trousse de secours","",35,"U","3",0],["2025","2025-10-10","Trousse de secours","",51,"U","1",0],["2025","2025-11-13","BODAINE","Arnaud",60,"4XL","2",0],["2025","2025-11-13","STOCK","STOCK",60,"4XL","5",1],["2025","2025-11-13","STOCK","STOCK",60,"3XL","5",1],["2025","2025-11-19","STOCK","STOCK",60,"M","5",1],["2025","","STOCK","STOCK",19,"46","5",1],["2026","2025-01-16","BODAINE","Arnaud",60,"4XL","2",0],["2026","2026-02-13","STOCK","STOCK",28,"3","5",1],["2026","2026-02-13","STOCK","STOCK",28,"2","5",1],["2026","2026-02-01","STOCK","STOCK",10,"43","",1],["2026","2026-02-01","STOCK","STOCK",10,"46","",1],["2026","2026-02-01","STOCK","STOCK",21,"45","",1],["2026","2026-02-01","STOCK","STOCK",46,"42","",1],["2026","2026-02-01","STOCK","STOCK",46,"44","",1],["2026","2026-02-01","STOCK","STOCK",46,"52","",1],["2026","2026-02-01","STOCK","STOCK",60,"M","",1],["2026","2026-02-01","STOCK","STOCK",60,"3XL","",1],["2026","2026-02-01","STOCK","STOCK",60,"4XL","",1],["2026","2026-02-01","STOCK","STOCK",23,"43","",1],["2026","2026-02-01","STOCK","STOCK",23,"45","",1],["2026","2026-03-18","SCHULTZ","Yanis",60,"M","2",0],["2026","2026-03-18","SCHULTZ","Yanis",57,"M","1",0],["2026","2026-05-01","STOCK","STOCK",57,"XL","",1],["2026","2026-05-01","STOCK","STOCK",57,"M","",1],["2026","2026-05-18","BARZETTI","Lorenzo",57,"XL","1",0],["2026","2026-05-18","AKILITOA","Taofifenua",19,"47","1",0],["2026","2026-05-21","AMBLARD","Jérémy",57,"M","1",0],["2026","2026-07-22","AMBLARD","Thierry",19,"40","1",0],["2026","2026-07-01","STOCK","STOCK",19,"40","",1]],"fiches":{"FINOEL JC":{"PANTALON":"42","VESTE":"L"},"VINDEZ F":{"CHAUSSURES":"46","PANTALON":"46"},"COUDEYRAS S":{"CHAUSSURES":"47","PANTALON":"54/56","VESTE":"XXXL"},"BOIZET JL":{"CHAUSSURES":"46","PANTALON":"48","VESTE":"XXL"},"FABER C":{"CHAUSSURES":"40","PANTALON":"42","VESTE":"XL"},"GENELOT M":{"CHAUSSURES":"42","PANTALON":"44","VESTE":"L"},"GROSJEAN J":{"CHAUSSURES":"44","PANTALON":"46"},"MILLION D":{"CHAUSSURES":"42","PANTALON":"40"},"GEDOR J":{"CHAUSSURES":"45","PANTALON":"42"},"REBOUCHE K":{"CHAUSSURES":"43","VESTE":"M"},"GEDOR M":{"CHAUSSURES":"42","PANTALON":"42"},"DAL MARTELLO Q":{"CHAUSSURES":"43","PANTALON":"40"},"MATHIEU T":{"CHAUSSURES":"43"},"AMBLARD T":{"CHAUSSURES":"40","PANTALON":"40"},"CERVELLE R":{"CHAUSSURES":"42","PANTALON":"40"},"FERRON D":{"CHAUSSURES":"43"},"HINDELANG H":{"CHAUSSURES":"43"},"LAFFRANCHINI A":{"CHAUSSURES":"46","PANTALON":"48","VESTE":"XXL"},"VALLEE C":{"CHAUSSURES":"42","PANTALON":"40","VESTE":"M"},"AMBLARD J":{"CHAUSSURES":"40","PANTALON":"40"},"FISCHER J":{"CHAUSSURES":"43","VESTE":"L"},"WOLFF C":{"CHAUSSURES":"39","PANTALON":"38"},"SCHULTZ Y":{"CHAUSSURES":"42","PANTALON":"46","VESTE":"XXL"},"COLIN J":{"CHAUSSURES":"43"}}};
+(function () {
+  var $ = function (s) { return document.querySelector(s); };
+  var $$ = function (s) { return Array.prototype.slice.call(document.querySelectorAll(s)); };
+
+  /* ---------------- données dérivées ---------------- */
+  var NOMS = DB.noms, EPIS = DB.epis, FAMS = DB.fams, ACTS = DB.acts, EPIFAM = DB.epifam;
+  var DIST = DB.dist.map(function (r) {
+    return { an: r[0], date: r[1], ni: r[2], ei: r[3], t: r[4] || '', q: r[5], ai: r[6], saisie: false };
+  });
+  var LOCAL = [];               // remises saisies dans l'app
+  var STOCK = [];               // [{e, t, q, seuil}]
+  var STOCK_KEY = 'epi:stock:v1';
+  var MOVE_KEY = 'epi:moves:v1';
+
+  function nomOf(i) { var n = NOMS[i]; return (n[0] + ' ' + (n[1] || '')).trim(); }
+  function famOf(ei) { return (ei >= 0 && FAMS[EPIFAM[ei]]) || 'AUTRE'; }
+  function key(e, t) { return e + '|' + (t || ''); }
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+  function frDate(iso) {
+    if (!iso) return '—';
+    var p = iso.split('-'); return p[2] + '/' + p[1] + '/' + p[0];
+  }
+  function toast(msg) {
+    var t = $('#toast'); t.textContent = msg; t.classList.add('on');
+    clearTimeout(t._h); t._h = setTimeout(function () { t.classList.remove('on'); }, 2600);
+  }
+
+  /* toutes les remises, fichier + saisies */
+  function allMoves() { return DIST.concat(LOCAL); }
+
+  /* ---------------- persistance ---------------- */
+  function save() {
+    try {
+      window.storage.set(STOCK_KEY, JSON.stringify(STOCK));
+      window.storage.set(MOVE_KEY, JSON.stringify(LOCAL));
+    } catch (e) { /* stockage indisponible : la session reste utilisable */ }
+  }
+  async function load() {
+    try {
+      var s = await window.storage.get(STOCK_KEY);
+      if (s && s.value) STOCK = JSON.parse(s.value);
+    } catch (e) { STOCK = []; }
+    try {
+      var m = await window.storage.get(MOVE_KEY);
+      if (m && m.value) LOCAL = JSON.parse(m.value);
+    } catch (e) { LOCAL = []; }
+  }
+
+  /* ---------------- stock ---------------- */
+  function stockFind(e, t) {
+    for (var i = 0; i < STOCK.length; i++) {
+      if (STOCK[i].e === e && (STOCK[i].t || '') === (t || '')) return STOCK[i];
+    }
+    return null;
+  }
+  function etat(r) {
+    if (!r.inv) return { c: 'nc', l: 'À inventorier' };
+    if (r.q <= 0) return { c: 'out', l: 'Rupture' };
+    if (r.seuil > 0 && r.q < r.seuil) return { c: 'low', l: 'Sous seuil' };
+    return { c: 'ok', l: 'OK' };
+  }
+
+  function renderStock() {
+    var q = ($('#stockSearch').value || '').toLowerCase();
+    var fam = $('#stockFam').value;
+    var onlyAlert = $('#stockOnlyAlert').checked;
+
+    var rupt = 0, bas = 0, nc = 0, pieces = 0;
+    STOCK.forEach(function (r) {
+      var st = etat(r);
+      if (st.c === 'out') rupt++;
+      else if (st.c === 'low') bas++;
+      else if (st.c === 'nc') nc++;
+      if (r.inv) pieces += Math.max(0, r.q);
+    });
+    $('#cRupture').textContent = rupt;
+    $('#cBas').textContent = bas;
+    $('#cRef').textContent = nc;
+    $('#cPieces').textContent = pieces;
+
+    var rows = STOCK.filter(function (r) {
+      if (fam && famOf(EPIS.indexOf(r.e)) !== fam) return false;
+      if (onlyAlert && etat(r).c === 'ok') return false;
+      if (q && (r.e + ' ' + r.t).toLowerCase().indexOf(q) < 0) return false;
+      return true;
+    }).sort(function (a, b) {
+      var ea = etat(a).c, eb = etat(b).c;
+      var rank = { out: 0, low: 1, nc: 2, ok: 3 };
+      if (rank[ea] !== rank[eb]) return rank[ea] - rank[eb];
+      return a.e.localeCompare(b.e) || String(a.t).localeCompare(String(b.t));
+    });
+
+    $('#stockEmpty').style.display = STOCK.length ? 'none' : 'block';
+    $('#stockTbl').style.display = STOCK.length ? '' : 'none';
+
+    $('#stockTbl tbody').innerHTML = rows.map(function (r) {
+      var st = etat(r);
+      var k = esc(key(r.e, r.t));
+      return '<tr>' +
+        '<td class="art">' + esc(r.e) + '</td>' +
+        '<td>' + (r.t ? '<span class="sz">' + esc(r.t) + '</span>' : '<span class="muted">—</span>') + '</td>' +
+        '<td class="num"><input class="qin" type="number" data-q="' + k + '" value="' + r.q + '"></td>' +
+        '<td class="num"><input class="qin" type="number" min="0" data-s="' + k + '" value="' + r.seuil + '"></td>' +
+        '<td><span class="bdg ' + st.c + '">' + st.l + '</span></td>' +
+        '<td class="num"><button class="btn mini" data-plus="' + k + '">+1</button></td>' +
+        '<td class="num"><button class="btn mini" data-del="' + k + '">Retirer</button></td>' +
+        '</tr>';
+    }).join('');
+  }
+
+  function bindStock() {
+    $('#stockTbl').addEventListener('change', function (ev) {
+      var el = ev.target;
+      var kq = el.getAttribute('data-q'), ks = el.getAttribute('data-s');
+      var k = kq || ks; if (!k) return;
+      var p = k.split('|'), r = stockFind(p[0], p[1]); if (!r) return;
+      var v = parseInt(el.value, 10); if (isNaN(v)) v = 0;
+      if (kq) { r.q = v; r.inv = true; } else r.seuil = Math.max(0, v);
+      save(); renderStock(); renderReappro();
+    });
+    $('#stockTbl').addEventListener('click', function (ev) {
+      var b = ev.target.closest('button'); if (!b) return;
+      var kp = b.getAttribute('data-plus'), kd = b.getAttribute('data-del');
+      if (kp) {
+        var p = kp.split('|'), r = stockFind(p[0], p[1]);
+        if (r) { r.q++; r.inv = true; save(); renderStock(); renderReappro(); }
+      }
+      if (kd) {
+        var d = kd.split('|');
+        STOCK = STOCK.filter(function (x) { return !(x.e === d[0] && (x.t || '') === (d[1] || '')); });
+        save(); renderStock(); renderReappro(); toast('Référence retirée');
+      }
+    });
+    ['#stockSearch', '#stockFam', '#stockOnlyAlert'].forEach(function (s) {
+      $(s).addEventListener('input', renderStock);
+      $(s).addEventListener('change', renderStock);
+    });
+
+    $('#addRef').addEventListener('click', function () {
+      var e = (prompt('Article ? (ex. PANTALON)') || '').trim().toUpperCase();
+      if (!e) return;
+      var t = (prompt('Taille ? (laisser vide si sans taille)') || '').trim().toUpperCase();
+      if (stockFind(e, t)) { toast('Cette référence existe déjà'); return; }
+      STOCK.push({ e: e, t: t, q: 0, seuil: 0, inv: true });
+      save(); renderStock(); renderReappro(); toast('Référence ajoutée');
+    });
+
+    $('#seedStock').addEventListener('click', function () {
+      var seen = {};
+      STOCK.forEach(function (r) { seen[key(r.e, r.t)] = true; });
+      allMoves().forEach(function (m) {
+        var e = EPIS[m.ei], k = key(e, m.t);
+        if (!seen[k]) { seen[k] = true; STOCK.push({ e: e, t: m.t, q: 0, seuil: 0, inv: false }); }
+      });
+      save(); renderStock(); renderReappro();
+      toast(STOCK.length + ' références créées — saisissez vos quantités');
+    });
+  }
+
+  /* ---------------- tailles connues ---------------- */
+  var FICHE_IDX = {};
+  Object.keys(DB.fiches).forEach(function (label) {
+    var surname = label.split(' ')[0].toUpperCase();
+    FICHE_IDX[surname] = FICHE_IDX[surname] || [];
+    FICHE_IDX[surname].push({ label: label, data: DB.fiches[label] });
+  });
+
+  /* tailles déduites de l'historique : la plus récente par famille */
+  function taillesDe(ni) {
+    var byFam = {};
+    allMoves().forEach(function (m) {
+      if (m.ni !== ni || !m.t) return;
+      var f = famOf(m.ei);
+      if (!byFam[f] || (m.date || '') > (byFam[f].date || '')) byFam[f] = { t: m.t, date: m.date };
+    });
+    var out = [];
+    ['CHAUSSURES', 'PANTALON', 'T-SHIRT', 'SOFTSHELL', 'VESTE', 'PARKA', 'BAUDRIER'].forEach(function (f) {
+      if (byFam[f]) out.push({ lab: f, val: byFam[f].t, sure: false });
+    });
+
+    var nom = NOMS[ni][0].toUpperCase();
+    var fiche = FICHE_IDX[nom];
+    if (fiche && fiche.length) {
+      var d = fiche[0].data;
+      Object.keys(d).forEach(function (lab) {
+        var hit = out.filter(function (o) { return o.lab === lab; })[0];
+        if (hit) { hit.val = d[lab]; hit.sure = true; }
+        else out.unshift({ lab: lab, val: d[lab], sure: true });
+      });
+    }
+    return out;
+  }
+
+  function ficheHTML(ni) {
+    var t = taillesDe(ni);
+    if (!t.length) return '<p class="muted">Aucune taille connue pour ce salarié.</p>';
+    var approx = t.some(function (x) { return !x.sure; });
+    return '<div class="fiche">' +
+      '<div class="fiche-h"><span>' + esc(nomOf(ni)) + '</span><em>Tailles</em></div>' +
+      '<div class="fiche-b">' + t.map(function (x) {
+        return '<div class="fiche-r' + (x.sure ? '' : ' guess') + '">' +
+          '<span>' + esc(x.lab) + '</span><b>' + esc(x.val) + '</b></div>';
+      }).join('') + '</div></div>' +
+      (approx ? '<p class="fiche-note">Les tailles suivies d\'un « ? » sont déduites de la dernière remise, pas d\'une fiche renseignée.</p>' : '');
+  }
+
+  /* ---------------- remise ---------------- */
+  function bindRemise() {
+    $('#dlNoms').innerHTML = NOMS.map(function (n, i) {
+      return '<option value="' + esc(nomOf(i)) + '">';
+    }).join('');
+    $('#dlEpis').innerHTML = EPIS.map(function (e) {
+      return '<option value="' + esc(e) + '">';
+    }).join('');
+    $('#rAct').innerHTML = '<option value="">—</option>' + ACTS.filter(Boolean).map(function (a) {
+      return '<option>' + esc(a) + '</option>';
+    }).join('');
+    $('#rDate').value = new Date().toISOString().slice(0, 10);
+
+    function findNi(v) {
+      v = (v || '').trim().toLowerCase();
+      for (var i = 0; i < NOMS.length; i++) if (nomOf(i).toLowerCase() === v) return i;
+      return -1;
+    }
+
+    $('#rNom').addEventListener('change', function () {
+      var ni = findNi(this.value);
+      $('#rFiche').innerHTML = ni >= 0 ? ficheHTML(ni)
+        : '<p class="muted">Salarié inconnu du fichier — la remise sera tout de même enregistrée.</p>';
+    });
+
+    function checkStock() {
+      var e = ($('#rEpi').value || '').trim().toUpperCase();
+      var t = ($('#rTaille').value || '').trim().toUpperCase();
+      var box = $('#rStockInfo');
+      if (!e) { box.textContent = ''; box.className = 'hint'; return; }
+      var r = stockFind(e, t);
+      if (!r) { box.className = 'hint'; box.innerHTML = 'Pas de suivi de stock sur cette référence.'; return; }
+      var q = parseInt($('#rQte').value, 10) || 1;
+      if (r.q < q) { box.className = 'hint warn'; box.innerHTML = 'Stock insuffisant : <b>' + r.q + '</b> en magasin.'; }
+      else { box.className = 'hint'; box.innerHTML = 'En magasin : <b>' + r.q + '</b> → il restera <b>' + (r.q - q) + '</b>.'; }
+    }
+    ['#rEpi', '#rTaille', '#rQte'].forEach(function (s) { $(s).addEventListener('input', checkStock); });
+
+    $('#formRemise').addEventListener('submit', function (ev) {
+      ev.preventDefault();
+      var nomTxt = $('#rNom').value.trim();
+      var ni = findNi(nomTxt);
+      if (ni < 0) { NOMS.push([nomTxt.toUpperCase(), '']); ni = NOMS.length - 1; }
+
+      var e = $('#rEpi').value.trim().toUpperCase();
+      var ei = EPIS.indexOf(e);
+      if (ei < 0) { EPIS.push(e); EPIFAM.push(FAMS.indexOf('AUTRE') < 0 ? 0 : FAMS.indexOf('AUTRE')); ei = EPIS.length - 1; }
+
+      var act = $('#rAct').value;
+      var ai = ACTS.indexOf(act); if (ai < 0) ai = 0;
+
+      var mv = {
+        an: parseInt($('#rDate').value.slice(0, 4), 10),
+        date: $('#rDate').value,
+        ni: ni, ei: ei,
+        t: $('#rTaille').value.trim().toUpperCase(),
+        q: parseInt($('#rQte').value, 10) || 1,
+        ai: ai, saisie: true
+      };
+      LOCAL.push(mv);
+
+      var r = stockFind(e, mv.t);
+      if (r) r.q -= mv.q;
+
+      save();
+      renderStock(); renderReappro(); renderHist(true); renderRecent();
+      toast('Remise enregistrée' + (r ? ' — stock mis à jour' : ''));
+      $('#rEpi').value = ''; $('#rTaille').value = ''; $('#rQte').value = 1;
+      checkStock();
+    });
+  }
+
+  function renderRecent() {
+    var el = $('#rRecent');
+    if (!LOCAL.length) { el.innerHTML = '<li class="muted">Aucune remise saisie ici pour l\'instant.</li>'; return; }
+    el.innerHTML = LOCAL.slice(-6).reverse().map(function (m) {
+      return '<li><span class="w">' + esc(nomOf(m.ni)) + '</span> — ' + esc(EPIS[m.ei]) +
+        (m.t ? ' <span class="sz">' + esc(m.t) + '</span>' : '') +
+        ' ×' + m.q + '<br><span class="d">' + frDate(m.date) + '</span></li>';
+    }).join('');
+  }
+
+  /* ---------------- salariés ---------------- */
+  var selNi = -1;
+  function actOf(ni) {
+    var c = {};
+    allMoves().forEach(function (m) { if (m.ni === ni && ACTS[m.ai]) c[ACTS[m.ai]] = (c[ACTS[m.ai]] || 0) + 1; });
+    var best = '', n = 0;
+    Object.keys(c).forEach(function (k) { if (c[k] > n) { n = c[k]; best = k; } });
+    return best;
+  }
+  function renderEmpList() {
+    var q = ($('#empSearch').value || '').toLowerCase();
+    var fa = $('#empAct').value;
+    var cnt = {};
+    allMoves().forEach(function (m) { cnt[m.ni] = (cnt[m.ni] || 0) + 1; });
+
+    var idx = NOMS.map(function (_, i) { return i; }).filter(function (i) {
+      if (!cnt[i]) return false;
+      if (q && nomOf(i).toLowerCase().indexOf(q) < 0) return false;
+      if (fa && actOf(i) !== fa) return false;
+      return true;
+    }).sort(function (a, b) { return nomOf(a).localeCompare(nomOf(b)); });
+
+    $('#empList').innerHTML = idx.map(function (i) {
+      return '<li data-ni="' + i + '"' + (i === selNi ? ' class="on"' : '') + '>' +
+        '<span class="who"><span class="nm">' + esc(nomOf(i)) + '</span>' +
+        '<span class="ac">' + esc(actOf(i) || '—') + '</span></span>' +
+        '<span class="n">' + cnt[i] + '</span></li>';
+    }).join('') || '<li class="muted" style="cursor:default">Aucun salarié</li>';
+  }
+  function renderEmpDetail() {
+    if (selNi < 0) { $('#empDetail').innerHTML = '<p class="muted">Sélectionnez un salarié dans la liste.</p>'; return; }
+    var mv = allMoves().filter(function (m) { return m.ni === selNi; })
+      .sort(function (a, b) { return (b.date || '').localeCompare(a.date || ''); });
+    var total = mv.reduce(function (s, m) { return s + m.q; }, 0);
+
+    $('#empDetail').innerHTML =
+      '<div class="detail-h"><h2>' + esc(nomOf(selNi)) + '</h2>' +
+      '<span class="tag">' + esc(actOf(selNi) || 'activité inconnue') + '</span>' +
+      '<span class="muted">' + mv.length + ' remises · ' + total + ' pièces</span></div>' +
+      '<div class="grid2"><div>' + ficheHTML(selNi) + '</div>' +
+      '<div><table class="tbl"><thead><tr><th>Date</th><th>Article</th><th>Taille</th><th class="num">Qté</th></tr></thead><tbody>' +
+      mv.map(function (m) {
+        return '<tr><td class="num" style="text-align:left">' + frDate(m.date) + '</td>' +
+          '<td class="art">' + esc(EPIS[m.ei]) + '</td>' +
+          '<td>' + (m.t ? '<span class="sz">' + esc(m.t) + '</span>' : '—') + '</td>' +
+          '<td class="num">' + m.q + '</td></tr>';
+      }).join('') + '</tbody></table></div></div>';
+  }
+  function bindEmp() {
+    $('#empList').addEventListener('click', function (ev) {
+      var li = ev.target.closest('li[data-ni]'); if (!li) return;
+      selNi = parseInt(li.getAttribute('data-ni'), 10);
+      renderEmpList(); renderEmpDetail();
+    });
+    $('#empSearch').addEventListener('input', renderEmpList);
+    $('#empAct').addEventListener('change', renderEmpList);
+  }
+
+  /* ---------------- à commander ---------------- */
+  function renderReappro() {
+    var rows = STOCK.filter(function (r) { return r.inv && (r.seuil > 0 ? r.q < r.seuil : r.q <= 0); })
+      .sort(function (a, b) { return (a.q - a.seuil) - (b.q - b.seuil); });
+    $('#reappro').style.display = rows.length ? '' : 'none';
+    $('#reapproVide').style.display = rows.length ? 'none' : 'block';
+    $('#reappro tbody').innerHTML = rows.map(function (r) {
+      var besoin = Math.max(1, (r.seuil || 1) - r.q);
+      return '<tr><td class="art">' + esc(r.e) + '</td>' +
+        '<td>' + (r.t ? '<span class="sz">' + esc(r.t) + '</span>' : '—') + '</td>' +
+        '<td class="num">' + r.q + '</td><td class="num">' + r.seuil + '</td>' +
+        '<td class="num"><b>' + besoin + '</b></td></tr>';
+    }).join('');
+  }
+  function renderDemandes() {
+    var d = DB.dem;
+    $('#demCount').textContent = d.length + ' lignes';
+    $('#demTbl tbody').innerHTML = d.map(function (r) {
+      var who = r[7] ? '<span class="tag">STOCK</span>' : esc((r[2] + ' ' + (r[3] || '')).trim());
+      return '<tr><td class="num" style="text-align:left">' + esc(r[0]) + '</td>' +
+        '<td>' + who + '</td><td class="art">' + esc(EPIS[r[4]]) + '</td>' +
+        '<td>' + (r[5] ? '<span class="sz">' + esc(r[5]) + '</span>' : '—') + '</td>' +
+        '<td class="num">' + esc(r[6] || '—') + '</td></tr>';
+    }).join('');
+  }
+
+  /* ---------------- historique ---------------- */
+  var hLimit = 100;
+  function renderHist(reset) {
+    if (reset) hLimit = 100;
+    var q = ($('#hSearch').value || '').toLowerCase();
+    var an = $('#hAnnee').value, fa = $('#hFam').value;
+    var rows = allMoves().filter(function (m) {
+      if (an && String(m.an) !== an) return false;
+      if (fa && famOf(m.ei) !== fa) return false;
+      if (q) {
+        var hay = (nomOf(m.ni) + ' ' + EPIS[m.ei] + ' ' + m.t).toLowerCase();
+        if (hay.indexOf(q) < 0) return false;
+      }
+      return true;
+    }).sort(function (a, b) { return (b.date || '').localeCompare(a.date || ''); });
+
+    $('#hCount').textContent = rows.length + ' remises';
+    $('#hMore').style.display = rows.length > hLimit ? '' : 'none';
+    $('#histTbl tbody').innerHTML = rows.slice(0, hLimit).map(function (m) {
+      return '<tr><td class="num" style="text-align:left">' + frDate(m.date) + '</td>' +
+        '<td>' + esc(nomOf(m.ni)) + '</td>' +
+        '<td class="muted">' + esc(ACTS[m.ai] || '—') + '</td>' +
+        '<td class="art">' + esc(EPIS[m.ei]) + '</td>' +
+        '<td>' + (m.t ? '<span class="sz">' + esc(m.t) + '</span>' : '—') + '</td>' +
+        '<td class="num">' + m.q + '</td></tr>';
+    }).join('');
+  }
+  function bindHist() {
+    var annees = {};
+    DIST.forEach(function (m) { if (m.an) annees[m.an] = 1; });
+    $('#hAnnee').innerHTML = '<option value="">Toutes les années</option>' +
+      Object.keys(annees).sort().map(function (a) { return '<option>' + a + '</option>'; }).join('');
+    $('#hFam').innerHTML = '<option value="">Toutes les familles</option>' +
+      FAMS.map(function (f) { return '<option>' + esc(f) + '</option>'; }).join('');
+    ['#hSearch', '#hAnnee', '#hFam'].forEach(function (s) {
+      $(s).addEventListener('input', function () { renderHist(true); });
+      $(s).addEventListener('change', function () { renderHist(true); });
+    });
+    $('#hMore').addEventListener('click', function () { hLimit += 100; renderHist(); });
+  }
+
+  /* ---------------- navigation ---------------- */
+  function bindNav() {
+    $$('.nav').forEach(function (b) {
+      b.addEventListener('click', function () {
+        $$('.nav').forEach(function (x) { x.classList.remove('on'); });
+        $$('.view').forEach(function (x) { x.classList.remove('on'); });
+        b.classList.add('on');
+        $('#v-' + b.getAttribute('data-view')).classList.add('on');
+      });
+    });
+  }
+
+  /* ---------------- démarrage ---------------- */
+  (async function init() {
+    await load();
+
+    $('#stockFam').innerHTML = '<option value="">Toutes les familles</option>' +
+      FAMS.map(function (f) { return '<option>' + esc(f) + '</option>'; }).join('');
+
+    var acts = {};
+    DIST.forEach(function (m) { if (ACTS[m.ai]) acts[ACTS[m.ai]] = 1; });
+    $('#empAct').innerHTML = '<option value="">Toutes les activités</option>' +
+      Object.keys(acts).sort().map(function (a) { return '<option>' + esc(a) + '</option>'; }).join('');
+
+    var people = {};
+    allMoves().forEach(function (m) { people[m.ni] = 1; });
+    $('#railPeople').textContent = Object.keys(people).length;
+    $('#railMoves').textContent = allMoves().length;
+
+    bindNav(); bindStock(); bindRemise(); bindEmp(); bindHist();
+    renderStock(); renderReappro(); renderDemandes();
+    renderEmpList(); renderEmpDetail(); renderHist(true); renderRecent();
+  })();
+})();
+
+</script>
