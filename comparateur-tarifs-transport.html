@@ -50,6 +50,14 @@ input:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:var
 .tgo-wrap{display:flex;align-items:center;gap:8px;}
 .tgo-wrap input{max-width:110px;}
 .tgo-wrap .pct{font-family:ui-monospace,Menlo,monospace;font-size:15px;color:var(--ink2);}
+.stepper{display:flex;align-items:stretch;border:1px solid var(--line);border-radius:2px;overflow:hidden;}
+.stepper input{border:0;border-left:1px solid var(--line);border-right:1px solid var(--line);
+  border-radius:0;text-align:center;padding:10px 4px;width:auto;flex:1;min-width:0;}
+.stepper button{width:36px;flex:0 0 36px;background:#fbfaf6;border:0;font-size:17px;line-height:1;
+  color:var(--ink2);cursor:pointer;font-family:ui-monospace,Menlo,monospace;}
+.stepper button:hover{background:var(--line2);}
+.stepper button:active{background:var(--line);}
+input[readonly]{background:#f3f2ec;color:var(--ink2);cursor:default;}
 
 .results{min-height:200px;}
 .empty{padding:60px 24px;text-align:center;color:var(--muted);font-style:italic;font-size:15px;}
@@ -104,24 +112,50 @@ input:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:var
     <div class="panel">
       <div class="hd">Expédition</div>
       <div class="form">
-        <div class="field">
-          <label for="poids">Poids total (kg)</label>
-          <input id="poids" type="number" min="0" step="1" inputmode="numeric" placeholder="ex. 320">
+        <div class="row2">
+          <div class="field">
+            <label for="poids">Poids marchandise (kg)</label>
+            <input id="poids" type="number" min="0" step="1" inputmode="numeric" placeholder="ex. 320">
+          </div>
+          <div class="field">
+            <label for="pal">Nombre de palettes</label>
+            <div class="stepper">
+              <button type="button" id="palMinus" aria-label="Moins de palettes">−</button>
+              <input id="pal" type="number" min="0" max="6" step="1" inputmode="numeric" value="1">
+              <button type="button" id="palPlus" aria-label="Plus de palettes">+</button>
+            </div>
+          </div>
         </div>
-        <div class="field">
-          <label for="pal">Nombre de palettes</label>
-          <input id="pal" type="number" min="0" max="6" step="1" inputmode="numeric" placeholder="ex. 2" value="1">
-          <div class="hint">CLOT : 1 à 6 · Schenker palette : 1 à 5</div>
+        <div class="row2">
+          <div class="field">
+            <label for="palkg">Poids palette vide (kg)</label>
+            <input id="palkg" type="number" min="0" step="1" inputmode="numeric" value="20">
+          </div>
+          <div class="field">
+            <label for="poidstotalfield">Poids total expédié (kg)</label>
+            <input id="poidstotalfield" type="text" readonly>
+          </div>
         </div>
-        <div class="field">
-          <label for="cp">Département ou code postal</label>
-          <input id="cp" type="text" inputmode="numeric" maxlength="5" placeholder="ex. 75 ou 75008">
-          <div class="commune" id="deptname"></div>
+        <div class="row2">
+          <div class="field">
+            <label for="cp">Département ou CP</label>
+            <input id="cp" type="text" inputmode="numeric" maxlength="5" placeholder="ex. 75 ou 75008">
+            <div class="commune" id="deptname"></div>
+          </div>
+          <div class="field">
+            <label for="ville">Ville <span style="text-transform:none;color:var(--muted)">(facult.)</span></label>
+            <input id="ville" type="text" placeholder="—">
+          </div>
         </div>
-        <div class="field">
-          <label for="ville">Ville <span style="text-transform:none;color:var(--muted)">(facultatif)</span></label>
-          <input id="ville" type="text" placeholder="—">
-          <div class="hint">Servira au repérage des localités d'altitude / îles.</div>
+        <div class="row2">
+          <div class="field">
+            <label for="clotBrut">Tarif CLOT (€)</label>
+            <input id="clotBrut" type="text" readonly placeholder="—">
+          </div>
+          <div class="field">
+            <label for="schBrut">Tarif Schenker (€)</label>
+            <input id="schBrut" type="text" readonly placeholder="—">
+          </div>
         </div>
         <div class="field">
           <label>Taxe gazole (TGo)</label>
@@ -130,6 +164,19 @@ input:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:var
             <span class="pct">%</span>
           </div>
           <div class="hint">Appliquée sur le tarif départ des deux transporteurs.</div>
+        </div>
+        <div class="field">
+          <div class="row2">
+            <div>
+              <label for="fraisClot">Frais CLOT (€)</label>
+              <input id="fraisClot" type="number" min="0" step="0.01" inputmode="decimal" value="1.50">
+            </div>
+            <div>
+              <label for="fraisSch">Frais Schenker (€)</label>
+              <input id="fraisSch" type="number" min="0" step="0.01" inputmode="decimal" value="1.50">
+            </div>
+          </div>
+          <div class="hint">Ajoutés au prix total, après application de la TGo (CTE, sûreté…).</div>
         </div>
         <div class="field">
           <label>Niveau de service Schenker</label>
@@ -174,7 +221,9 @@ document.querySelectorAll('#svc button').forEach(b=>{
     document.querySelectorAll('#svc button').forEach(x=>x.setAttribute('aria-pressed', x===b));
     render(); };
 });
-['poids','pal','cp','tgo','ville'].forEach(id=> el(id).addEventListener('input', render));
+['poids','pal','palkg','cp','tgo','fraisClot','fraisSch','ville'].forEach(id=> el(id).addEventListener('input', render));
+el('palMinus').onclick=()=>{ const v=Math.max(0,(parseInt(el('pal').value,10)||0)-1); el('pal').value=v; render(); };
+el('palPlus').onclick=()=>{ const v=Math.min(6,(parseInt(el('pal').value,10)||0)+1); el('pal').value=v; render(); };
 
 function cpToDept(v){
   v=(v||'').trim();
@@ -199,18 +248,26 @@ function schPallet(code, npal, grid){
 }
 
 function render(){
-  const poids=parseFloat(el('poids').value);
+  const poidsMarch=parseFloat(el('poids').value);
   const npal=parseInt(el('pal').value,10);
+  const palkg=parseFloat(el('palkg').value)||0;
   const dept=cpToDept(el('cp').value);
   const tgo=parseFloat(el('tgo').value)||0;
+  const fraisClot=parseFloat(el('fraisClot').value)||0;
+  const fraisSch=parseFloat(el('fraisSch').value)||0;
   const name=dept?deptName(dept):null;
   el('deptname').textContent = dept ? (name?('→ '+name):('Département '+dept+' inconnu')) : '';
 
+  const poidsPal = (!isNaN(npal) && npal>0) ? npal*palkg : 0;
+  el('poidstotalfield').value = poidsMarch ? (poidsMarch+poidsPal) : '';
+
   const out=el('out');
-  if(!poids||!dept||isNaN(npal)){
+  if(!poidsMarch||!dept||isNaN(npal)){
     out.innerHTML='<div class="empty">Renseignez au moins le poids, les palettes et le département.</div>';
+    el('clotBrut').value=''; el('schBrut').value='';
     return;
   }
+  const poids = poidsMarch + poidsPal;
   const f = 1 + tgo/100;
   const wGrid = svc==='std'?'system':'prem13';
   const pGrid = svc==='std'?'pallet':'palletp';
@@ -223,7 +280,7 @@ function render(){
   if(sw) opts.push({mode:'au poids', base:sw.p, how:sw.how});
   if(sp) opts.push({mode:'à la palette', base:sp.p, how:sp.how});
   if(opts.length){
-    opts.forEach(o=>o.final=Math.round(o.base*f*100)/100);
+    opts.forEach(o=>o.final=Math.round((o.base*f+fraisSch)*100)/100);
     opts.sort((a,b)=>a.final-b.final);
     sBest=opts[0];
     const other=opts[1];
@@ -242,7 +299,10 @@ function render(){
     else if(npal>6){ cWarn='CLOT s\'arrête à 6 palettes.'; }
     cDelai=c.delai;
   }
-  const cFinal = cVal!=null ? Math.round(cVal*f*100)/100 : null;
+  const cFinal = cVal!=null ? Math.round((cVal*f+fraisClot)*100)/100 : null;
+
+  el('clotBrut').value = cVal!=null ? euro(cVal)+' €' : '—';
+  el('schBrut').value = sBest ? euro(sBest.base)+' €' : '—';
 
   // winner
   let winner=null;
@@ -258,7 +318,7 @@ function render(){
       ${cFinal!=null
         ? `<div class="price">${euro(cFinal)}<span class="cur">€</span></div>
            <div class="delai">Délai ${cDelai}</div>
-           <div class="mode"><span class="k">Barème :</span> ${cHow}${tgo?`<br><span class="k">dont TGo +${euro(tgo)} %</span>`:''}</div>`
+           <div class="mode"><span class="k">Barème :</span> ${cHow}${tgo?`<br><span class="k">dont TGo +${euro(tgo)} %</span>`:''}${fraisClot?`<br><span class="k">+ frais transporteur ${euro(fraisClot)} €</span>`:''}</div>`
         : `<div class="price na">${cWarn||'Non tarifé'}</div>`}
     </div>`;
   const schCard = `
@@ -268,7 +328,7 @@ function render(){
       <div class="svc">${svcLabel}</div>
       ${sBest
         ? `<div class="price">${euro(sBest.final)}<span class="cur">€</span></div>
-           <div class="mode">${sDetail}${tgo?`<br><span class="k">dont TGo +${euro(tgo)} %</span>`:''}</div>`
+           <div class="mode">${sDetail}${tgo?`<br><span class="k">dont TGo +${euro(tgo)} %</span>`:''}${fraisSch?`<br><span class="k">+ frais transporteur ${euro(fraisSch)} €</span>`:''}</div>`
         : `<div class="price na">${sWarn||'Non tarifé'}</div>`}
     </div>`;
 
