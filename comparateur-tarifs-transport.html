@@ -382,8 +382,8 @@ function render(){
   // ---- CLOT ----
   const c=C[dept]; let cVal=null, cHow='', cDelai='', cWarn='', clotIdx=null;
   if(c){
-    if(npal<=1 && poids<=100){ cVal=c.xs; cHow='XS (≤100 kg, 1 palette maxi)'; clotIdx=0; }
-    else if(npal<=1 && poids<=250){ cVal=c.s; cHow='S (101-250 kg, 1 palette maxi)'; clotIdx=1; }
+    if(poids<=100){ cVal=c.xs; cHow='XS (≤100 kg)'; clotIdx=0; }
+    else if(poids<=250){ cVal=c.s; cHow='S (101-250 kg)'; clotIdx=1; }
     else if(npal>=1 && npal<=6){ cVal=c.pal[npal-1]; cHow=npal+' palette'+(npal>1?'s':''); clotIdx=2+(npal-1); }
     else if(npal>6){ cWarn='CLOT s\'arrête à 6 palettes.'; }
     cDelai=c.delai;
