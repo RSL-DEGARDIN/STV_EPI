@@ -230,7 +230,7 @@ input[readonly]{background:#f3f2ec;color:var(--ink2);cursor:default;}
               </div>
             </div>
           </div>
-          <div class="hint">Appliquée sur le tarif départ de chaque transporteur.</div>
+          <div class="hint">Appliquée sur le tarif départ de chaque transporteur. <span id="tgoStatus"></span></div>
         </div>
         <div class="field">
           <div class="row2">
@@ -637,6 +637,19 @@ function downloadEml(){
 }
 
 render();
+
+const TGO_WEBHOOK_URL = 'https://hook.eu2.make.com/wnu38afufcvlqi54q6r60sl4be4swvgd';
+(function fetchTgo(){
+  const status = document.getElementById('tgoStatus');
+  fetch(TGO_WEBHOOK_URL).then(r=>{ if(!r.ok) throw new Error('http '+r.status); return r.json(); }).then(data=>{
+    if(typeof data.tgoClot === 'number'){ el('tgoClot').value = data.tgoClot; }
+    if(typeof data.tgoSchenker === 'number'){ el('tgoSch').value = data.tgoSchenker; }
+    if(status) status.textContent = 'Valeurs TGo mises à jour automatiquement.';
+    render();
+  }).catch(()=>{
+    if(status) status.textContent = 'TGo auto indisponible — valeurs par défaut utilisées.';
+  });
+})();
 </script>
 </body>
 </html>
