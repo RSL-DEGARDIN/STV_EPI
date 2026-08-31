@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RSL — Extracteur de factures SAGE</title>
+<style>
+  :root{
+    --ink:#1c2430; --ink-soft:#5a6472; --paper:#f2f4f6; --card:#ffffff; --line:#dde3e9;
+    --accent:#0f5c8c; --accent-soft:#e3eef6; --debit:#0f5c8c; --credit:#a8532a;
+    --ok:#1d7a4f; --warn:#b0821b; --err:#b3392f;
+    --mono:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;padding:24px 16px 64px}
+  .wrap{max-width:1180px;margin:0 auto}
+
+  header{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:20px;border-bottom:3px solid var(--ink);padding-bottom:12px}
+  header h1{font-size:1.25rem;font-weight:700}
+  header h1 span{color:var(--accent)}
+  header .sub{font-size:.8rem;color:var(--ink-soft);font-family:var(--mono)}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:6px;padding:20px;margin-bottom:16px}
+  .card h2{font-size:.95rem;margin-bottom:12px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .card h2 .tag{font-family:var(--mono);font-size:.7rem;background:var(--ink);color:#fff;padding:2px 7px;border-radius:3px}
+  .card h2 .badge{font-family:var(--mono);font-size:.7rem;padding:2px 8px;border-radius:3px;border:1px solid var(--warn);color:var(--warn)}
+  .card h2 .count{font-family:var(--mono);font-size:.7rem;background:var(--accent-soft);color:var(--accent);border:1px solid var(--accent);padding:2px 8px;border-radius:3px}
+  .spacer{flex:1}
+
+  .dropzone{border:2px dashed var(--line);border-radius:6px;padding:32px 20px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s}
+  .dropzone:hover,.dropzone.over{border-color:var(--accent);background:var(--accent-soft)}
+  .dropzone p{color:var(--ink-soft);font-size:.9rem}
+  .dropzone .big{font-size:1.05rem;color:var(--ink);font-weight:600;margin-bottom:6px}
+  .dropzone input{display:none}
+  .queue{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;justify-content:center}
+  .filechip{display:inline-flex;align-items:center;gap:6px;background:var(--accent-soft);border:1px solid var(--accent);color:var(--accent);padding:5px 10px;border-radius:4px;font-size:.78rem;font-family:var(--mono)}
+  .filechip.done{background:#e7f4ed;border-color:var(--ok);color:var(--ok)}
+  .filechip.err{background:#fbeae8;border-color:var(--err);color:var(--err)}
+  .filechip button{background:none;border:none;color:inherit;cursor:pointer;font-size:.9rem;padding:0 2px}
+
+  .btn{display:inline-flex;align-items:center;gap:8px;border:none;border-radius:4px;padding:10px 20px;font-size:.9rem;font-weight:600;cursor:pointer;transition:opacity .15s}
+  .btn:disabled{opacity:.45;cursor:not-allowed}
+  .btn-primary{background:var(--accent);color:#fff}
+  .btn-primary:hover:not(:disabled){opacity:.88}
+  .btn-ghost{background:transparent;color:var(--ink-soft);border:1px solid var(--line)}
+  .btn-ghost:hover{color:var(--ink);border-color:var(--ink-soft)}
+  .btn-ok{background:var(--ok);color:#fff}
+  .btn-txt{background:var(--ink);color:#fff}
+  .btn-mini{padding:4px 10px;font-size:.75rem;border-radius:3px}
+  .actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;align-items:center}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(165px,1fr));gap:12px}
+  .field label{display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-soft);margin-bottom:4px;font-weight:600}
+  .field input,.field select{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:4px;font-size:.9rem;font-family:inherit;background:#fff;color:var(--ink)}
+  .field input:disabled{background:var(--paper);color:var(--ink-soft)}
+  .field input:focus,.field select:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:var(--accent)}
+  .field input.num{font-family:var(--mono);text-align:right}
+  .coherence{margin-top:12px;padding:9px 12px;border-radius:4px;font-size:.85rem;font-family:var(--mono)}
+  .coherence.ok{background:#e7f4ed;color:var(--ok);border:1px solid #bfe0cd}
+  .coherence.ko{background:#fbeae8;color:var(--err);border:1px solid #eec4bf}
+
+  .tblwrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:.83rem;min-width:1080px}
+  th{font-size:.66rem;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-soft);text-align:left;padding:6px;border-bottom:2px solid var(--ink);white-space:nowrap}
+  th.void{color:#b6bfc9;font-weight:400;font-style:italic}
+  td{padding:4px;border-bottom:1px solid var(--line);vertical-align:middle}
+  td input{width:100%;border:1px solid transparent;border-radius:3px;padding:5px 6px;font-size:.83rem;font-family:inherit;background:transparent}
+  td input:hover{border-color:var(--line);background:#fff}
+  td input:focus{outline:none;border-color:var(--accent);background:#fff}
+  td.num input,th.num{text-align:right}
+  td.num input,td.mono input{font-family:var(--mono)}
+  .rm{background:none;border:none;color:var(--err);cursor:pointer;font-size:1rem;padding:2px 6px;border-radius:3px}
+  .rm:hover{background:#fbeae8}
+  tfoot td{font-family:var(--mono);font-weight:700;border-bottom:none;border-top:2px solid var(--ink);padding-top:8px}
+  tr.grp-head td{background:var(--paper);border-bottom:1px solid var(--line);padding:7px 8px}
+  tr.grp-head .gl{display:flex;align-items:center;gap:10px;font-size:.78rem;font-weight:700;font-family:var(--mono)}
+  tr.grp-head .gl .pill{background:var(--ink);color:#fff;padding:1px 7px;border-radius:3px;font-size:.68rem}
+  tr.grp-head .gl .bal-ok{color:var(--ok);font-weight:600}
+  tr.grp-head .gl .bal-ko{color:var(--err);font-weight:600}
+  tr.grp-head .gl .sp{flex:1}
+  tr.sel td{background:#fbfdff}
+  col.c-code{width:50px} col.c-piece{width:60px} col.c-date{width:84px} col.c-cg{width:90px}
+  col.c-ct{width:76px} col.c-ref{width:104px} col.c-deb{width:80px} col.c-cred{width:80px}
+  col.c-let{width:56px} col.c-fac{width:96px} col.c-rm{width:34px}
+
+  .status{padding:12px 14px;border-radius:4px;font-size:.88rem;margin-top:14px;display:none}
+  .status.show{display:block}
+  .status.info{background:var(--accent-soft);color:var(--accent);border:1px solid #bcd6e8}
+  .status.ok{background:#e7f4ed;color:var(--ok);border:1px solid #bfe0cd}
+  .status.err{background:#fbeae8;color:var(--err);border:1px solid #eec4bf}
+  .spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--accent);border-top-color:transparent;border-radius:50%;animation:spin .7s linear infinite;vertical-align:-2px;margin-right:8px}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  @media (prefers-reduced-motion:reduce){.spinner{animation-duration:2s}}
+
+  .note{font-size:.78rem;color:var(--ink-soft);margin-top:10px;line-height:1.5}
+  .hidden{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>RSL · <span>Extracteur de factures</span> — import SAGE</h1>
+    <div class="sub">Multi-factures · Base appiFR0OI1xKgksCu</div>
+  </header>
+
+  <!-- DÉPÔT : file d'attente multi-PDF -->
+  <div class="card" id="cardUpload">
+    <h2><span class="tag">PDF</span> Factures fournisseurs — plusieurs fichiers acceptés</h2>
+    <div class="dropzone" id="dropzone">
+      <p class="big">Déposez une ou plusieurs factures PDF</p>
+      <p>ou cliquez pour parcourir — DKV, Orange, EDF, Grand Nancy, Amazon…</p>
+      <input type="file" id="fileInput" accept="application/pdf" multiple>
+      <div class="queue" id="queue"></div>
+    </div>
+    <div class="actions">
+      <button class="btn btn-primary" id="btnExtract" disabled>Analyser et ajouter au tableau</button>
+      <span class="note" style="margin:0" id="hintPiece"></span>
+    </div>
+    <div class="status" id="statusExtract"></div>
+  </div>
+
+  <!-- EN-TÊTE : agit sur la facture sélectionnée -->
+  <div class="card hidden" id="cardVerify">
+    <h2><span class="tag">EN-TÊTE</span> Facture sélectionnée
+      <select id="fSelect" style="max-width:340px;padding:5px 8px;border:1px solid var(--line);border-radius:4px;font-family:var(--mono);font-size:.78rem"></select>
+      <span class="badge hidden" id="badgeIntracom">TVA autoliquidée (intracom.)</span>
+    </h2>
+    <div class="grid">
+      <div class="field"><label for="fFournisseur">Fournisseur (tiers)</label><input id="fFournisseur"></div>
+      <div class="field"><label for="fNumero">N° facture (= référence)</label><input id="fNumero"></div>
+      <div class="field"><label for="fDate">Date facture (= date de pièce)</label><input id="fDate" type="date"></div>
+      <div class="field"><label for="fEcheance">Date échéance (Airtable)</label><input id="fEcheance" type="date"></div>
+      <div class="field"><label for="fCode">Code journal</label><input id="fCode" value="02"></div>
+      <div class="field"><label for="fPiece">N° pièce</label><input id="fPiece" class="num" type="number" step="1"></div>
+      <div class="field"><label for="fTTC">Montant TTC (€)</label><input id="fTTC" class="num" type="number" step="0.01"></div>
+      <div class="field"><label for="fTVAtot">TVA totale (calculée)</label><input id="fTVAtot" class="num" disabled></div>
+      <div class="field"><label for="fRegime">Régime TVA</label>
+        <select id="fRegime">
+          <option value="fr">France — TVA déductible</option>
+          <option value="intracom">Intracommunautaire — autoliquidation</option>
+        </select>
+      </div>
+    </div>
+    <div class="coherence" id="coherence"></div>
+    <p class="note">L'en-tête agit sur la facture sélectionnée uniquement. Les modifications sont répercutées dans ses lignes du tableau, sans écraser vos retouches de comptes, libellés ou montants.</p>
+  </div>
+
+  <!-- TABLEAU TXT CUMULATIF -->
+  <div class="card hidden" id="cardTxt">
+    <h2><span class="tag">TXT</span> Fichier d'import SAGE — cumul des factures analysées
+      <span class="count" id="cntFactures">0 facture</span>
+      <span class="spacer"></span>
+      <button class="btn btn-ghost btn-mini" id="btnAddHT" type="button">+ ligne HT</button>
+      <button class="btn btn-ghost btn-mini" id="btnAddTVA" type="button">+ ligne TVA</button>
+    </h2>
+    <div class="tblwrap">
+    <table>
+      <colgroup>
+        <col class="c-code"><col class="c-piece"><col class="c-date"><col class="c-cg"><col class="c-ct"><col class="c-ref"><col><col class="c-deb"><col class="c-cred"><col class="c-let"><col class="c-fac"><col class="c-rm">
+      </colgroup>
+      <thead>
+        <tr>
+          <th>A · journal</th><th>C · pièce</th><th>D · date</th><th>E · compte</th><th>G · tiers</th><th>I · référence</th><th>K · libellé</th><th class="num">L · débit</th><th class="num">M · crédit</th><th>N · lettrage</th><th>O · n° facture</th><th></th>
+        </tr>
+      </thead>
+      <tbody id="sageBody"></tbody>
+      <tfoot>
+        <tr>
+          <td colspan="7">Équilibre général Débit / Crédit</td>
+          <td class="num" id="totDebit" style="text-align:right">0,00</td>
+          <td class="num" id="totCredit" style="text-align:right">0,00</td>
+          <td colspan="3"></td>
+        </tr>
+      </tfoot>
+    </table>
+    </div>
+    <div class="actions">
+      <button class="btn btn-txt" id="btnDownloadTxt">✓ Exporter tout en 1 fichier TXT</button>
+      <button class="btn btn-ok" id="btnSend">Envoyer la sélection vers Airtable</button>
+      <button class="btn btn-ghost" id="btnReset">Tout effacer</button>
+    </div>
+    <div class="status" id="statusSend"></div>
+    <p class="note">Le TXT contient la ligne de titres puis toutes les factures à la suite (mappage : A journal, B <em>vide</em>, C pièce, D date AAAAMMJJ, E compte, F <em>vide</em>, G tiers, H <em>vide</em>, I référence = n° facture, J <em>vide</em>, K libellé, L débit, M crédit, N lettrage) — tabulations, montants à virgule avec « 0 » pour les cases vides, encodage Windows-1252. Chaque nouvelle facture analysée reçoit automatiquement le n° de pièce suivant.</p>
+  </div>
+</div>
+
+<script>
+/* ================= CONFIG AIRTABLE ================= */
+const AIRTABLE = {
+  baseId: "appiFR0OI1xKgksCu",
+  ecritures: {
+    tableId: "tbleJsfT96ol2W351",
+    f: {
+      code:"fldF1N4qrK8FuWc3v", date:"fldxj5XczbMdx8uV4", piece:"fldglYb13Yejnr5u9",
+      compteGen:"fldoDX3xpm0dHgRsT", compteTiers:"fldu94TLFgm56R9S6", numFacture:"fldKImGwDHyim4aHS",
+      reference:"flddqFtCF0QXTw4ap", libelle:"fldIUerdOtoMsXMa2", debit:"fldP5CM5VfkoEBXgR",
+      credit:"fldcX4LIfm3Z4uOA8", contrepartie:"fldQp3M72u0Aw1hhh", echeance:"fldkEpyJooy0zK5Fx",
+      factureSrc:"fldED9mP21B3FGOQU"
+    }
+  },
+  factures: {
+    tableId: "tblBjAKBfAa2mMWoN",
+    f: { nom:"fldmGgiKEr6mp8tsX", dateReception:"fldSXz2QspZE6gUfy", fournisseur:"fldTjsyt7simUjbTu", montantTotal:"fldb5uBzbabSbNi5c" }
+  }
+};
+
+/* ================= MODÈLES SAGE PAR FOURNISSEUR =================
+   Comptes du scénario Make 8749219 + templates validés (dkv_OK.txt, capture Orange, import Grand Nancy).
+   Référence (col. I) = mois de la facture, ex. "juin-26" ; refStyle:"numero" -> n° de facture à la place.
+   Lettrage (col. N) vide par défaut ; lettrageTTC:"L" -> L sur la ligne TTC (modèle ORANGE).
+   Le n° de facture figure toujours en colonne O.
+   libStyle "fact"  → "Fact DKV" / HT "Fact DKV - FRAIS SERVICE"
+   libStyle "plain" → "ORANGE Mobiles" / "ORANGE TVA"
+   libBase          → libellé fixe sur toutes les lignes (Grand Nancy) */
+const TEMPLATES = {
+  DKV:          { regime:"intracom", compteCharge:"6061401", tvaDeductible:"4456630", tvaDue:"4452030", compteFournisseur:"4010CEE", libStyle:"fact" },
+  EDF:          { regime:"fr", compteCharge:"6061100", tvaDeductible:"4456611", compteFournisseur:"4010000", libStyle:"fact" },
+  TOTALGAZ:     { regime:"fr", compteCharge:"6061100", tvaDeductible:"4456611", compteFournisseur:"4010000", libStyle:"plain", useDetail:true, alwaysTaux:true },
+  EASYPARK:     { regime:"fr", compteCharge:"6251000", tvaDeductible:"4456611", compteFournisseur:"4010000", libStyle:"fact" },
+  ORANGE:       { regime:"fr", compteCharge:"6261000", tvaDeductible:"4456611", compteFournisseur:"4010000", tiersName:"ORANGE2", libStyle:"plain", libTTC:"ORANGE Téléphonie groupée", lettrageTTC:"L" },
+  "GRAND NANCY":{ regime:"fr", compteCharge:"6061300", tvaDeductible:"4456611", compteFournisseur:"4010000", libBase:"GRAND NANCY (EAU54)" },
+  EAU54:        { regime:"fr", compteCharge:"6061300", tvaDeductible:"4456611", compteFournisseur:"4010000", libBase:"GRAND NANCY (EAU54)" },
+  AMAZON:       { regime:"fr", compteCharge:"6068000", tvaDeductible:"4456611", compteFournisseur:"4010000", libStyle:"fact" },
+  "BIP&GO":     { regime:"fr", compteCharge:"6251000", tvaDeductible:"4456611", compteFournisseur:"4010000", libStyle:"fact" },
+  _default:     { regime:"fr", compteCharge:"6068000", tvaDeductible:"4456611", compteFournisseur:"4010000", libStyle:"fact" }
+};
+/* ALIASES : nom commercial figurant sur la facture -> nom du tiers utilisé dans SAGE.
+   Ex. une facture TotalEnergies est comptabilisée sous le tiers TOTALGAZ. */
+const ALIASES=[
+  {match:/TOTAL\s*[EÉ]NERGIE|TOTALENERGIES|TOTAL\s*GAZ|TOTALGAZ/i, name:"TOTALGAZ"},
+  {match:/GRAND\s*NANCY|EAU\s*54|EAU54/i, name:"GRAND NANCY"},
+  {match:/BIP\s*&?\s*GO/i, name:"BIP&GO"}
+];
+/* Renvoie le nom du fournisseur normalisé pour SAGE */
+function normFournisseur(f){
+  const up=(f||'').trim().toUpperCase();
+  const a=ALIASES.find(x=>x.match.test(up));
+  return a?a.name:up;
+}
+function getTemplate(fournisseur){
+  const up=normFournisseur(fournisseur);
+  const key=Object.keys(TEMPLATES).find(k=>k!=="_default"&&up.includes(k));
+  return key?{...TEMPLATES[key]}:{...TEMPLATES._default};
+}
+
+/* ================= ÉTAT =================
+   invoices : [{id, pdfName, fournisseur, numero, echeance, regime, tpl, rows:[{type, cols[10]}]}]
+   cols = [code, piece, dateAAAAMMJJ, compteGen, compteTiers, reference, libelle, debit, credit, lettrage] */
+let queue=[];            // fichiers en attente d'analyse
+let invoices=[];         // factures analysées, cumulées
+let selectedId=null;
+let seqPiece=25;         // n° de pièce attribué à la prochaine facture
+let uid=0;
+const CI={code:0,piece:1,date:2,cg:3,ct:4,ref:5,lib:6,deb:7,cred:8,let:9};
+const HEADERS=['journal','vide','pièce','date','compte','vide','tiers','vide','reference','vide','libélé','débit','crédit','lettrage','n° facture'];
+
+/* ================= Helpers ================= */
+const $=id=>document.getElementById(id);
+const fmt=n=>(isFinite(n)?n:0).toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const r2=n=>Math.round(n*100)/100;
+const frNum=s=>r2(parseFloat(String(s||'').replace(/\u202f|\u00a0| /g,'').replace(',','.'))||0);
+const numSage=n=>{const v=typeof n==='number'?n:frNum(n);return v>0?fmt(v).replace(/\u202f|\u00a0| /g,''):'0';};
+const isoToSage=iso=>iso?iso.replace(/-/g,''):'';
+const sageToISO=s=>s&&/^\d{8}$/.test(s)?s.slice(0,4)+'-'+s.slice(4,6)+'-'+s.slice(6,8):'';
+function showStatus(id,cls,html){const el=$(id);el.className='status show '+cls;el.innerHTML=html;}
+function hideStatus(id){$(id).className='status';}
+function esc(s){return String(s||'').replace(/"/g,'&quot;');}
+const inv=id=>invoices.find(v=>v.id===id);
+const sel=()=>inv(selectedId);
+const ttcRowOf=v=>v.rows.find(r=>r.type==='TTC');
+const sumTypeOf=(v,t)=>r2(v.rows.filter(r=>r.type===t).reduce((s,r)=>s+frNum(r.cols[CI.deb]),0));
+function balOf(v){
+  const d=r2(v.rows.reduce((s,r)=>s+frNum(r.cols[CI.deb]),0));
+  const c=r2(v.rows.reduce((s,r)=>s+frNum(r.cols[CI.cred]),0));
+  return {ok:Math.abs(d-c)<0.02,d,c};
+}
+function updateHint(){
+  $('hintPiece').textContent=invoices.length
+    ? 'Prochaine facture analysée → pièce n°'+seqPiece
+    : 'Première facture → pièce n°'+seqPiece+' (modifiable ensuite dans l\'en-tête)';
+}
+
+/* ================= File d'attente ================= */
+const dz=$('dropzone'),fi=$('fileInput');
+dz.addEventListener('click',()=>fi.click());
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('over');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('over'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('over');addFiles(e.dataTransfer.files);});
+fi.addEventListener('change',()=>{addFiles(fi.files);fi.value='';});
+
+function addFiles(files){
+  hideStatus('statusExtract');
+  let rejected=0;
+  Array.from(files).forEach(file=>{
+    if(file.type!=='application/pdf'||file.size>25*1024*1024){rejected++;return;}
+    if(queue.some(q=>q.name===file.name&&q.size===file.size))return; // doublon dans la file
+    const r=new FileReader();
+    r.onload=()=>{
+      queue.push({name:file.name,size:file.size,b64:r.result.split(',')[1],state:'pending'});
+      renderQueue();
+    };
+    r.readAsDataURL(file);
+  });
+  if(rejected)showStatus('statusExtract','err',rejected+' fichier(s) ignoré(s) : PDF uniquement, 25 Mo maximum.');
+}
+function renderQueue(){
+  const q=$('queue');q.innerHTML='';
+  queue.forEach((f,i)=>{
+    const d=document.createElement('div');
+    d.className='filechip'+(f.state==='done'?' done':f.state==='err'?' err':'');
+    d.innerHTML='<span>'+(f.state==='done'?'✓':f.state==='err'?'✕':'📄')+' '+esc(f.name)+'</span>';
+    if(f.state==='pending'){
+      const b=document.createElement('button');b.textContent='✕';b.title='Retirer';
+      b.addEventListener('click',e=>{e.stopPropagation();queue.splice(i,1);renderQueue();});
+      d.appendChild(b);
+    }
+    q.appendChild(d);
+  });
+  $('btnExtract').disabled=!queue.some(f=>f.state==='pending');
+  const n=queue.filter(f=>f.state==='pending').length;
+  $('btnExtract').textContent=n>1?'Analyser '+n+' factures et les ajouter au tableau':'Analyser et ajouter au tableau';
+  updateHint();
+}
+
+/* ================= Extraction IA (séquentielle) ================= */
+$('btnExtract').addEventListener('click',async()=>{
+  const todo=queue.filter(f=>f.state==='pending');
+  if(!todo.length)return;
+  $('btnExtract').disabled=true;
+  let done=0,failed=0;
+  for(const f of todo){
+    showStatus('statusExtract','info','<span class="spinner"></span>Analyse de « '+esc(f.name)+' » ('+(done+failed+1)+'/'+todo.length+')…');
+    try{
+      const d=await extractOne(f.b64);
+      addInvoice(d,f.name);
+      f.state='done';done++;
+    }catch(err){
+      console.error(err);f.state='err';failed++;
+    }
+    renderQueue();
+  }
+  if(failed)showStatus('statusExtract','err',done+' facture(s) ajoutée(s), '+failed+' en échec. Retirez les fichiers en échec et réessayez.');
+  else showStatus('statusExtract','ok','✓ '+done+' facture(s) ajoutée(s) au tableau. Vous pouvez en déposer d\'autres.');
+  $('cardVerify').classList.remove('hidden');
+  $('cardTxt').classList.remove('hidden');
+  renderAll();
+  if(done)$('cardTxt').scrollIntoView({behavior:'smooth'});
+});
+
+async function extractOne(b64){
+  const prompt=`Tu es un assistant comptable français. Analyse cette facture fournisseur PDF.
+Réponds UNIQUEMENT avec un objet JSON valide, sans backticks Markdown, sans texte avant ou après :
+{
+  "fournisseur": "nom court en MAJUSCULES (ex: DKV, ORANGE, EDF, GRAND NANCY, AMAZON)",
+  "numero_facture": "numéro de la facture",
+  "date_facture": "YYYY-MM-DD",
+  "date_echeance": "YYYY-MM-DD ou null",
+  "tva_autoliquidee": true si facture intracommunautaire avec autoliquidation (reverse charge, TVA 0%, art. 283 CGI ou directive 2006/112/CE), sinon false,
+  "montant_ttc": nombre (total TTC dû au fournisseur en euros),
+  "lignes_tva": [{"taux": "5.5" ou "10" ou "20", "montant": nombre}],
+  "lignes_ht": [{"libelle": "description courte EN MAJUSCULES (ex: FRAIS SERVICE, GASOIL, MOBILES)", "montant": nombre}],
+  "detail_tarifaire": "prix unitaire principal avec son unité s'il figure sur la facture, au format français avec virgule (ex: \\"0,05871€/kWh\\", \\"1,689€/L\\"), sinon null"
+}
+Une ligne de TVA par taux présent (eau/gaz : souvent 5,5% et 10% ; télécoms : 20%). Σ lignes_ht + Σ lignes_tva = montant_ttc. Regroupe les lignes HT par catégorie (max 5). Valeur absente → null ou []. Nombres décimaux avec un point, sans symbole €.`;
+  const resp=await fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      model:"claude-sonnet-4-6",max_tokens:1500,
+      messages:[{role:"user",content:[
+        {type:"document",source:{type:"base64",media_type:"application/pdf",data:b64}},
+        {type:"text",text:prompt}
+      ]}]
+    })
+  });
+  if(!resp.ok)throw new Error("Erreur API ("+resp.status+")");
+  const data=await resp.json();
+  const text=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
+  return JSON.parse(text.replace(/```json|```/g,'').trim());
+}
+
+/* ================= Libellés ================= */
+/* Référence (col. I) : mois de la facture ("juin-26") par défaut — modèle ORANGE généralisé.
+   refStyle:"numero" sur un template pour y mettre le n° de facture à la place. */
+const MOIS=['janv','févr','mars','avr','mai','juin','juil','août','sept','oct','nov','déc'];
+function refFor(tpl,numero,dateISO){
+  if(tpl.refStyle==='numero')return numero||'';
+  if(dateISO&&/^\d{4}-\d{2}/.test(dateISO)){
+    const m=parseInt(dateISO.slice(5,7),10)-1;
+    return MOIS[m]+'-'+dateISO.slice(2,4);
+  }
+  return numero||''; // pas de date exploitable -> repli sur le n° de facture
+}
+
+/* detail : mention tarifaire extraite de la facture (TOTALGAZ → "0,05871€/kWh") */
+function libFor(tpl,F,kind,extra,detail){
+  if(tpl.libBase){
+    if(kind==='tva')return tpl.libBase+(extra?' '+extra+'%':'');
+    return tpl.libBase;
+  }
+  if(tpl.libStyle==='plain'){
+    // useDetail : le détail tarifaire suit le fournisseur sur TTC et HT (modèle TOTALGAZ)
+    if(tpl.useDetail&&detail){
+      if(kind==='tva')return F+' TVA'+(extra?' '+extra+'%':'');
+      return F+' '+detail;
+    }
+    if(kind==='ht') return F+(extra?' '+extra:'');
+    if(kind==='tva')return F+' TVA'+(extra?' '+extra+'%':'');
+    return tpl.libTTC||F+' TTC';
+  }
+  if(kind==='ht') return 'Fact '+F+(extra?' - '+String(extra).toUpperCase():'');
+  if(kind==='tva')return 'Fact '+F+(extra?' TVA '+extra+'%':'');
+  return 'Fact '+F;
+}
+
+/* ================= Ajout d'une facture au cumul ================= */
+function addInvoice(d,pdfName){
+  const tpl=getTemplate(d.fournisseur);
+  const regime=d.tva_autoliquidee?"intracom":tpl.regime;
+  const numero=(d.numero_facture||'').trim().replace(/^\d{2}\//,'').replace(/\/\d{3}$/,'').trim();
+  const ttc=r2(parseFloat(d.montant_ttc)||0);
+  const F=normFournisseur(d.fournisseur)||'FOURNISSEUR'; // TOTALENERGIES -> TOTALGAZ
+  const T=tpl.tiersName||F;
+  const code='02', piece=String(seqPiece++), date=isoToSage(d.date_facture);
+  const ref=refFor(tpl,numero,d.date_facture); // col. I : n° facture, ou "juin-26" pour ORANGE
+
+  let lt=(d.lignes_tva||[]).filter(l=>parseFloat(l.montant)>0)
+    .map(l=>({taux:String(l.taux||'').replace('%','').trim(),montant:r2(parseFloat(l.montant)||0)}));
+  if(regime==='intracom'&&!lt.length&&ttc)lt=[{taux:'20',montant:r2(ttc*0.2)}];
+
+  let lh=(d.lignes_ht&&d.lignes_ht.length?d.lignes_ht:[{libelle:'',montant:ttc}])
+    .map(l=>({libelle:(l.libelle||'').trim(),montant:r2(parseFloat(l.montant)||0)}));
+  if(regime==='intracom'&&ttc){
+    const s=r2(lh.reduce((a,l)=>a+l.montant,0));
+    if(Math.abs(s-ttc)>=0.02)lh=[{libelle:'',montant:ttc}];
+  }
+
+  // detail tarifaire (TOTALGAZ → "0,05871€/kWh") repris dans les libellés TTC et HT
+  const detail=(d.detail_tarifaire||'').trim()||null;
+  // alwaysTaux : le taux figure dans le libellé TVA même s'il n'y en a qu'un (modèle TOTALGAZ)
+  const multi=lt.length>1||!!tpl.alwaysTaux;
+
+  const rows=[];
+  rows.push({type:'TTC',cols:[code,piece,date,tpl.compteFournisseur,T,ref,libFor(tpl,F,'ttc','',detail),'0',numSage(ttc),tpl.lettrageTTC||'']});
+  lt.forEach(l=>rows.push({type:'TVA',cols:[code,piece,date,regime==='intracom'?tpl.tvaDeductible:(tpl.tvaDeductible||'4456611'),'',ref,libFor(tpl,F,'tva',multi?l.taux:'',detail),numSage(l.montant),'0','']}));
+  if(regime==='intracom'&&lt.length){
+    const tot=r2(lt.reduce((s,l)=>s+l.montant,0));
+    rows.push({type:'TVADUE',cols:[code,piece,date,tpl.tvaDue||'4452030','',ref,libFor(tpl,F,'tva','',detail),'0',numSage(tot),'']});
+  }
+  lh.forEach(l=>rows.push({type:'HT',cols:[code,piece,date,tpl.compteCharge,'',ref,libFor(tpl,F,'ht',l.libelle,detail),numSage(l.montant),'0','']}));
+
+  const id=++uid;
+  invoices.push({id,pdfName,fournisseur:F,numero,echeance:d.date_echeance||'',regime,tpl,detail,rows,sentAirtable:false});
+  selectedId=id;
+}
+
+/* ================= Rendu ================= */
+function renderAll(){renderSelect();renderHeader();renderTable();updateHint();}
+
+function renderSelect(){
+  const s=$('fSelect');s.innerHTML='';
+  invoices.forEach(v=>{
+    const o=document.createElement('option');
+    o.value=v.id;
+    o.textContent='Pièce '+v.rows[0].cols[CI.piece]+' · '+v.fournisseur+(v.numero?' · '+v.numero:'')+(v.sentAirtable?' ✓':'');
+    s.appendChild(o);
+  });
+  s.value=selectedId;
+}
+$('fSelect').addEventListener('change',()=>{selectedId=+$('fSelect').value;renderHeader();renderTable();});
+
+function renderHeader(){
+  const v=sel();if(!v)return;
+  const t=ttcRowOf(v);
+  $('fFournisseur').value=v.fournisseur;
+  $('fNumero').value=v.numero;
+  $('fDate').value=sageToISO(v.rows[0].cols[CI.date]);
+  $('fEcheance').value=v.echeance||'';
+  $('fCode').value=v.rows[0].cols[CI.code];
+  $('fPiece').value=v.rows[0].cols[CI.piece];
+  $('fTTC').value=frNum(t?t.cols[CI.cred]:0)||'';
+  $('fRegime').value=v.regime;
+  refreshTotals();
+}
+
+function renderTable(){
+  const tb=$('sageBody');tb.innerHTML='';
+  invoices.forEach(v=>{
+    const b=balOf(v);
+    const hr=document.createElement('tr');
+    hr.className='grp-head';
+    hr.innerHTML='<td colspan="12"><div class="gl">'
+      +'<span class="pill">PIÈCE '+esc(v.rows[0].cols[CI.piece])+'</span>'
+      +'<span>'+esc(v.fournisseur)+(v.numero?' · '+esc(v.numero):'')+'</span>'
+      +'<span style="color:var(--ink-soft);font-weight:400">'+esc(v.pdfName)+'</span>'
+      +'<span class="sp"></span>'
+      +'<span class="'+(b.ok?'bal-ok':'bal-ko')+'">'+(b.ok?'✓ équilibrée':'✗ écart '+fmt(Math.abs(b.d-b.c))+' €')+' · '+fmt(b.d)+' / '+fmt(b.c)+'</span>'
+      +(v.sentAirtable?'<span class="bal-ok">Airtable ✓</span>':'')
+      +'<button class="rm" data-rminv="'+v.id+'" title="Retirer cette facture">✕</button>'
+      +'</div></td>';
+    tb.appendChild(hr);
+    v.rows.forEach((r,ri)=>{
+      const tr=document.createElement('tr');
+      if(v.id===selectedId)tr.className='sel';
+      tr.innerHTML=
+        '<td class="mono"><input data-v="'+v.id+'" data-i="'+ri+'" data-c="0" value="'+esc(r.cols[0])+'"></td>'+
+        '<td class="mono"><input data-v="'+v.id+'" data-i="'+ri+'" data-c="1" value="'+esc(r.cols[1])+'"></td>'+
+        '<td class="mono"><input data-v="'+v.id+'" data-i="'+ri+'" data-c="2" value="'+esc(r.cols[2])+'"></td>'+
+        '<td class="mono"><input data-v="'+v.id+'" data-i="'+ri+'" data-c="3" value="'+esc(r.cols[3])+'"></td>'+
+        '<td class="mono"><input data-v="'+v.id+'" data-i="'+ri+'" data-c="4" value="'+esc(r.cols[4])+'"></td>'+
+        '<td><input data-v="'+v.id+'" data-i="'+ri+'" data-c="5" value="'+esc(r.cols[5])+'"></td>'+
+        '<td><input data-v="'+v.id+'" data-i="'+ri+'" data-c="6" value="'+esc(r.cols[6])+'"></td>'+
+        '<td class="num"><input data-v="'+v.id+'" data-i="'+ri+'" data-c="7" value="'+esc(r.cols[7])+'"></td>'+
+        '<td class="num"><input data-v="'+v.id+'" data-i="'+ri+'" data-c="8" value="'+esc(r.cols[8])+'"></td>'+
+        '<td class="mono"><input data-v="'+v.id+'" data-i="'+ri+'" data-c="9" value="'+esc(r.cols[9])+'"></td>'+
+        '<td class="mono"><input value="'+esc(v.numero)+'" disabled title="Colonne O — modifiable via le champ N° facture de l\'en-tête"></td>'+
+        '<td>'+(r.type!=='TTC'?'<button class="rm" data-rm="'+v.id+':'+ri+'" title="Supprimer la ligne">✕</button>':'')+'</td>';
+      tb.appendChild(tr);
+    });
+  });
+  tb.querySelectorAll('input').forEach(i=>{
+    i.addEventListener('input',e=>{
+      const v=inv(+e.target.dataset.v);if(!v)return;
+      v.rows[+e.target.dataset.i].cols[+e.target.dataset.c]=e.target.value;
+      refreshTotals();refreshGroupBadges();
+    });
+    i.addEventListener('focus',e=>{
+      const id=+e.target.dataset.v;
+      if(id!==selectedId){selectedId=id;renderSelect();renderHeader();
+        document.querySelectorAll('#sageBody tr.sel').forEach(t=>t.classList.remove('sel'));
+        document.querySelectorAll('#sageBody input[data-v="'+id+'"]').forEach(x=>x.closest('tr').classList.add('sel'));
+      }
+    });
+  });
+  tb.querySelectorAll('.rm[data-rm]').forEach(b=>b.addEventListener('click',()=>{
+    const [vid,ri]=b.dataset.rm.split(':').map(Number);
+    const v=inv(vid);if(!v)return;
+    v.rows.splice(ri,1);renderTable();refreshTotals();
+  }));
+  tb.querySelectorAll('.rm[data-rminv]').forEach(b=>b.addEventListener('click',()=>{
+    const id=+b.dataset.rminv;
+    invoices=invoices.filter(x=>x.id!==id);
+    if(selectedId===id)selectedId=invoices.length?invoices[invoices.length-1].id:null;
+    if(!invoices.length){$('cardVerify').classList.add('hidden');$('cardTxt').classList.add('hidden');}
+    renderAll();
+  }));
+  $('cntFactures').textContent=invoices.length+' facture'+(invoices.length>1?'s':'')+' · '+invoices.reduce((s,v)=>s+v.rows.length,0)+' lignes';
+  refreshTotals();
+}
+
+function refreshGroupBadges(){
+  document.querySelectorAll('#sageBody tr.grp-head').forEach((tr,i)=>{
+    const v=invoices[i];if(!v)return;
+    const b=balOf(v);
+    const span=tr.querySelector('.gl span:nth-last-child(2)')||tr.querySelector('.bal-ok,.bal-ko');
+    if(span&&(span.classList.contains('bal-ok')||span.classList.contains('bal-ko'))){
+      span.className=b.ok?'bal-ok':'bal-ko';
+      span.textContent=(b.ok?'✓ équilibrée':'✗ écart '+fmt(Math.abs(b.d-b.c))+' €')+' · '+fmt(b.d)+' / '+fmt(b.c);
+    }
+  });
+}
+
+function refreshTotals(){
+  const all=invoices.flatMap(v=>v.rows);
+  const totD=r2(all.reduce((s,r)=>s+frNum(r.cols[CI.deb]),0));
+  const totC=r2(all.reduce((s,r)=>s+frNum(r.cols[CI.cred]),0));
+  $('totDebit').textContent=fmt(totD);
+  $('totCredit').textContent=fmt(totC);
+  const v=sel();
+  if(!v)return {ok:Math.abs(totD-totC)<0.02,totD,totC};
+  const sHT=sumTypeOf(v,'HT'), sTVA=sumTypeOf(v,'TVA');
+  $('fTVAtot').value=fmt(sTVA);
+  const ttc=frNum(ttcRowOf(v)?ttcRowOf(v).cols[CI.cred]:0);
+  const c=$('coherence');
+  $('badgeIntracom').classList.toggle('hidden',v.regime!=='intracom');
+  if(v.regime==='intracom'){
+    const diff=Math.abs(sHT-ttc);
+    c.className='coherence '+(diff<0.02?'ok':'ko');
+    c.textContent=diff<0.02
+      ?'✓ Pièce '+v.rows[0].cols[CI.piece]+' (autoliquidation) : Σ HT '+fmt(sHT)+' = TTC '+fmt(ttc)+' · TVA autoliquidée '+fmt(sTVA)+' (neutre)'
+      :'✗ Pièce '+v.rows[0].cols[CI.piece]+' : écart de '+fmt(diff)+' € — Σ HT ('+fmt(sHT)+') ≠ TTC ('+fmt(ttc)+'). En autoliquidation le TTC dû = HT.';
+  }else{
+    const diff=Math.abs(r2(sHT+sTVA)-ttc);
+    c.className='coherence '+(diff<0.02?'ok':'ko');
+    c.textContent=diff<0.02
+      ?'✓ Pièce '+v.rows[0].cols[CI.piece]+' : Σ HT '+fmt(sHT)+' + Σ TVA '+fmt(sTVA)+' = TTC '+fmt(ttc)
+      :'✗ Pièce '+v.rows[0].cols[CI.piece]+' : écart de '+fmt(diff)+' € — Σ HT + Σ TVA ('+fmt(r2(sHT+sTVA))+') ≠ TTC ('+fmt(ttc)+').';
+  }
+  return {ok:Math.abs(totD-totC)<0.02,totD,totC};
+}
+
+/* ================= En-tête → lignes de la facture sélectionnée ================= */
+function setCol(ci,val){const v=sel();if(!v)return;v.rows.forEach(r=>r.cols[ci]=val);renderTable();}
+$('fCode').addEventListener('input',()=>setCol(CI.code,$('fCode').value.trim()));
+$('fPiece').addEventListener('input',()=>{setCol(CI.piece,$('fPiece').value.trim());renderSelect();});
+$('fDate').addEventListener('input',()=>{
+  const v=sel();if(!v)return;
+  setCol(CI.date,isoToSage($('fDate').value));
+  const t=getTemplate(v.fournisseur);
+  if(t.refStyle!=='numero')setCol(CI.ref,refFor(t,v.numero,$('fDate').value)); // la référence "juin-26" suit la date
+});
+$('fNumero').addEventListener('input',()=>{
+  const v=sel();if(!v)return;
+  v.numero=$('fNumero').value.trim();
+  // col. O = n° facture ; col. I = mois, sauf template en refStyle "numero"
+  if(getTemplate(v.fournisseur).refStyle==='numero')setCol(CI.ref,v.numero);
+  renderTable();renderSelect();
+});
+$('fFournisseur').addEventListener('input',()=>{
+  const v=sel();if(!v)return;
+  v.fournisseur=normFournisseur($('fFournisseur').value);
+  const t=ttcRowOf(v);
+  if(t)t.cols[CI.ct]=getTemplate(v.fournisseur).tiersName||v.fournisseur;
+  renderTable();renderSelect();
+});
+$('fTTC').addEventListener('input',()=>{
+  const v=sel();if(!v)return;
+  const t=ttcRowOf(v);
+  if(t)t.cols[CI.cred]=numSage(parseFloat($('fTTC').value)||0);
+  renderTable();
+});
+$('fEcheance').addEventListener('input',()=>{const v=sel();if(v)v.echeance=$('fEcheance').value;});
+
+$('fRegime').addEventListener('change',()=>{
+  const v=sel();if(!v)return;
+  const regime=$('fRegime').value;v.regime=regime;
+  const t=getTemplate(v.fournisseur);
+  const base=v.rows[0].cols;
+  const meta={code:base[CI.code],piece:base[CI.piece],date:base[CI.date],ref:base[CI.ref]};
+  const tvaRows=v.rows.filter(r=>r.type==='TVA');
+  const totTVA=r2(tvaRows.reduce((s,r)=>s+frNum(r.cols[CI.deb]),0));
+  v.rows=v.rows.filter(r=>r.type!=='TVADUE');
+  if(regime==='intracom'){
+    const ded=t.regime==='intracom'?t.tvaDeductible:'4456630';
+    tvaRows.forEach(r=>r.cols[CI.cg]=ded);
+    const ttc=frNum(ttcRowOf(v)?ttcRowOf(v).cols[CI.cred]:0);
+    const tot=totTVA||r2(ttc*0.2);
+    if(!tvaRows.length&&ttc){
+      const i=v.rows.findIndex(r=>r.type==='HT');
+      v.rows.splice(i<0?v.rows.length:i,0,{type:'TVA',cols:[meta.code,meta.piece,meta.date,ded,'',meta.ref,libFor(t,v.fournisseur,'tva','',v.detail),numSage(tot),'0','']});
+    }
+    const iHT=v.rows.findIndex(r=>r.type==='HT');
+    v.rows.splice(iHT<0?v.rows.length:iHT,0,{type:'TVADUE',cols:[meta.code,meta.piece,meta.date,t.tvaDue||'4452030','',meta.ref,libFor(t,v.fournisseur,'tva','',v.detail),'0',numSage(tot),'']});
+    const tr=ttcRowOf(v);if(tr&&tr.cols[CI.cg]==='4010000')tr.cols[CI.cg]='4010CEE';
+  }else{
+    tvaRows.forEach(r=>r.cols[CI.cg]='4456611');
+    const tr=ttcRowOf(v);if(tr&&tr.cols[CI.cg]==='4010CEE')tr.cols[CI.cg]='4010000';
+  }
+  renderTable();
+});
+
+$('btnAddHT').addEventListener('click',()=>{
+  const v=sel();if(!v)return;
+  const t=getTemplate(v.fournisseur),b=v.rows[0].cols;
+  v.rows.push({type:'HT',cols:[b[CI.code],b[CI.piece],b[CI.date],t.compteCharge,'',b[CI.ref],libFor(t,v.fournisseur,'ht','',v.detail),'0','0','']});
+  renderTable();
+});
+$('btnAddTVA').addEventListener('click',()=>{
+  const v=sel();if(!v)return;
+  const t=getTemplate(v.fournisseur),b=v.rows[0].cols;
+  const ded=v.regime==='intracom'?(t.regime==='intracom'?t.tvaDeductible:'4456630'):'4456611';
+  const i=v.rows.findIndex(r=>r.type==='TVADUE'||r.type==='HT');
+  v.rows.splice(i<0?v.rows.length:i,0,{type:'TVA',cols:[b[CI.code],b[CI.piece],b[CI.date],ded,'',b[CI.ref],libFor(t,v.fournisseur,'tva',t.alwaysTaux?'20':'',v.detail),'0','0','']});
+  renderTable();
+});
+
+/* ================= Export TXT unique (toutes les factures) ================= */
+function toCP1252(str){
+  const extra={'\u20AC':0x80,'\u201A':0x82,'\u0192':0x83,'\u201E':0x84,'\u2026':0x85,'\u2020':0x86,'\u2021':0x87,'\u02C6':0x88,'\u2030':0x89,'\u0160':0x8A,'\u2039':0x8B,'\u0152':0x8C,'\u017D':0x8E,'\u2018':0x91,'\u2019':0x92,'\u201C':0x93,'\u201D':0x94,'\u2022':0x95,'\u2013':0x96,'\u2014':0x97,'\u02DC':0x98,'\u2122':0x99,'\u0161':0x9A,'\u203A':0x9B,'\u0153':0x9C,'\u017E':0x9E,'\u0178':0x9F};
+  const bytes=[];
+  for(const ch of str){
+    const cp=ch.codePointAt(0);
+    if(cp<=0xFF)bytes.push(cp);
+    else if(extra[ch]!==undefined)bytes.push(extra[ch]);
+    else bytes.push(0x3F);
+  }
+  return new Uint8Array(bytes);
+}
+
+$('btnDownloadTxt').addEventListener('click',()=>{
+  if(!invoices.length){showStatus('statusSend','err','Aucune facture à exporter.');return;}
+  const bad=invoices.filter(v=>!balOf(v).ok);
+  if(bad.length){
+    showStatus('statusSend','err',bad.length+' facture(s) non équilibrée(s) : pièce '+bad.map(v=>v.rows[0].cols[CI.piece]).join(', ')+'. Corrigez avant l\'export.');
+    return;
+  }
+  const lines=[HEADERS.join('\t')]; // ligne de titres
+  invoices.forEach(v=>v.rows.forEach(r=>{
+    const c=r.cols;
+    // Mappage : A journal, B vide, C pièce, D date, E compte, F vide, G tiers, H vide,
+    // I référence, J vide, K libellé, L débit, M crédit, N lettrage, O n° facture
+    lines.push([c[0],'',c[1],c[2],c[3],'',c[4],'',c[5],'',c[6],numSage(c[7]),numSage(c[8]),c[9],v.numero||''].join('\t'));
+  }));
+  const blob=new Blob([toCP1252(lines.join('\r\n')+'\r\n')],{type:'text/plain;charset=windows-1252'});
+  const p1=invoices[0].rows[0].cols[CI.piece], p2=invoices[invoices.length-1].rows[0].cols[CI.piece];
+  const name=invoices.length===1
+    ? 'import_sage_'+invoices[0].fournisseur.replace(/[^A-Za-z0-9&-]+/g,'_')+'_'+(invoices[0].numero||p1)+'.txt'
+    : 'import_sage_'+invoices.length+'factures_pieces_'+p1+'-'+p2+'.txt';
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);a.download=name;
+  document.body.appendChild(a);a.click();URL.revokeObjectURL(a.href);a.remove();
+  showStatus('statusSend','ok','✓ Fichier TXT téléchargé : '+invoices.length+' facture(s), '+(lines.length-1)+' écritures + ligne de titres.');
+});
+
+/* ================= Envoi Airtable (facture sélectionnée) ================= */
+$('btnSend').addEventListener('click',async()=>{
+  const v=sel();
+  if(!v){showStatus('statusSend','err','Aucune facture sélectionnée.');return;}
+  const b=balOf(v);
+  if(!b.ok){showStatus('statusSend','err','Pièce '+v.rows[0].cols[CI.piece]+' non équilibrée : Débit '+fmt(b.d)+' ≠ Crédit '+fmt(b.c)+'.');return;}
+  $('btnSend').disabled=true;
+  showStatus('statusSend','info','<span class="spinner"></span>Envoi de la pièce '+v.rows[0].cols[CI.piece]+' ('+v.fournisseur+') vers Airtable…');
+
+  const E=AIRTABLE.ecritures.f, FA=AIRTABLE.factures.f;
+  const ttc=frNum(ttcRowOf(v)?ttcRowOf(v).cols[CI.cred]:0);
+  const factureFields={};
+  factureFields[FA.nom]=v.pdfName||('Facture '+v.fournisseur+' '+v.numero);
+  const dISO=sageToISO(v.rows[0].cols[CI.date]);
+  if(dISO)factureFields[FA.dateReception]=dISO;
+  factureFields[FA.fournisseur]=v.fournisseur;
+  factureFields[FA.montantTotal]=ttc;
+
+  const ecritureRecords=v.rows.map(r=>{
+    const c=r.cols,f={};
+    if(c[CI.code])f[E.code]=c[CI.code];
+    const d2=sageToISO(c[CI.date]);
+    if(d2)f[E.date]=d2;
+    if(c[CI.piece])f[E.piece]=c[CI.piece];
+    f[E.compteGen]=c[CI.cg];
+    if(c[CI.ct])f[E.compteTiers]=c[CI.ct];
+    if(v.numero)f[E.numFacture]=v.numero;
+    if(c[CI.ref])f[E.reference]=c[CI.ref];
+    f[E.libelle]=c[CI.lib];
+    const deb=frNum(c[CI.deb]),cred=frNum(c[CI.cred]);
+    if(deb>0)f[E.debit]=deb;
+    if(cred>0)f[E.credit]=cred;
+    if(r.type!=='TTC')f[E.contrepartie]=getTemplate(v.fournisseur).tiersName||v.fournisseur;
+    if(r.type==='TTC'&&v.echeance)f[E.echeance]=v.echeance;
+    return {fields:f};
+  });
+
+  const mcpPrompt=`Effectue ces deux opérations Airtable dans l'ordre avec les outils MCP :
+
+ÉTAPE 1 — Crée l'enregistrement de la facture avec create_records_for_table :
+- baseId : "${AIRTABLE.baseId}"
+- tableId : "${AIRTABLE.factures.tableId}"
+- records : [{"fields": ${JSON.stringify(factureFields)}}]
+Note l'ID (rec...) de l'enregistrement créé.
+
+ÉTAPE 2 — Crée les écritures comptables avec create_records_for_table :
+- baseId : "${AIRTABLE.baseId}"
+- tableId : "${AIRTABLE.ecritures.tableId}"
+- records : ${JSON.stringify(ecritureRecords)}
+IMPORTANT : ajoute dans chaque record le champ "${E.factureSrc}" avec pour valeur ["<ID de l'étape 1>"] pour lier chaque écriture à la facture.
+
+Utilise exactement ces IDs de champs, sans en ajouter d'autres.
+Réponds ensuite UNIQUEMENT avec le JSON {"success": true, "factureId": "rec...", "nbEcritures": N} ou {"success": false, "error": "..."} sans aucun autre texte.`;
+
+  try{
+    const resp=await fetch("https://api.anthropic.com/v1/messages",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({
+        model:"claude-sonnet-4-6",max_tokens:2000,
+        messages:[{role:"user",content:mcpPrompt}],
+        mcp_servers:[{type:"url",url:"https://mcp.airtable.com/mcp",name:"airtable-mcp"}]
+      })
+    });
+    if(!resp.ok)throw new Error("Erreur API ("+resp.status+")");
+    const data=await resp.json();
+    const textBlocks=(data.content||[]).filter(x=>x.type==='text').map(x=>x.text).join('\n');
+    const toolResults=(data.content||[]).filter(x=>x.type==='mcp_tool_result');
+    let ok=false,factureId=null,nb=0,errMsg='';
+    try{
+      const p=JSON.parse(textBlocks.replace(/```json|```/g,'').trim());
+      ok=p.success===true;factureId=p.factureId||null;nb=p.nbEcritures||0;errMsg=p.error||'';
+    }catch(_){}
+    if(!ok){
+      const ids=[];
+      for(const bl of toolResults){
+        const t=bl?.content?.[0]?.text||'';
+        (t.match(/rec[A-Za-z0-9]{14}/g)||[]).forEach(i=>ids.push(i));
+      }
+      if(ids.length>=v.rows.length+1){ok=true;factureId=ids[0];nb=v.rows.length;}
+    }
+    if(ok){
+      v.sentAirtable=true;
+      showStatus('statusSend','ok','✓ Pièce '+v.rows[0].cols[CI.piece]+' — <strong>'+v.fournisseur+(v.numero?' n°'+v.numero:'')+'</strong> envoyée : 1 enregistrement Factures PDF'+(factureId?' (<code>'+factureId+'</code>)':'')+' + '+(nb||v.rows.length)+' écritures liées.');
+      renderSelect();renderTable();
+    }else{
+      throw new Error(errMsg||'La création n\'a pas pu être confirmée. Vérifiez la connexion Airtable.');
+    }
+  }catch(err){
+    console.error(err);
+    showStatus('statusSend','err','Échec de l\'envoi : '+err.message);
+  }finally{
+    $('btnSend').disabled=false;
+  }
+});
+
+/* ================= Reset ================= */
+$('btnReset').addEventListener('click',()=>{
+  if(invoices.length&&!confirm('Effacer les '+invoices.length+' facture(s) du tableau ?'))return;
+  queue=[];invoices=[];selectedId=null;uid=0;
+  fi.value='';
+  renderQueue();
+  $('cardVerify').classList.add('hidden');
+  $('cardTxt').classList.add('hidden');
+  hideStatus('statusExtract');hideStatus('statusSend');
+  window.scrollTo({top:0,behavior:'smooth'});
+});
+
+updateHint();
+</script>
+</body>
+</html>
