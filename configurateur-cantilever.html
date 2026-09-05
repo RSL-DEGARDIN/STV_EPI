@@ -1,0 +1,1422 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Configurateur Cantilever — RSL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bleu:#123A5E; --bleu2:#1B5B92; --bleu-pale:#E7EFF6;
+  --orange:#E8701A; --orange-pale:#FDF0E6;
+  --graphite:#4A4E55; --graphite2:#6B7079;
+  --fond:#F2F4F6; --blanc:#fff; --texte:#1A222C; --gris:#7C858F; --trait:#D8DEE4;
+  --rouge:#B3261E; --vert:#1F7A4D;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--fond);color:var(--texte);font-family:'Barlow',system-ui,sans-serif;font-size:15px;line-height:1.5}
+h1,h2,h3,.cond{font-family:'Barlow Condensed',sans-serif;letter-spacing:.01em}
+a{color:var(--bleu2)}
+
+/* ---- bandeau ---- */
+header{background:var(--bleu);color:#fff;padding:14px 22px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+header img{height:34px}
+header .t{font-family:'Barlow Condensed',sans-serif;font-size:26px;font-weight:700;line-height:1}
+header .s{font-size:13px;color:#A9C4DA;margin-top:2px}
+header .back{margin-left:auto;font-size:13px;color:#A9C4DA;text-decoration:none;border:1px solid #2C5F8C;padding:6px 12px;border-radius:3px}
+header .back:hover{background:#1B4A73;color:#fff}
+
+.wrap{max-width:1240px;margin:0 auto;padding:22px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:22px;align-items:start}
+@media(max-width:960px){.grid{grid-template-columns:1fr}}
+
+.card{background:var(--blanc);border:1px solid var(--trait);border-radius:4px;margin-bottom:18px}
+.card>h2{margin:0;font-size:19px;font-weight:600;padding:12px 18px;border-bottom:1px solid var(--trait);
+  background:linear-gradient(to right,var(--bleu-pale),#fff);color:var(--bleu)}
+.card>h2 .n{display:inline-block;width:22px;height:22px;line-height:22px;text-align:center;background:var(--bleu);
+  color:#fff;border-radius:50%;font-size:13px;margin-right:8px;vertical-align:1px}
+.body{padding:18px}
+
+label{display:block;font-size:13px;font-weight:600;color:var(--graphite2);margin-bottom:5px}
+.hint{font-size:12.5px;color:var(--gris);margin-top:4px;line-height:1.4}
+select.dep{width:auto;display:inline-block;padding:3px 6px;font-size:13.5px;
+  border-radius:3px;vertical-align:baseline;max-width:230px}
+select,input[type=number],input[type=text],input[type=email],input[type=tel],textarea{
+  width:100%;padding:9px 10px;border:1px solid var(--trait);border-radius:3px;font-family:inherit;font-size:15px;background:#fff;color:var(--texte)}
+select:focus,input:focus,textarea:focus{outline:2px solid var(--bleu2);outline-offset:-1px;border-color:var(--bleu2)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.f{margin-bottom:16px}
+@media(max-width:520px){.row,.row3{grid-template-columns:1fr}}
+
+/* segmented */
+.seg{display:flex;border:1px solid var(--trait);border-radius:3px;overflow:hidden}
+.seg button{flex:1;padding:10px 6px;border:0;background:#fff;font-family:'Barlow',sans-serif;font-size:14px;font-weight:500;
+  cursor:pointer;color:var(--graphite2);border-right:1px solid var(--trait)}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed=true]{background:var(--bleu);color:#fff}
+.seg button:hover:not([aria-pressed=true]){background:var(--bleu-pale)}
+
+.bays{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:9px}
+.bays .b span{display:block;font-size:11.5px;color:var(--gris);margin-bottom:3px}
+.bays select{padding:7px 8px;font-size:14px}
+.lien{background:none;border:0;padding:0;color:var(--bleu2);font:inherit;font-size:12.5px;text-decoration:underline;cursor:pointer}
+.step{display:flex;align-items:stretch;border:1px solid var(--trait);border-radius:3px;overflow:hidden}
+.step button{width:42px;flex:none;border:0;background:#F1F4F7;cursor:pointer;color:var(--bleu);
+  font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:600;line-height:1;padding:0}
+.step button:hover{background:var(--bleu-pale)}
+.step button:active{background:var(--bleu);color:#fff}
+.step input{border:0;border-left:1px solid var(--trait);border-right:1px solid var(--trait);
+  border-radius:0;text-align:center;font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:600;
+  color:var(--bleu);-moz-appearance:textfield}
+.step input::-webkit-outer-spin-button,.step input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.check{display:flex;gap:9px;align-items:flex-start;margin-bottom:10px;font-size:14px;cursor:pointer}
+.check input{margin-top:3px;flex:none;width:16px;height:16px;accent-color:var(--bleu)}
+.check span b{font-weight:600}
+
+/* schéma */
+.viz{background:#fff;border:1px solid var(--trait);border-radius:4px;padding:14px}
+.viz svg{width:100%;height:auto;display:block}
+.vtabs{display:flex;gap:6px;margin-bottom:10px}
+.vtabs button{padding:6px 13px;border:1px solid var(--trait);background:#fff;border-radius:3px;cursor:pointer;
+  font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:600;color:var(--graphite2)}
+.vtabs button[aria-pressed=true]{background:var(--graphite);color:#fff;border-color:var(--graphite)}
+
+/* verdict */
+.verdict{border-left:4px solid var(--bleu2);background:var(--bleu-pale);padding:12px 14px;font-size:14px;margin-bottom:14px;border-radius:0 3px 3px 0}
+.verdict.err{border-color:var(--rouge);background:#FCEDEC}
+.verdict.warn{border-color:var(--orange);background:var(--orange-pale)}
+.verdict b{font-weight:600}
+.verdict ul{margin:6px 0 0;padding-left:18px}
+
+/* cotes */
+.cotes{display:grid;grid-template-columns:repeat(auto-fit,minmax(112px,1fr));gap:1px;
+  background:var(--trait);border:1px solid var(--trait);margin:12px 0 0}
+.cotes div{background:#fff;padding:9px 11px;display:flex;flex-direction:column}
+.cotes dt{font-size:11.5px;color:var(--gris);font-weight:500;line-height:1.3}
+.cotes dd{margin:0;margin-top:auto;padding-top:6px;font-family:'Barlow Condensed',sans-serif;
+  font-size:21px;font-weight:600;color:var(--bleu);line-height:1}
+
+/* prix : un seul bandeau, une seule ligne */
+.prix{background:var(--bleu);color:#fff;border-radius:4px;padding:10px 18px;margin-bottom:14px;
+  display:flex;align-items:baseline;gap:9px;flex-wrap:wrap;
+  font-family:'Barlow Condensed',sans-serif;font-variant-numeric:tabular-nums}
+.prix .quoi{font-size:16px;font-weight:500;color:#9FC0DA;margin-right:auto;letter-spacing:.02em}
+.prix .pu{font-size:19px;font-weight:500;color:#D3E3EF}
+.prix .op{font-size:17px;color:#7FA6C6}
+.prix .tt{font-size:27px;font-weight:700;color:#fff}
+.prix .tt em{font-style:normal;font-size:16px;font-weight:600;color:#9FC0DA}
+
+/* nomenclature */
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600;color:var(--graphite2);
+  border-bottom:2px solid var(--trait);padding:7px 9px;white-space:nowrap}
+td{border-bottom:1px solid #EDF0F3;padding:8px 9px;vertical-align:top}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+td.ref{font-size:12.5px;color:var(--gris);letter-spacing:.02em;white-space:nowrap}
+tfoot td{font-weight:600;border-top:2px solid var(--trait);border-bottom:0}
+
+.btn{display:inline-block;padding:12px 22px;border:0;border-radius:3px;font-family:'Barlow Condensed',sans-serif;
+  font-size:18px;font-weight:600;cursor:pointer;background:var(--orange);color:#fff}
+.btn:hover{background:#CF5F0E}
+.btn:disabled{background:#C4CAD1;cursor:not-allowed}
+.btn.sec{background:#fff;color:var(--bleu);border:1px solid var(--bleu2)}
+.btn.sec:hover{background:var(--bleu-pale)}
+.tools{display:flex;gap:9px;flex-wrap:wrap;margin-top:14px}
+
+.lignes{width:100%;border-collapse:collapse}
+.lignes td{padding:11px 9px;border-bottom:1px solid #EDF0F3;vertical-align:top}
+.lignes tr.edit td{background:var(--orange-pale)}
+.lignes .titre{font-family:'Barlow Condensed',sans-serif;font-size:17px;font-weight:600;color:var(--bleu)}
+.lignes .det{font-size:13px;color:var(--gris);margin-top:2px;line-height:1.45}
+.lignes .qte{width:62px;padding:6px 7px;text-align:center}
+.lignes .act{white-space:nowrap;text-align:right}
+.lignes .act button{margin-left:6px}
+.mini{padding:6px 11px;border:1px solid var(--trait);background:#fff;border-radius:3px;cursor:pointer;
+  font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:600;color:var(--graphite2)}
+.mini:hover{background:var(--bleu-pale);border-color:var(--bleu2);color:var(--bleu)}
+.mini.sup:hover{background:#FCEDEC;border-color:var(--rouge);color:var(--rouge)}
+.vide{text-align:center;color:var(--gris);padding:26px 12px;font-size:14px}
+.recap{margin-top:16px;border-top:2px solid var(--trait);padding-top:12px}
+.recap .l{display:flex;justify-content:space-between;padding:4px 0;font-size:14.5px;color:var(--graphite2)}
+.recap .l b{font-variant-numeric:tabular-nums;color:var(--texte);font-weight:600}
+.recap .g{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid var(--trait);margin-top:8px;padding-top:10px}
+.recap .g span{font-family:'Barlow Condensed',sans-serif;font-size:19px;font-weight:600;color:var(--bleu)}
+.recap .g b{font-family:'Barlow Condensed',sans-serif;font-size:30px;font-weight:700;color:var(--bleu);font-variant-numeric:tabular-nums}
+.msg{padding:11px 14px;border-radius:3px;font-size:14px;margin-top:12px}
+.msg.ok{background:#E7F4ED;color:var(--vert);border:1px solid #B6DFC8}
+.msg.ko{background:#FCEDEC;color:var(--rouge);border:1px solid #F0C4C1}
+.small{font-size:12.5px;color:var(--gris)}
+footer{text-align:center;padding:26px;color:var(--gris);font-size:12.5px}
+@media print{header .back,.tools,.vtabs,#formDevis,.seg{display:none}}
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+<header>
+  <!-- Remplacer par le logo RSL (URL CDN ou base64) -->
+  <svg width="72" height="34" viewBox="0 0 72 34" aria-label="RSL" role="img">
+    <rect x="0" y="0" width="72" height="34" rx="3" fill="#E8701A"/>
+    <text x="36" y="25" text-anchor="middle" font-family="Barlow Condensed,sans-serif"
+          font-size="23" font-weight="700" fill="#fff" letter-spacing="1">RSL</text>
+  </svg>
+  <div>
+    <div class="t">Configurateur Cantilever</div>
+    <div class="s">Stockage de charges longues — barres, tubes, profilés, panneaux</div>
+  </div>
+  <a class="back" href="https://rsl.eu/choisissez-que-produit-a-chiffrer/">← Autres produits</a>
+</header>
+
+<div class="wrap">
+<div class="grid">
+
+  <!-- ============ COLONNE GAUCHE : PARAMÈTRES ============ -->
+  <div>
+    <div class="card">
+      <h2><span class="n">1</span>Votre rayonnage</h2>
+      <div class="body">
+
+        <div class="f">
+          <label>Accès au rayonnage</label>
+          <div class="seg" id="segFace">
+            <button type="button" data-v="SF" aria-pressed="true">Simple face — contre un mur</button>
+            <button type="button" data-v="DF" aria-pressed="false">Double face — accès des 2 côtés</button>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="f">
+            <label for="H">Hauteur des colonnes</label>
+            <select id="H"></select>
+          </div>
+          <div class="f">
+            <label for="L">Profondeur des bras</label>
+            <select id="L"></select>
+            <div class="hint">Longueur du bras en porte-à-faux.</div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="f">
+            <label for="N">Niveaux de bras</label>
+            <div class="step">
+              <button type="button" data-d="-1" aria-label="Un niveau de moins">&minus;</button>
+              <input type="number" id="N" min="1" max="10" step="1" value="4">
+              <button type="button" data-d="1" aria-label="Un niveau de plus">+</button>
+            </div>
+            <div class="hint">Le sol (sur embase) fait un niveau de stockage en plus.</div>
+          </div>
+          <div class="f">
+            <label for="C">Charge par bras</label>
+            <input type="number" id="C" min="10" max="800" step="10" value="200">
+            <div class="hint">En kg. Soit environ la charge d'un niveau sur une travée, divisée par 2.</div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="f">
+            <label for="T">Nombre de travées</label>
+            <div class="step">
+              <button type="button" data-d="-1" aria-label="Une travée de moins">&minus;</button>
+              <input type="number" id="T" min="1" max="30" step="1" value="3">
+              <button type="button" data-d="1" aria-label="Une travée de plus">+</button>
+            </div>
+            <div class="hint">1 travée = 2 colonnes. Chaque travée en plus ajoute 1 colonne.</div>
+          </div>
+          <div class="f">
+            <label for="Q">Cantilevers identiques</label>
+            <div class="step">
+              <button type="button" data-d="-1" aria-label="Un cantilever de moins">&minus;</button>
+              <input type="number" id="Q" min="1" max="99" step="1" value="1">
+              <button type="button" data-d="1" aria-label="Un cantilever de plus">+</button>
+            </div>
+            <div class="hint">Nombre d'exemplaires de ce rayonnage dans le devis.</div>
+          </div>
+        </div>
+
+        <div class="f">
+          <label>Largeur intérieure de chaque travée</label>
+          <div class="bays" id="bays"></div>
+          <div class="hint">C'est la longueur du contreventement, entre deux colonnes. Les travées peuvent être de largeurs différentes.
+            <button type="button" class="lien" id="btnUnif">Tout aligner sur la première</button></div>
+        </div>
+
+        <div class="f" style="margin-bottom:0">
+          <label>Options</label>
+          <label class="check"><input type="checkbox" id="optBB">
+            <span><b>Butées d'extrémité de bras</b> — tige Ø 8 mm, hauteur 100 mm. Empêche les tubes et rondins de rouler.</span></label>
+          <label class="check" style="margin-bottom:0"><input type="checkbox" id="optBE">
+            <span><b>Butées sur embase</b> — même rôle pour le niveau au sol.</span></label>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============ COLONNE DROITE : SCHÉMA + PRIX ============ -->
+  <div>
+    <div class="prix" id="prixBox"></div>
+
+    <div class="viz">
+      <div class="vtabs">
+        <button type="button" data-v="axo" aria-pressed="true">Vue d'ensemble</button>
+        <button type="button" data-v="profil" aria-pressed="false">Vue de côté</button>
+      </div>
+      <div id="svgBox"></div>
+      <dl class="cotes" id="cotes"></dl>
+    </div>
+
+    <div style="height:18px"></div>
+    <div id="verdictBox"></div>
+    <div class="tools">
+      <button class="btn" type="button" id="btnAjouter">Ajouter au devis</button>
+      <button class="btn sec" type="button" id="btnAnnuler" style="display:none">Annuler la modification</button>
+    </div>
+    <div class="small" id="ajoutMsg" style="margin-top:8px"></div>
+  </div>
+</div>
+
+<!-- ============ DEVIS ============ -->
+<div class="card" style="margin-top:4px">
+  <h2><span class="n">2</span>Votre devis</h2>
+  <div class="body" id="panierBox"></div>
+</div>
+
+<!-- ============ NOMENCLATURE ============ -->
+<div class="card">
+  <h2><span class="n">3</span>Nomenclature complète du devis</h2>
+  <div class="body" style="overflow-x:auto">
+    <table id="nomen">
+      <thead><tr><th>Référence</th><th>Désignation</th><th class="n">Qté</th>
+                 <th class="n">P.U. HT</th><th class="n">Total HT</th><th class="n">Poids</th></tr></thead>
+      <tbody></tbody><tfoot></tfoot>
+    </table>
+  </div>
+</div>
+
+<!-- ============ DEVIS ============ -->
+<div class="card" id="formDevis">
+  <h2><span class="n">4</span>Recevoir ce devis par e-mail</h2>
+  <div class="body">
+    <div class="row">
+      <div class="f"><label for="cNom">Nom et prénom *</label><input type="text" id="cNom" autocomplete="name"></div>
+      <div class="f"><label for="cSoc">Société *</label><input type="text" id="cSoc" autocomplete="organization"></div>
+    </div>
+    <div class="row">
+      <div class="f"><label for="cMail">E-mail *</label><input type="email" id="cMail" autocomplete="email"></div>
+      <div class="f"><label for="cTel">Téléphone</label><input type="tel" id="cTel" autocomplete="tel"></div>
+    </div>
+    <div class="row">
+      <div class="f"><label for="cCp">Code postal du chantier</label><input type="text" id="cCp" inputmode="numeric" maxlength="5"></div>
+      <div class="f"><label for="cVille">Ville</label><input type="text" id="cVille"></div>
+    </div>
+    <div class="f">
+      <label for="cMsg">Précisions (nature des charges stockées, délai, montage souhaité…)</label>
+      <textarea id="cMsg" rows="3"></textarea>
+    </div>
+    <label class="check"><input type="checkbox" id="cRgpd">
+      <span>J'accepte que RSL utilise ces informations pour traiter ma demande. <a href="https://rsl.eu/politique-de-confidentialite/" target="_blank" rel="noopener">Politique de confidentialité</a>.</span></label>
+    <button class="btn" type="button" id="btnEnvoi" style="margin-top:8px">Envoyer ma demande de devis</button>
+    <div id="envoiMsg"></div>
+  </div>
+</div>
+
+<footer>
+  RSL — Rayonnages Services Lorraine · Prix indicatifs HT, hors montage · Tarif au 01/09/2026<br>
+  Le schéma est un assemblage des pièces configurées, pas un plan de montage.
+</footer>
+</div>
+
+<script>
+"use strict";
+
+/* ===================== RÉGLAGES ===================== */
+const WEBHOOK_DEVIS = "https://hook.eu2.make.com/vrtmhmhtxy5cu7s1wvvk3s48zt6slm4z";
+const SOURCE        = "configurateur-cantilever";
+const TVA           = 0.20;
+const FRAIS_FIXE    = 55;      // supplément grille transport
+
+/* ===================== DONNÉES ===================== */
+const TARIF = {"colonnes": {"LG": {"DF": {"1750": {"400": {"ref": "AF12017540ABE0003", "p": 185.21, "w": 28.872, "d": "COLONNE 140X40 DF 1750X400 RAL7024"}, "500": {"ref": "AF12017550ABE0003", "p": 194.52, "w": 31.112, "d": "COLONNE 140X40 DF 1750X500 RAL7024"}, "600": {"ref": "AF12017560ABE0003", "p": 204.15, "w": 33.352, "d": "COLONNE 140X40 DF 1750X600 RAL7024"}, "700": {"ref": "AF12017570ABE0003", "p": 214.24, "w": 35.592, "d": "COLONNE 140X40 DF 1750X700 RAL7024"}, "800": {"ref": "AF12017580ABE0003", "p": 223.48, "w": 37.832, "d": "COLONNE 140X40 DF 1750X800 RAL7024"}}, "2000": {"400": {"ref": "AF12020040ABE0003", "p": 194.91, "w": 30.972, "d": "COLONNE 140X40 DF 2000X400 RAL7024"}, "500": {"ref": "AF12020050ABE0003", "p": 204.17, "w": 33.212, "d": "COLONNE 140X40 DF 2000X500 RAL7024"}, "600": {"ref": "AF12020060ABE0003", "p": 213.84, "w": 35.452, "d": "COLONNE 140X40 DF 2000X600 RAL7024"}, "700": {"ref": "AF12020070ABE0003", "p": 223.93, "w": 37.692, "d": "COLONNE 140X40 DF 2000X700 RAL7024"}, "800": {"ref": "AF12020080ABE0003", "p": 233.17, "w": 39.932, "d": "COLONNE 140X40 DF 2000X800 RAL7024"}}, "2500": {"400": {"ref": "AF12025040ABE0003", "p": 225.05, "w": 35.072, "d": "COLONNE 140X40 DF 2500X400 RAL7024"}, "500": {"ref": "AF12025050ABE0003", "p": 234.23, "w": 37.312, "d": "COLONNE 140X40 DF 2500X500 RAL7024"}, "600": {"ref": "AF12025060ABE0003", "p": 243.94, "w": 39.552, "d": "COLONNE 140X40 DF 2500X600 RAL7024"}, "700": {"ref": "AF12025070ABE0003", "p": 254.02, "w": 41.792, "d": "COLONNE 140X40 DF 2500X700 RAL7024"}, "800": {"ref": "AF12025080ABE0003", "p": 263.32, "w": 44.032, "d": "COLONNE 140X40 DF 2500X800 RAL7024"}}, "3000": {"400": {"ref": "AF12030040ABE0003", "p": 248.63, "w": 39.172, "d": "COLONNE 140X40 DF 3000X400 RAL7024"}, "500": {"ref": "AF12030050ABE0003", "p": 257.96, "w": 41.412, "d": "COLONNE 140X40 DF 3000X500 RAL7024"}, "600": {"ref": "AF12030060ABE0003", "p": 267.59, "w": 43.652, "d": "COLONNE 140X40 DF 3000X600 RAL7024"}, "700": {"ref": "AF12030070ABE0003", "p": 277.61, "w": 45.892, "d": "COLONNE 140X40 DF 3000X700 RAL7024"}, "800": {"ref": "AF12030080ABE0003", "p": 286.93, "w": 48.132, "d": "COLONNE 140X40 DF 3000X800 RAL7024"}}}, "SF": {"1750": {"400": {"ref": "AF12017540AAE0003", "p": 166.28, "w": 25.016, "d": "COLONNE 140X40 SF 1750X400 RAL7024"}, "500": {"ref": "AF12017550AAE0003", "p": 171.35, "w": 26.136, "d": "COLONNE 140X40 SF 1750X500 RAL7024"}, "600": {"ref": "AF12017560AAE0003", "p": 176.35, "w": 27.256, "d": "COLONNE 140X40 SF 1750X600 RAL7024"}, "700": {"ref": "AF12017570AAE0003", "p": 180.24, "w": 28.376, "d": "COLONNE 140X40 SF 1750X700 RAL7024"}, "800": {"ref": "AF12017580AAE0003", "p": 185.21, "w": 29.496, "d": "COLONNE 140X40 SF 1750X800 RAL7024"}}, "2000": {"400": {"ref": "AF12020040AAE0003", "p": 175.87, "w": 27.116, "d": "COLONNE 140X40 SF 2000X400 RAL7024"}, "500": {"ref": "AF12020050AAE0003", "p": 181.01, "w": 28.236, "d": "COLONNE 140X40 SF 2000X500 RAL7024"}, "600": {"ref": "AF12020060AAE0003", "p": 186.03, "w": 29.356, "d": "COLONNE 140X40 SF 2000X600 RAL7024"}, "700": {"ref": "AF12020070AAE0003", "p": 189.87, "w": 30.476, "d": "COLONNE 140X40 SF 2000X700 RAL7024"}, "800": {"ref": "AF12020080AAE0003", "p": 194.91, "w": 31.596, "d": "COLONNE 140X40 SF 2000X800 RAL7024"}}, "2500": {"400": {"ref": "AF12025040AAE0003", "p": 206.09, "w": 31.216, "d": "COLONNE 140X40 SF 2500X400 RAL7024"}, "500": {"ref": "AF12025050AAE0003", "p": 211.14, "w": 32.336, "d": "COLONNE 140X40 SF 2500X500 RAL7024"}, "600": {"ref": "AF12025060AAE0003", "p": 216.17, "w": 33.456, "d": "COLONNE 140X40 SF 2500X600 RAL7024"}, "700": {"ref": "AF12025070AAE0003", "p": 220.0, "w": 34.576, "d": "COLONNE 140X40 SF 2500X700 RAL7024"}, "800": {"ref": "AF12025080AAE0003", "p": 225.05, "w": 35.696, "d": "COLONNE 140X40 SF 2500X800 RAL7024"}}, "3000": {"400": {"ref": "AF12030040AAE0003", "p": 229.7, "w": 35.316, "d": "COLONNE 140X40 SF 3000X400 RAL7024"}, "500": {"ref": "AF12030050AAE0003", "p": 234.7, "w": 36.436, "d": "COLONNE 140X40 SF 3000X500 RAL7024"}, "600": {"ref": "AF12030060AAE0003", "p": 239.76, "w": 37.556, "d": "COLONNE 140X40 SF 3000X600 RAL7024"}, "700": {"ref": "AF12030070AAE0003", "p": 243.64, "w": 38.676, "d": "COLONNE 140X40 SF 3000X700 RAL7024"}, "800": {"ref": "AF12030080AAE0003", "p": 248.63, "w": 39.796, "d": "COLONNE 140X40 SF 3000X800 RAL7024"}}}}, "ML": {"DF": {"2000": {"500": {"ref": "AF12020050BBE0003", "p": 305.48, "w": 53.26, "d": "COLONNE 200X80 DF 2000X500 RAL7024"}, "600": {"ref": "AF12020060BBE0003", "p": 320.18, "w": 57.06, "d": "COLONNE 200X80 DF 2000X600 RAL7024"}, "700": {"ref": "AF12020070BBE0003", "p": 334.13, "w": 60.86, "d": "COLONNE 200X80 DF 2000X700 RAL7024"}, "800": {"ref": "AF12020080BBE0003", "p": 348.8, "w": 64.66, "d": "COLONNE 200X80 DF 2000X800 RAL7024"}, "1000": {"ref": "AF12020010BBE0003", "p": 375.87, "w": 72.26, "d": "COLONNE 200X80 DF 2000X1000 RAL7024"}, "1200": {"ref": "AF12020012BBE0003", "p": 390.54, "w": 79.66, "d": "COLONNE 200X80 DF 2000X1200 RAL7024"}}, "2500": {"1000": {"ref": "AF12025010BBE0003", "p": 413.74, "w": 78.76, "d": "COLONNE 200X80 DF 2500X1000 RAL7024"}, "1200": {"ref": "AF12025012BBE0003", "p": 428.43, "w": 86.16, "d": "COLONNE 200X80 DF 2500X1200 RAL7024"}, "500": {"ref": "AF12025050BBE0003", "p": 343.39, "w": 59.76, "d": "COLONNE 200X80 DF 2500X500 RAL7024"}, "600": {"ref": "AF12025060BBE0003", "p": 358.05, "w": 63.56, "d": "COLONNE 200X80 DF 2500X600 RAL7024"}, "700": {"ref": "AF12025070BBE0003", "p": 372.0, "w": 67.36, "d": "COLONNE 200X80 DF 2500X700 RAL7024"}, "800": {"ref": "AF12025080BBE0003", "p": 386.68, "w": 71.16, "d": "COLONNE 200X80 DF 2500X800 RAL7024"}}, "3000": {"1000": {"ref": "AF12030010BBE0003", "p": 449.73, "w": 85.16, "d": "COLONNE 200X80 DF 3000X1000 RAL7024"}, "1200": {"ref": "AF12030012BBE0003", "p": 464.42, "w": 92.56, "d": "COLONNE 200X80 DF 3000X1200 RAL7024"}, "500": {"ref": "AF12030050BBE0003", "p": 379.35, "w": 66.16, "d": "COLONNE 200X80 DF 3000X500 RAL7024"}, "600": {"ref": "AF12030060BBE0003", "p": 394.03, "w": 69.96, "d": "COLONNE 200X80 DF 3000X600 RAL7024"}, "700": {"ref": "AF12030070BBE0003", "p": 407.97, "w": 73.76, "d": "COLONNE 200X80 DF 3000X700 RAL7024"}, "800": {"ref": "AF12030080BBE0003", "p": 422.65, "w": 77.56, "d": "COLONNE 200X80 DF 3000X800 RAL7024"}}, "3500": {"1000": {"ref": "AF12035010BBE0003", "p": 486.47, "w": 91.66, "d": "COLONNE 200X80 DF 3500X1000 RAL7024"}, "1200": {"ref": "AF12035012BBE0003", "p": 501.1, "w": 99.06, "d": "COLONNE 200X80 DF 3500X1200 RAL7024"}, "500": {"ref": "AF12035050BBE0003", "p": 416.06, "w": 72.66, "d": "COLONNE 200X80 DF 3500X500 RAL7024"}, "600": {"ref": "AF12035060BBE0003", "p": 430.7, "w": 76.46, "d": "COLONNE 200X80 DF 3500X600 RAL7024"}, "700": {"ref": "AF12035070BBE0003", "p": 444.69, "w": 80.26, "d": "COLONNE 200X80 DF 3500X700 RAL7024"}, "800": {"ref": "AF12035080BBE0003", "p": 459.34, "w": 84.06, "d": "COLONNE 200X80 DF 3500X800 RAL7024"}}, "4000": {"1000": {"ref": "AF12040010BBE0003", "p": 524.32, "w": 98.06, "d": "COLONNE 200X80 DF 4000X1000 RAL7024"}, "1200": {"ref": "AF12040012BBE0003", "p": 539.0, "w": 105.46, "d": "COLONNE 200X80 DF 4000X1200 RAL7024"}, "500": {"ref": "AF12040050BBE0003", "p": 453.95, "w": 79.06, "d": "COLONNE 200X80 DF 4000X500 RAL7024"}, "600": {"ref": "AF12040060BBE0003", "p": 468.63, "w": 82.86, "d": "COLONNE 200X80 DF 4000X600 RAL7024"}, "700": {"ref": "AF12040070BBE0003", "p": 482.56, "w": 86.66, "d": "COLONNE 200X80 DF 4000X700 RAL7024"}, "800": {"ref": "AF12040080BBE0003", "p": 497.27, "w": 90.46, "d": "COLONNE 200X80 DF 4000X800 RAL7024"}}}, "SF": {"2000": {"500": {"ref": "AF12020050BAE0003", "p": 270.28, "w": 44.8, "d": "COLONNE 200X80 SF 2000X500 RAL7024"}, "600": {"ref": "AF12020060BAE0003", "p": 278.39, "w": 46.6, "d": "COLONNE 200X80 SF 2000X600 RAL7024"}, "700": {"ref": "AF12020070BAE0003", "p": 284.2, "w": 48.6, "d": "COLONNE 200X80 SF 2000X700 RAL7024"}, "800": {"ref": "AF12020080BAE0003", "p": 291.95, "w": 50.4, "d": "COLONNE 200X80 SF 2000X800 RAL7024"}, "1000": {"ref": "AF12020010BAE0003", "p": 305.48, "w": 54.2, "d": "COLONNE 200X80 SF 2000X1000 RAL7024"}, "1200": {"ref": "AF12020012BAE0003", "p": 320.18, "w": 58.0, "d": "COLONNE 200X80 SF 2000X1200 RAL7024"}}, "2500": {"1000": {"ref": "AF12025010BAE0003", "p": 343.39, "w": 60.7, "d": "COLONNE 200X80 SF 2500X1000 RAL7024"}, "1200": {"ref": "AF12025012BAE0003", "p": 358.05, "w": 64.5, "d": "COLONNE 200X80 SF 2500X1200 RAL7024"}, "500": {"ref": "AF12025050BAE0003", "p": 308.16, "w": 51.3, "d": "COLONNE 200X80 SF 2500X500 RAL7024"}, "600": {"ref": "AF12025060BAE0003", "p": 316.29, "w": 53.1, "d": "COLONNE 200X80 SF 2500X600 RAL7024"}, "700": {"ref": "AF12025070BAE0003", "p": 322.1, "w": 55.1, "d": "COLONNE 200X80 SF 2500X700 RAL7024"}, "800": {"ref": "AF12025080BAE0003", "p": 329.83, "w": 56.9, "d": "COLONNE 200X80 SF 2500X800 RAL7024"}}, "3000": {"1000": {"ref": "AF12030010BAE0003", "p": 379.35, "w": 67.1, "d": "COLONNE 200X80 SF 3000X1000 RAL7024"}, "1200": {"ref": "AF12030012BAE0003", "p": 394.03, "w": 70.9, "d": "COLONNE 200X80 SF 3000X1200 RAL7024"}, "500": {"ref": "AF12030050BAE0003", "p": 344.14, "w": 57.7, "d": "COLONNE 200X80 SF 3000X500 RAL7024"}, "600": {"ref": "AF12030060BAE0003", "p": 352.25, "w": 59.5, "d": "COLONNE 200X80 SF 3000X600 RAL7024"}, "700": {"ref": "AF12030070BAE0003", "p": 358.05, "w": 61.5, "d": "COLONNE 200X80 SF 3000X700 RAL7024"}, "800": {"ref": "AF12030080BAE0003", "p": 365.79, "w": 63.3, "d": "COLONNE 200X80 SF 3000X800 RAL7024"}}, "3500": {"1000": {"ref": "AF12035010BAE0003", "p": 416.06, "w": 73.6, "d": "COLONNE 200X80 SF 3500X1000 RAL7024"}, "1200": {"ref": "AF12035012BAE0003", "p": 430.7, "w": 77.4, "d": "COLONNE 200X80 SF 3500X1200 RAL7024"}, "500": {"ref": "AF12035050BAE0003", "p": 380.84, "w": 64.2, "d": "COLONNE 200X80 SF 3500X500 RAL7024"}, "600": {"ref": "AF12035060BAE0003", "p": 389.03, "w": 66.0, "d": "COLONNE 200X80 SF 3500X600 RAL7024"}, "700": {"ref": "AF12035070BAE0003", "p": 394.79, "w": 68.0, "d": "COLONNE 200X80 SF 3500X700 RAL7024"}, "800": {"ref": "AF12035080BAE0003", "p": 402.52, "w": 69.8, "d": "COLONNE 200X80 SF 3500X800 RAL7024"}}, "4000": {"1000": {"ref": "AF12040010BAE0003", "p": 453.95, "w": 80.0, "d": "COLONNE 200X80 SF 4000X1000 RAL7024"}, "1200": {"ref": "AF12040012BAE0003", "p": 468.59, "w": 83.8, "d": "COLONNE 200X80 SF 4000X1200 RAL7024"}, "500": {"ref": "AF12040050BAE0003", "p": 418.78, "w": 70.6, "d": "COLONNE 200X80 SF 4000X500 RAL7024"}, "600": {"ref": "AF12040060BAE0003", "p": 426.86, "w": 72.4, "d": "COLONNE 200X80 SF 4000X600 RAL7024"}, "700": {"ref": "AF12040070BAE0003", "p": 432.63, "w": 74.4, "d": "COLONNE 200X80 SF 4000X700 RAL7024"}, "800": {"ref": "AF12040080BAE0003", "p": 440.38, "w": 76.2, "d": "COLONNE 200X80 SF 4000X800 RAL7024"}}}}}, "bras": {"ML": {"40X40X2": {"1000": {"ref": "AF14001000BAB0003", "p": 25.52, "w": 4.106, "d": "BRAS CANTI ML 40X40X2 1000MM RAL7024"}, "400": {"ref": "AF14000400BAB0003", "p": 17.04, "w": 2.626, "d": "BRAS CANTI ML 40X40X2 400MM RAL7024"}, "500": {"ref": "AF14000500BAB0003", "p": 18.98, "w": 2.866, "d": "BRAS CANTI ML 40X40X2 500MM RAL7024"}, "600": {"ref": "AF14000600BAB0003", "p": 20.14, "w": 3.106, "d": "BRAS CANTI ML 40X40X2 600MM RAL7024"}, "700": {"ref": "AF14000700BAB0003", "p": 21.67, "w": 3.336, "d": "BRAS CANTI ML 40X40X2 700MM RAL7024"}, "800": {"ref": "AF14000800BAB0003", "p": 22.82, "w": 3.606, "d": "BRAS CANTI ML 40X40X2 800MM RAL7024"}}, "80X60X3": {"1000": {"ref": "AF14001000BCB0003", "p": 53.72, "w": 7.886, "d": "BRAS CANTI ML 80X60X3 1000MM RAL7024"}, "1200": {"ref": "AF14001200BCB0003", "p": 61.86, "w": 9.206, "d": "BRAS CANTI ML 80X60X3 1200MM RAL7024"}, "400": {"ref": "AF14000400BCB0003", "p": 32.5, "w": 4.236, "d": "BRAS CANTI ML 80X60X3 400MM RAL7024"}, "500": {"ref": "AF14000500BCB0003", "p": 35.96, "w": 4.806, "d": "BRAS CANTI ML 80X60X3 500MM RAL7024"}, "600": {"ref": "AF14000600BCB0003", "p": 38.65, "w": 5.706, "d": "BRAS CANTI ML 80X60X3 600MM RAL7024"}, "700": {"ref": "AF14000700BCB0003", "p": 43.66, "w": 5.806, "d": "BRAS CANTI ML 80X60X3 700MM RAL7024"}, "800": {"ref": "AF14000800BCB0003", "p": 46.8, "w": 6.906, "d": "BRAS CANTI ML 80X60X3 800MM RAL7024"}}, "80X40X2": {"1000": {"ref": "AF14001000BBB0003", "p": 34.8, "w": 5.306, "d": "BRAS CANTI ML 80X40X2 1000MM RAL7024"}, "1200": {"ref": "AF14001200BBB0003", "p": 37.88, "w": 6.056, "d": "BRAS CANTI ML 80X40X2 1200MM RAL7024"}, "400": {"ref": "AF14000400BBB0003", "p": 25.9, "w": 3.126, "d": "BRAS CANTI ML 80X40X2 400MM RAL7024"}, "500": {"ref": "AF14000500BBB0003", "p": 27.03, "w": 3.506, "d": "BRAS CANTI ML 80X40X2 500MM RAL7024"}, "600": {"ref": "AF14000600BBB0003", "p": 30.16, "w": 3.906, "d": "BRAS CANTI ML 80X40X2 600MM RAL7024"}, "700": {"ref": "AF14000700BBB0003", "p": 31.31, "w": 4.206, "d": "BRAS CANTI ML 80X40X2 700MM RAL7024"}, "800": {"ref": "AF14000800BBB0003", "p": 32.48, "w": 4.606, "d": "BRAS CANTI ML 80X40X2 800MM RAL7024"}}}, "LG": {"40X40X2": {"300": {"ref": "AF14000300AAB0003", "p": 16.23, "w": 1.276, "d": "BRAS CANTI LEGER 40X40X2 300MM RAL7024"}, "400": {"ref": "AF14000400AAB0003", "p": 17.04, "w": 1.476, "d": "BRAS CANTI LEGER 40X40X2 400MM RAL7024"}, "500": {"ref": "AF14000500AAB0003", "p": 18.95, "w": 1.676, "d": "BRAS CANTI LEGER 40X40X2 500MM RAL7024"}, "600": {"ref": "AF14000600AAB0003", "p": 20.12, "w": 1.876, "d": "BRAS CANTI LEGER 40X40X2 600MM RAL7024"}, "700": {"ref": "AF14000700AAB0003", "p": 21.67, "w": 2.176, "d": "BRAS CANTI LEGER 40X40X2 700MM RAL7024"}, "800": {"ref": "AF14000800AAB0003", "p": 22.82, "w": 2.376, "d": "BRAS CANTI LEGER 40X40X2 800MM RAL7024"}}, "80X40X2": {"300": {"ref": "AF14000300ABB0003", "p": 23.99, "w": 1.556, "d": "BRAS CANTI LEGER 80X40X2 300MM RAL7024"}, "400": {"ref": "AF14000400ABB0003", "p": 25.89, "w": 1.926, "d": "BRAS CANTI LEGER 80X40X2 400MM RAL7024"}, "500": {"ref": "AF14000500ABB0003", "p": 27.02, "w": 2.286, "d": "BRAS CANTI LEGER 80X40X2 500MM RAL7024"}, "600": {"ref": "AF14000600ABB0003", "p": 30.19, "w": 2.646, "d": "BRAS CANTI LEGER 80X40X2 600MM RAL7024"}, "700": {"ref": "AF14000700ABB0003", "p": 31.32, "w": 3.016, "d": "BRAS CANTI LEGER 80X40X2 700MM RAL7024"}, "800": {"ref": "AF14000800ABB0003", "p": 32.48, "w": 3.376, "d": "BRAS CANTI LEGER 80X40X2 800MM RAL7024"}}}}, "contrev": {"LG": {"1000": {"ref": "AF16001000FD00003", "p": 70.41, "w": 3.824, "d": "CONTREVENTEMENT CANTI LG 1000MM RAL7024"}, "1250": {"ref": "AF16001250FD00003", "p": 75.06, "w": 4.424, "d": "CONTREVENTEMENT CANTI LG 1250MM RAL7024"}, "1500": {"ref": "AF16001500FD00003", "p": 81.98, "w": 5.044, "d": "CONTREVENTEMENT CANTI LG 1500MM RAL7024"}, "500": {"ref": "AF16000500FD00003", "p": 65.82, "w": 2.674, "d": "CONTREVENTEMENT CANTI LG 500MM RAL7024"}, "750": {"ref": "AF16000750FD00003", "p": 65.82, "w": 3.234, "d": "CONTREVENTEMENT CANTI LG 750MM RAL7024"}}, "ML": {"1000": {"ref": "AF16001000FF00003", "p": 74.85, "w": 6.284, "d": "CONTREVENTEMENT CANTI ML 1000MM RAL7024"}, "1250": {"ref": "AF16001250FF00003", "p": 79.64, "w": 7.264, "d": "CONTREVENTEMENT CANTI ML 1250MM RAL7024"}, "1500": {"ref": "AF16001500FF00003", "p": 86.04, "w": 7.514, "d": "CONTREVENTEMENT CANTI ML 1500MM RAL7024"}, "500": {"ref": "AF16000500FF00003", "p": 70.08, "w": 4.454, "d": "CONTREVENTEMENT CANTI ML 500MM RAL7024"}, "750": {"ref": "AF16000750FF00003", "p": 70.08, "w": 5.324, "d": "CONTREVENTEMENT CANTI ML 750MM RAL7024"}}}, "trav_bras": {"OUV40": {"1000": {"ref": "AF10001000CJFA003", "p": 11.68, "w": 2.4, "d": "TRAV SUPP/BRAS CANTI OUV40 L1000 RAL7024"}, "1250": {"ref": "AF10001250CJFA003", "p": 11.68, "w": 3.0, "d": "TRAV SUPP/BRAS CANTI OUV40 L1250 RAL7024"}, "1500": {"ref": "AF10001500CJFA003", "p": 11.68, "w": 3.6, "d": "TRAV SUPP/BRAS CANTI OUV40 L1500 RAL7024"}, "500": {"ref": "AF10000500CJFA003", "p": 11.68, "w": 1.2, "d": "TRAV SUPP/BRAS CANTI OUV40 L500 RAL7024"}, "750": {"ref": "AF10000750CJFA003", "p": 11.68, "w": 1.8, "d": "TRAV SUPP/BRAS CANTI OUV40 L750 RAL7024"}}, "OUV80": {"1000": {"ref": "AF10001000CJLA003", "p": 11.68, "w": 2.3, "d": "TRAV SUPP/BRAS CANTI OUV80 L1000 RAL7024"}, "1250": {"ref": "AF10001250CJLA003", "p": 11.68, "w": 3.0, "d": "TRAV SUPP/BRAS CANTI OUV80 L1250 RAL7024"}, "1500": {"ref": "AF10001500CJLA003", "p": 11.68, "w": 3.5, "d": "TRAV SUPP/BRAS CANTI OUV80 L1500 RAL7024"}, "500": {"ref": "AF10000500CJLA003", "p": 11.68, "w": 1.2, "d": "TRAV SUPP/BRAS CANTI OUV80 L500 RAL7024"}, "750": {"ref": "AF10000750CJLA003", "p": 11.68, "w": 1.8, "d": "TRAV SUPP/BRAS CANTI OUV80 L750 RAL7024"}}}, "trav_emb": {"LG": {"1000": {"ref": "AF10001000CKFA003", "p": 11.68, "w": 2.2, "d": "TRAV SUPP/EMB LG  CANTI L1000 RAL7024"}, "1250": {"ref": "AF10001250CKFA003", "p": 11.68, "w": 2.8, "d": "TRAV SUPP/EMB LG  CANTI L1250 RAL7024"}, "1500": {"ref": "AF10001500CKFA003", "p": 11.68, "w": 3.4, "d": "TRAV SUPP/EMB LG  CANTI L1500 RAL7024"}, "500": {"ref": "AF10000500CKFA003", "p": 11.68, "w": 1.01, "d": "TRAV SUPP/EMB LG  CANTI L500 RAL7024"}, "750": {"ref": "AF10000750CKFA003", "p": 11.68, "w": 1.61, "d": "TRAV SUPP/EMB LG  CANTI  L750 RAL7024"}}, "ML": {"1000": {"ref": "AF10001000CKDA003", "p": 18.9, "w": 2.0, "d": "TRAV SUPP/EMB ML  CANTI L1000 RAL7024"}, "1250": {"ref": "AF10001250CKDA003", "p": 18.9, "w": 2.6, "d": "TRAV SUPP/EMB ML  CANTI L1250 RAL7024"}, "1500": {"ref": "AF10001500CKDA003", "p": 18.9, "w": 3.1, "d": "TRAV SUPP/EMB ML  CANTI L1500 RAL7024"}, "500": {"ref": "AF10000500CKDA003", "p": 18.9, "w": 0.8, "d": "TRAV SUPP/EMB ML  CANTI L500 RAL7024"}, "750": {"ref": "AF10000750CKDA003", "p": 18.9, "w": 1.4, "d": "TRAV SUPP/EMB ML  CANTI L750 RAL7024"}}}, "butees": {"bras": {"145": {"ref": "AF04008145G000099", "p": 6.6, "w": 0.06, "d": "BUTEE AMOVIBLE DIAM 8 LG 145 MM GALVA"}, "165": {"ref": "AF04008165G000099", "p": 6.6, "w": 0.068, "d": "BUTEE AMOVIBLE DIAM 8 LG 165 MM GALVA"}, "185": {"ref": "AF04008185G000099", "p": 6.6, "w": 0.075, "d": "BUTEE AMOVIBLE DIAM 8 LG 185 MM GALVA"}}, "embase": {"LG": {"ref": "AF04000000G000199", "p": 18.9, "w": 0.21, "d": "BUTEE AMOVIBLE GALVA SUR EMBASE LG"}, "ML": {"ref": "AF04000000G000299", "p": 18.9, "w": 0.2, "d": "BUTEE AMOVIBLE GALVA SUR EMBASE ML"}}}, "goujon": {"ref": "AF13001270OA00100", "p": 9.11, "w": 0.2, "d": "LOT DE 2 GOUJONS D'ANCRAGES"}};
+const TRANSPORT = {"1": [27.2254, 44.4089, 0.1063, 0.0751, 0.0636, 0.052, 0.0416, 0.03], "2": [27.8834, 49.0557, 0.0868, 0.0587, 0.0428, 0.0342, 0.0306, 0.0196], "3": [31.3508, 46.3734, 0.1156, 0.082, 0.0728, 0.0462, 0.0404, 0.0277], "4": [46.8125, 61.1763, 0.1491, 0.1075, 0.0994, 0.0728, 0.0636, 0.0485], "5": [46.1538, 59.8705, 0.1456, 0.1075, 0.0994, 0.0728, 0.0636, 0.0485], "6": [37.6372, 59.8243, 0.1352, 0.1109, 0.1075, 0.0705, 0.0612, 0.0462], "7": [43.3342, 56.8198, 0.1387, 0.1028, 0.0959, 0.0786, 0.0555, 0.0404], "8": [26.2576, 33.1643, 0.1002, 0.055, 0.0538, 0.0318, 0.0269, 0.0183], "9": [45.7031, 60.1016, 0.1352, 0.1063, 0.0994, 0.0844, 0.0751, 0.0508], "10": [33.1643, 43.9827, 0.1137, 0.0733, 0.0672, 0.0416, 0.0318, 0.0196], "11": [45.7031, 60.1016, 0.1398, 0.1132, 0.1017, 0.0844, 0.0716, 0.0555], "12": [44.4089, 58.1256, 0.1456, 0.1132, 0.089, 0.0786, 0.0636, 0.0497], "13": [32.7606, 46.0267, 0.1167, 0.0901, 0.0855, 0.0705, 0.0682, 0.0462], "14": [34.5578, 43.9827, 0.0966, 0.0672, 0.0526, 0.0416, 0.033, 0.0269], "15": [44.4089, 57.9176, 0.1398, 0.089, 0.082, 0.0705, 0.0612, 0.0404], "16": [35.0371, 46.3734, 0.1525, 0.089, 0.0786, 0.0589, 0.0508, 0.0312], "17": [36.7936, 49.4241, 0.1387, 0.089, 0.0786, 0.0589, 0.0508, 0.0312], "18": [34.4131, 48.1067, 0.1213, 0.0751, 0.0636, 0.0485, 0.0393, 0.0254], "19": [40.7226, 64.6777, 0.1352, 0.089, 0.0786, 0.0636, 0.0532, 0.0381], "20": null, "21": [30.7153, 42.0168, 0.1063, 0.0751, 0.0636, 0.0485, 0.0393, 0.0254], "22": [40.2719, 50.0712, 0.1352, 0.0959, 0.0636, 0.0566, 0.0393, 0.0312], "23": [39.6363, 51.3886, 0.1271, 0.0751, 0.0636, 0.0566, 0.0485, 0.0312], "24": [37.8799, 49.8517, 0.1167, 0.089, 0.082, 0.0624, 0.0532, 0.0381], "25": [39.3937, 48.5574, 0.1213, 0.0797, 0.0705, 0.052, 0.0439, 0.03], "26": [31.3508, 44.4089, 0.0959, 0.0867, 0.082, 0.052, 0.0497, 0.0485], "27": [30.6339, 41.929, 0.0941, 0.0672, 0.0513, 0.033, 0.0318, 0.0196], "28": [31.7829, 41.929, 0.1088, 0.0623, 0.0526, 0.0416, 0.0342, 0.0196], "29": [41.1501, 54.6473, 0.1387, 0.0867, 0.0797, 0.0705, 0.0555, 0.0381], "30": [33.7429, 49.6552, 0.1075, 0.1063, 0.1063, 0.0636, 0.0636, 0.0497], "31": [30.1144, 43.6231, 0.1132, 0.0901, 0.0809, 0.0612, 0.052, 0.0439], "32": [46.5814, 61.1763, 0.1352, 0.1052, 0.0959, 0.0797, 0.067, 0.0485], "33": [39.9946, 63.8226, 0.0994, 0.082, 0.0797, 0.0636, 0.0589, 0.0404], "34": [35.2105, 60.483, 0.1052, 0.0936, 0.0936, 0.0636, 0.0636, 0.052], "35": [38.9777, 46.8125, 0.1075, 0.0751, 0.0566, 0.0393, 0.0324, 0.03], "36": [40.2719, 48.1067, 0.1156, 0.0636, 0.0589, 0.0462, 0.0393, 0.0266], "37": [31.79, 43.1031, 0.1052, 0.0786, 0.0774, 0.0485, 0.0393, 0.0266], "38": [27.4565, 39.8328, 0.1017, 0.0682, 0.0659, 0.0508, 0.0497, 0.0324], "39": [32.6682, 48.5574, 0.1075, 0.0751, 0.0647, 0.0555, 0.0462, 0.03], "40": [38.9777, 51.5966, 0.1236, 0.0994, 0.0959, 0.0786, 0.0693, 0.0497], "41": [35.0371, 46.8125, 0.1028, 0.0636, 0.0532, 0.0393, 0.0358, 0.0243], "42": [28.5312, 44.848, 0.0959, 0.0636, 0.0636, 0.0404, 0.0404, 0.0324], "43": [36.5741, 50.0712, 0.1225, 0.0855, 0.0728, 0.0589, 0.052, 0.0358], "44": [38.7697, 48.8232, 0.0971, 0.0716, 0.0682, 0.0508, 0.0404, 0.03], "45": [34.3133, 52.9675, 0.1039, 0.0599, 0.0489, 0.0416, 0.0342, 0.0196], "46": [46.5814, 50.7183, 0.1456, 0.0994, 0.0855, 0.0705, 0.067, 0.0462], "47": [39.8443, 44.4089, 0.1456, 0.0948, 0.0913, 0.0728, 0.0636, 0.0497], "48": [45.5067, 61.3959, 0.1537, 0.1213, 0.1213, 0.0728, 0.0636, 0.0497], "49": [32.6682, 51.5966, 0.1028, 0.0751, 0.0636, 0.0566, 0.0451, 0.0277], "50": [40.2719, 57.9176, 0.1075, 0.0705, 0.0636, 0.0451, 0.0416, 0.0277], "51": [30.6339, 52.5274, 0.1015, 0.0575, 0.0489, 0.0342, 0.0318, 0.0183], "52": [38.9219, 49.0557, 0.1002, 0.0611, 0.0587, 0.0416, 0.0403, 0.0244], "53": [33.0842, 35.4878, 0.1156, 0.0705, 0.0682, 0.0428, 0.0393, 0.0254], "54": [42.6014, 49.5203, 0.1222, 0.055, 0.0538, 0.0318, 0.0281, 0.0244], "55": [34.9979, 43.7749, 0.1002, 0.0721, 0.055, 0.0318, 0.0281, 0.0257], "56": [44.4089, 46.8125, 0.1248, 0.0832, 0.0774, 0.0624, 0.0497, 0.0324], "57": [33.3965, 47.4421, 0.1002, 0.0575, 0.0489, 0.0379, 0.0281, 0.0196], "58": [40.0639, 51.5966, 0.1121, 0.067, 0.0566, 0.0508, 0.0393, 0.0254], "59": [19.8032, 43.3348, 0.0599, 0.0318, 0.0293, 0.0171, 0.0147, 0.0122], "60": [26.7099, 47.4421, 0.0868, 0.0587, 0.0452, 0.0318, 0.0281, 0.0183], "61": [34.9979, 51.8184, 0.1137, 0.0672, 0.0587, 0.0428, 0.0342, 0.0244], "62": [21.1968, 43.3348, 0.0623, 0.0452, 0.0428, 0.0196, 0.0196, 0.0134], "63": [36.7936, 48.985, 0.1063, 0.0636, 0.0578, 0.0428, 0.0416, 0.0324], "64": [37.0247, 48.985, 0.1456, 0.1098, 0.082, 0.0728, 0.067, 0.0485], "65": [37.8799, 46.3734, 0.1329, 0.1156, 0.0809, 0.0728, 0.067, 0.0485], "66": [38.0994, 51.5966, 0.1375, 0.1098, 0.0959, 0.0728, 0.067, 0.052], "67": [33.9099, 53.7865, 0.1051, 0.0709, 0.0489, 0.0318, 0.0318, 0.0257], "68": [35.2302, 55.2779, 0.1174, 0.0538, 0.0538, 0.0342, 0.0318, 0.0269], "69": [18.8128, 44.6515, 0.0751, 0.0428, 0.0416, 0.0393, 0.0381, 0.03], "70": [33.5349, 47.032, 0.0994, 0.0705, 0.052, 0.0497, 0.0404, 0.0277], "71": [28.3117, 51.5966, 0.0855, 0.0682, 0.0566, 0.0404, 0.0404, 0.0312], "72": [32.2291, 45.5067, 0.1109, 0.0578, 0.0428, 0.0404, 0.0312, 0.0231], "73": [23.9551, 40.2719, 0.0751, 0.067, 0.0612, 0.0566, 0.0462, 0.0358], "74": [24.3711, 45.5067, 0.1156, 0.0728, 0.0624, 0.0566, 0.0462, 0.0358], "75": [31.7829, 39.1664, 0.1125, 0.0599, 0.0489, 0.033, 0.0293, 0.0196], "76": [31.0617, 76.3768, 0.0892, 0.0538, 0.044, 0.0318, 0.0306, 0.0196], "77": [29.0447, 52.5396, 0.1051, 0.0538, 0.0513, 0.0318, 0.0293, 0.0196], "78": [30.1816, 42.1491, 0.1125, 0.055, 0.0513, 0.0318, 0.0306, 0.0196], "79": [35.0371, 46.3734, 0.1075, 0.0693, 0.0636, 0.052, 0.0428, 0.0289], "80": [26.7099, 47.4421, 0.0868, 0.0587, 0.0379, 0.0293, 0.0257, 0.0147], "81": [33.5349, 48.985, 0.1156, 0.0948, 0.0855, 0.0751, 0.0682, 0.0485], "82": [33.5349, 48.985, 0.1167, 0.0982, 0.089, 0.0728, 0.0636, 0.0485], "83": [33.1304, 54.7282, 0.1213, 0.0936, 0.0867, 0.0751, 0.0659, 0.0485], "84": [32.8646, 49.4241, 0.1028, 0.0959, 0.0959, 0.0636, 0.0543, 0.0404], "85": [38.9777, 50.5103, 0.1086, 0.0751, 0.0659, 0.0508, 0.0485, 0.03], "86": [34.4131, 47.4596, 0.1156, 0.0751, 0.0636, 0.0508, 0.0404, 0.0289], "87": [37.8799, 50.2908, 0.1075, 0.0751, 0.0682, 0.0543, 0.0508, 0.0289], "88": [35.6947, 48.1389, 0.1125, 0.0672, 0.0599, 0.0465, 0.0403, 0.0269], "89": [35.6947, 50.6571, 0.1198, 0.0672, 0.055, 0.0416, 0.0379, 0.0269], "90": [36.5741, 44.4089, 0.1075, 0.0786, 0.0786, 0.0508, 0.0404, 0.0289], "91": [34.5578, 47.9067, 0.1076, 0.0599, 0.0428, 0.0318, 0.0281, 0.0196], "92": [33.6288, 51.8184, 0.1125, 0.0538, 0.0416, 0.033, 0.0281, 0.0183], "93": [33.6288, 52.5763, 0.1125, 0.0538, 0.0416, 0.0403, 0.0281, 0.0183], "94": [33.6288, 51.8184, 0.1125, 0.0538, 0.0416, 0.0318, 0.0281, 0.0183], "95": [35.6947, 47.2221, 0.1125, 0.0513, 0.0489, 0.0318, 0.0281, 0.0183]};
+
+// Capacité d'une colonne (kg), charge totale répartie sur toute la colonne
+const CAP_COL = {
+  LG:{ SF:{1750:{400:1600,500:1340,600:1150,700:1010,800:884},
+           2000:{400:1470,500:1240,600:1070,700:916,800:830},
+           2500:{400:1285,500:1084,600:928,700:814,800:724},
+           3000:{400:1118,500:946,600:828,700:730,800:648}},
+       DF:{1750:1790,2000:1920,2500:1620,3000:1430}},
+  ML:{ SF:{2000:{500:2240,600:2444,700:2144,800:1946,1000:1606,1200:1368},
+           2500:{500:2526,600:2220,700:1978,800:1772,1000:1472,1200:1250},
+           3000:{500:2318,600:2030,700:1824,800:1620,1000:1358,1200:1158},
+           3500:{500:2122,600:1858,700:1654,800:1490,1000:1246,1200:1060},
+           4000:{500:1954,600:1708,700:1534,800:1390,1000:1148,1200:982}},
+       DF:{2000:4480,2500:3850,3000:3400,3500:3040,4000:2770}}
+};
+
+// Capacité d'un bras (kg) selon gamme / section / longueur
+const CAP_BRAS = {
+  LG:{ "40X40X2":{300:246,400:184,500:149,600:124,700:106,800:92},
+       "80X40X2":{300:540,400:403,500:320,600:261,700:218,800:186}},
+  ML:{ "40X40X2":{400:180,500:140,600:120,700:100,800:90,1000:70},
+       "80X40X2":{400:320,500:250,600:200,700:150,800:130,1000:95,1200:70},
+       "80X60X3":{400:800,500:600,600:500,700:400,800:350,1000:275,1200:200}}
+};
+
+// Butée d'extrémité adaptée à la section de bras
+const BUTEE_BRAS = { LG:{"40X40X2":"145","80X40X2":"185"},
+                     ML:{"40X40X2":"145","80X40X2":"145","80X60X3":"165"} };
+
+const LARG_COL   = {LG:40,  ML:80};    // colonne vue de face : 40 (léger) ou 80 (mi-lourd) mm
+const PROF_COL   = {LG:140, ML:200};   // colonne vue de côté : profondeur du profil
+const LARG_EMB   = {LG:95,  ML:130};   // largeur du profilé d'embase
+const H_MIN_N1   = 470;                // hauteur mini du 1er niveau
+
+const DEPTS = ["Ain","Aisne","Allier","Alpes-de-Haute-Provence","Hautes-Alpes","Alpes-Maritimes",
+"Ardèche","Ardennes","Ariège","Aube","Aude","Aveyron","Bouches-du-Rhône","Calvados","Cantal","Charente",
+"Charente-Maritime","Cher","Corrèze","Corse","Côte-d'Or","Côtes-d'Armor","Creuse","Dordogne","Doubs",
+"Drôme","Eure","Eure-et-Loir","Finistère","Gard","Haute-Garonne","Gers","Gironde","Hérault","Ille-et-Vilaine",
+"Indre","Indre-et-Loire","Isère","Jura","Landes","Loir-et-Cher","Loire","Haute-Loire","Loire-Atlantique",
+"Loiret","Lot","Lot-et-Garonne","Lozère","Maine-et-Loire","Manche","Marne","Haute-Marne","Mayenne",
+"Meurthe-et-Moselle","Meuse","Morbihan","Moselle","Nièvre","Nord","Oise","Orne","Pas-de-Calais","Puy-de-Dôme",
+"Pyrénées-Atlantiques","Hautes-Pyrénées","Pyrénées-Orientales","Bas-Rhin","Haut-Rhin","Rhône","Haute-Saône",
+"Saône-et-Loire","Sarthe","Savoie","Haute-Savoie","Paris","Seine-Maritime","Seine-et-Marne","Yvelines",
+"Deux-Sèvres","Somme","Tarn","Tarn-et-Garonne","Var","Vaucluse","Vendée","Vienne","Haute-Vienne","Vosges",
+"Yonne","Territoire de Belfort","Essonne","Hauts-de-Seine","Seine-Saint-Denis","Val-de-Marne","Val-d'Oise"];
+const nomDept = d => DEPTS[+d-1] ? String(d).padStart(2,"0")+" — "+DEPTS[+d-1] : "Autre / outre-mer";
+
+const HAUTEURS = [1750,2000,2500,3000,3500,4000];
+const LONGS    = [300,400,500,600,700,800,1000,1200];
+const ENTRAXES = [500,750,1000,1250,1500];
+
+/* ===================== ÉTAT ===================== */
+const S = { face:"SF", H:3000, L:800, N:4, C:200, bays:[1000,1000,1000], qte:1,
+            dep:"54", bb:false, be:false, vue:"axo" };
+
+const nbTravees  = s => s.bays.length;
+// Longueur totale = somme des contreventements + largeur de chaque colonne.
+const longueurHT = (s, r) => s.bays.reduce((a,b)=>a+b,0) + LARG_COL[r.g] * (s.bays.length + 1);
+// Abscisses du bord gauche de chaque colonne.
+function abscisses(s, r){
+  const xs = [0];
+  s.bays.forEach(e => xs.push(xs[xs.length-1] + LARG_COL[r.g] + e));
+  return xs;
+}
+
+/* ===================== OUTILS ===================== */
+const $ = id => document.getElementById(id);
+const eur = v => v.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2}) + " €";
+const nb  = (v,d=0) => v.toLocaleString('fr-FR',{minimumFractionDigits:d,maximumFractionDigits:d});
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ===================== MOTEUR ===================== */
+// Choisit la combinaison colonne + bras la moins chère qui tient la charge.
+function resoudre(s){
+  const cands = [];
+  const raisons = [];
+
+  for(const g of ["LG","ML"]){
+    const colG = TARIF.colonnes[g][s.face];
+    if(!colG[s.H]){ raisons.push(`${g==="LG"?"Léger":"Mi-lourd"} : pas de colonne de ${s.H} mm.`); continue; }
+
+    // plus petite profondeur de colonne qui accepte le bras
+    const profs = Object.keys(colG[s.H]).map(Number).sort((a,b)=>a-b);
+    const P = profs.find(p => p >= s.L);
+    if(!P){ raisons.push(`${g==="LG"?"Léger":"Mi-lourd"} : embase trop courte pour un bras de ${s.L} mm.`); continue; }
+
+    const cap = s.face==="SF" ? CAP_COL[g].SF[s.H][P] : CAP_COL[g].DF[s.H];
+    const chargeCol = s.N * s.C * (s.face==="DF"?2:1);
+    if(chargeCol > cap){
+      raisons.push(`${g==="LG"?"Léger":"Mi-lourd"} : colonne chargée à ${nb(chargeCol)} kg pour ${nb(cap)} kg admissibles.`);
+      continue;
+    }
+
+    let dispo = 0, assez = 0;
+    for(const sect of Object.keys(CAP_BRAS[g])){
+      const capB = (CAP_BRAS[g][sect]||{})[s.L];
+      if(capB === undefined) continue;
+      if(!TARIF.bras[g] || !TARIF.bras[g][sect] || !TARIF.bras[g][sect][s.L]) continue;
+      dispo++;
+      if(capB < s.C) continue;
+      assez++;
+      if(!s.bays.every(e => TARIF.contrev[g][e])) continue;
+      cands.push({g, P, sect, capB, capCol:cap, chargeCol});
+    }
+    const nom = g==="LG" ? "Léger" : "Mi-lourd";
+    if(!dispo)      raisons.push(`${nom} : pas de bras de ${s.L} mm.`);
+    else if(!assez) raisons.push(`${nom} : aucun bras de ${s.L} mm ne tient ${nb(s.C)} kg.`);
+  }
+  if(!cands.length) return {ok:false, raisons};
+
+  // chiffrage de chaque candidat, on garde le moins cher
+  let best = null;
+  for(const c of cands){
+    const n = chiffrer(s, c);
+    if(!best || n.totalHT < best.n.totalHT) best = {c, n};
+  }
+  return {ok:true, ...best.c, ...best.n, cands:cands.length};
+}
+
+function chiffrer(s, c){
+  const nbCol = nbTravees(s) + 1;
+  const nbFace = s.face === "DF" ? 2 : 1;
+  const lignes = [];
+  const add = (art, q, lib) => { if(art && q>0) lignes.push({ref:art.ref, lib:lib||art.d, q, pu:art.p, pw:art.w,
+                                                             total:+(art.p*q).toFixed(2), poids:+(art.w*q).toFixed(2)}); };
+
+  const col = TARIF.colonnes[c.g][s.face][s.H][c.P];
+  add(col, nbCol, `Colonne ${s.face==="DF"?"double":"simple"} face ${c.g==="LG"?"140 × 40 × 3":"200 × 80 × 3"} mm — H. ${s.H} mm, embase ${c.P} mm`);
+
+  const parLargeur = {};
+  s.bays.forEach(e => parLargeur[e] = (parLargeur[e] || 0) + 1);
+  Object.keys(parLargeur).sort((a,b)=>a-b).forEach(e =>
+    add(TARIF.contrev[c.g][e], parLargeur[e], `Contreventement ${nb(+e)} mm — largeur de travée`));
+
+  const br = TARIF.bras[c.g][c.sect][s.L];
+  add(br, nbCol * s.N * nbFace, `Bras ${c.sect.replace(/X/g,' × ')} mm — L. ${s.L} mm (${c.capB} kg max)`);
+
+  const lots = Math.ceil(nbCol * nbFace / 2);
+  add(TARIF.goujon, lots, `Goujons d'ancrage au sol — lot de 2 (${nbCol*nbFace} fixations)`);
+
+  if(s.bb){
+    const bb = TARIF.butees.bras[BUTEE_BRAS[c.g][c.sect]];
+    add(bb, nbCol * s.N * nbFace, `Butée d'extrémité de bras — H. 100 mm`);
+  }
+  if(s.be){
+    const be = TARIF.butees.embase[c.g];
+    add(be, nbCol * nbFace, `Butée sur embase — H. 100 mm`);
+  }
+
+  const totalHT = +lignes.reduce((a,l)=>a+l.total,0).toFixed(2);
+  const poids   = +lignes.reduce((a,l)=>a+l.poids,0).toFixed(1);
+  return {lignes, totalHT, poids, nbCol, nbFace, lots};
+}
+
+/* --- transport : grille 4, selon département et montant marchandise --- */
+function transport(dep, montant){
+  const g = TRANSPORT[dep];
+  if(!g) return {ok:false};
+  let base;
+  if(montant <= 150)       base = g[0];
+  else if(montant <= 300)  base = g[1];
+  else if(montant <= 1500) base = montant * g[2];
+  else if(montant <= 2600) base = montant * g[3];
+  else if(montant <= 5200) base = montant * g[4];
+  else if(montant <= 7800) base = montant * g[5];
+  else if(montant <= 10000)base = montant * g[6];
+  else                     base = montant * g[7];
+  return {ok:true, montant:+(base + FRAIS_FIXE).toFixed(2)};
+}
+
+/* --- emprise au sol : l'embase porte les bras ET la colonne --- */
+function empriseSol(s, r){
+  return s.face === "DF" ? 2*r.P + PROF_COL[r.g] : r.P + PROF_COL[r.g];
+}
+
+/* --- géométrie : positions verticales des niveaux --- */
+function niveaux(s){
+  if(s.N === 1) return [H_MIN_N1];
+  const pas = Math.floor((s.H - H_MIN_N1) / (s.N - 1) / 50) * 50;
+  return Array.from({length:s.N}, (_,i) => H_MIN_N1 + i*pas);
+}
+
+/* ===================== SCHÉMA ===================== */
+function dessiner(s, r){
+  if(!r.ok){ $("svgBox").innerHTML =
+    `<div style="padding:52px 18px;text-align:center;color:var(--gris);font-size:14px">
+       Aucune configuration ne correspond.<br>Ajustez la hauteur, la profondeur ou la charge.</div>`; return; }
+  $("svgBox").innerHTML = s.vue === "profil" ? svgProfil(s,r) : svgAxo(s,r);
+}
+
+// Section réelle d'un bras : largeur (axe X, vue de face) et hauteur (axe Z), en mm.
+// Le 80x40 est monté à la verticale en léger (80 de haut) et à plat en mi-lourd (80 de large).
+function sectionBras(g, sect){
+  if(sect === "80X40X2") return g === "LG" ? {w:40, h:80} : {w:80, h:40};
+  if(sect === "80X60X3") return {w:80, h:60};
+  return {w:40, h:40};
+}
+
+/* ---------- vue de biais (projection oblique) ----------
+   x : longueur du rayonnage (horizontal)   y : profondeur, la fuite part vers le haut-droite
+   z : hauteur                              y = 0 correspond au nez des bras avant           */
+function svgAxo(s, r){
+  const nv = niveaux(s);
+  const df  = s.face === "DF";
+  const CW  = LARG_COL[r.g];                 // colonne : largeur en façade
+  const CD  = PROF_COL[r.g];                 // colonne : profondeur
+  const EH  = r.g === "LG" ? 150 : 200;      // hauteur du profilé d'embase
+  const EW  = LARG_EMB[r.g];                 // largeur du profilé d'embase
+  const A   = sectionBras(r.g, r.sect);
+  const yC0 = s.L, yC1 = s.L + CD;                       // colonne
+  const yMax = df ? 2*s.L + CD : s.L + CD;
+
+  const T = nbTravees(s), xs = abscisses(s, r), LT = longueurHT(s, r);
+  const W = 760, HMAX = 442, mL = 72, mR = 14, mT = 38, mB = 50;
+  const FX = 0.46, FZ = 0.30;                            // fuite oblique
+  const wMM = LT + yMax*FX;
+  const hMM = s.H + yMax*FZ;
+  const k = Math.min((W-mL-mR)/wMM, (HMAX-mT-mB)/hMM);
+  const ox = mL + Math.max(0, (W-mL-mR - wMM*k)/2), oy = mT + k*hMM;
+  const P  = (x,y,z) => [ox + k*(x + y*FX), oy - k*(z + y*FZ)];
+  const pol = (pts, fill, stroke) =>
+    `<polygon points="${pts.map(p=>P(...p).map(v=>v.toFixed(1)).join(",")).join(" ")}"
+      fill="${fill}"${stroke?` stroke="${stroke}" stroke-width=".6"`:""}/>`;
+
+  // volume : on ne voit que la face avant (y0), le dessus (z1) et le flanc droit (x1)
+  const box = (x0,x1,y0,y1,z0,z1,c) =>
+      pol([[x1,y0,z0],[x1,y1,z0],[x1,y1,z1],[x1,y0,z1]], c.r)
+    + pol([[x0,y0,z1],[x1,y0,z1],[x1,y1,z1],[x0,y1,z1]], c.t)
+    + pol([[x0,y0,z0],[x1,y0,z0],[x1,y0,z1],[x0,y0,z1]], c.f);
+
+  const COL = {f:"#54585F", t:"#6E747C", r:"#43474D"};
+  const BRA = {f:"#6A7078", t:"#848B93", r:"#565A61"};
+  const EMB = {f:"#393D43", t:"#4E535A", r:"#2E3238"};
+
+  // trait orange vertical de 100 mm figurant une butée
+  const butee = (x,y,z) => { const a = P(x,y,z), b = P(x,y,z+100);
+    return `<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${b[0].toFixed(1)}" y2="${b[1].toFixed(1)}"
+            stroke="#E8701A" stroke-width="${Math.max(1.6,k*18)}" stroke-linecap="round"/>`; };
+  const colX = i => xs[i];
+  const ex0  = i => colX(i) + (CW-EW)/2, ex1 = i => colX(i) + (CW+EW)/2;
+  const ax0  = i => colX(i) + (CW-A.w)/2, ax1 = i => colX(i) + (CW+A.w)/2;
+  let g = "";
+
+  // --- sol ---
+  const [gx0,gy0] = P(-140, 0, 0), [gx1,gy1] = P(LT+140, 0, 0);
+  const [hx0,hy0] = P(-140, yMax, 0), [hx1,hy1] = P(LT+140, yMax, 0);
+  g += `<polygon points="${gx0},${gy0} ${gx1},${gy1} ${hx1},${hy1} ${hx0},${hy0}" fill="#EDF0F3"/>`;
+  g += `<line x1="${gx0}" y1="${gy0}" x2="${gx1}" y2="${gy1}" stroke="#B9C1C9" stroke-width="1.4"/>`;
+
+  // --- 1. embases, partie arrière (masquée par la colonne) ---
+  for(let i=0;i<=T;i++) if(yMax > yC1){
+    g += box(ex0(i),ex1(i), yC1,yMax, 0,EH, EMB);
+    if(s.be) g += butee((ex0(i)+ex1(i))/2, yMax, EH);
+  }
+
+  // --- 2. bras arrière (double face) ---
+  if(df) for(let i=0;i<=T;i++) nv.forEach(z=>{
+    g += box(ax0(i),ax1(i), yC1, yC1+s.L, z, z+A.h, BRA);
+    if(s.bb) g += butee((ax0(i)+ax1(i))/2, yC1+s.L, z+A.h);
+  });
+
+  // --- 3. contreventements ---
+  const zA = Math.round(s.H*0.14), zB = Math.round(s.H*0.52), yM = yC0 + CD/2;
+  const sw = Math.max(1.6, k*38);
+  for(let i=0;i<T;i++){
+    const a = colX(i)+CW, b = colX(i+1);
+    const seg = (x1,z1,x2,z2) => { const p=P(x1,yM,z1), q=P(x2,yM,z2);
+      return `<line x1="${p[0].toFixed(1)}" y1="${p[1].toFixed(1)}" x2="${q[0].toFixed(1)}" y2="${q[1].toFixed(1)}"
+              stroke="#5F656D" stroke-width="${sw}" stroke-linecap="round"/>`; };
+    g += seg(a,zA,b,zA) + seg(a,zB,b,zB) + seg(a,zA,a,zB) + seg(b,zA,b,zB) + seg(a,zA,b,zB);
+  }
+
+  // --- 4. embase sous la colonne + colonne ---
+  for(let i=0;i<=T;i++){
+    g += box(ex0(i),ex1(i), yC0,yC1, 0,EH, EMB);
+    g += box(colX(i), colX(i)+CW, yC0,yC1, 0,s.H, COL);
+    // trame de perçage au pas de 100 mm sur la face avant
+    for(let z=200; z<s.H-60; z+=200){
+      const p = P(colX(i)+CW*0.5, yC0, z);
+      g += `<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="${Math.max(.7,k*11)}" fill="#3E4249"/>`;
+    }
+  }
+
+  // --- 5. bras avant ---
+  for(let i=0;i<=T;i++) nv.forEach(z=>{
+    g += box(ax0(i),ax1(i), 0, yC0, z, z+A.h, BRA);
+    if(s.bb) g += butee((ax0(i)+ax1(i))/2, 0, z+A.h);
+  });
+
+  // --- 6. embases, partie avant (devant la colonne) ---
+  for(let i=0;i<=T;i++){
+    g += box(ex0(i),ex1(i), 0,yC0, 0,EH, EMB);
+    if(s.be) g += butee((ex0(i)+ex1(i))/2, 0, EH);
+  }
+
+  // --- cote de profondeur, portée par le bras en haut à gauche ---
+  {
+    const zc = nv[nv.length-1] + A.h, xm = (ax0(0)+ax1(0))/2;
+    const a = P(xm, 0, zc), b = P(xm, yC0, zc);
+    const dx = b[0]-a[0], dy = b[1]-a[1], lg = Math.hypot(dx,dy) || 1;
+    const px_ = -dy/lg, py_ = dx/lg;                    // normale à la ligne de cote
+    const dec = -18;                                    // négatif : la cote passe au-dessus du bras
+    const s1 = [a[0]+px_*dec, a[1]+py_*dec], s2 = [b[0]+px_*dec, b[1]+py_*dec];
+    const tick = (p,q) => `<line x1="${(p[0]-px_*5).toFixed(1)}" y1="${(p[1]-py_*5).toFixed(1)}"
+        x2="${(p[0]+px_*5).toFixed(1)}" y2="${(p[1]+py_*5).toFixed(1)}"
+        stroke="#E8701A" stroke-width="1.3"/>`;
+    const mx = (s1[0]+s2[0])/2, my = (s1[1]+s2[1])/2;
+    const ang = Math.atan2(dy,dx)*180/Math.PI;
+    g += `<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${s1[0].toFixed(1)}" y2="${s1[1].toFixed(1)}"
+            stroke="#E8701A" stroke-width=".7" stroke-dasharray="2 2"/>
+          <line x1="${b[0].toFixed(1)}" y1="${b[1].toFixed(1)}" x2="${s2[0].toFixed(1)}" y2="${s2[1].toFixed(1)}"
+            stroke="#E8701A" stroke-width=".7" stroke-dasharray="2 2"/>
+          <line x1="${s1[0].toFixed(1)}" y1="${s1[1].toFixed(1)}" x2="${s2[0].toFixed(1)}" y2="${s2[1].toFixed(1)}"
+            stroke="#E8701A" stroke-width="1.3"/>${tick(s1)}${tick(s2)}
+          <text x="${mx.toFixed(1)}" y="${(my-7).toFixed(1)}" text-anchor="middle" font-size="12.5" fill="#E8701A"
+            font-family="Barlow Condensed" font-weight="600"
+            transform="rotate(${ang.toFixed(1)} ${mx.toFixed(1)} ${my.toFixed(1)})">${nb(s.L)} mm</text>`;
+  }
+
+  // --- cotes d'encombrement ---
+  const c1 = P(0,0,0), c2 = P(LT,0,0), yc = Math.max(c1[1],c2[1]) + 24;
+  g += `<line x1="${c1[0]}" y1="${yc}" x2="${c2[0]}" y2="${yc}" stroke="#E8701A" stroke-width="1.3"/>
+        <line x1="${c1[0]}" y1="${yc-5}" x2="${c1[0]}" y2="${yc+5}" stroke="#E8701A" stroke-width="1.3"/>
+        <line x1="${c2[0]}" y1="${yc-5}" x2="${c2[0]}" y2="${yc+5}" stroke="#E8701A" stroke-width="1.3"/>
+        <text x="${(c1[0]+c2[0])/2}" y="${yc+17}" text-anchor="middle" font-size="13" fill="#E8701A"
+              font-family="Barlow Condensed" font-weight="600">${nb(LT)} mm hors tout</text>`;
+  const v0 = P(0,0,0), v1 = P(0,0,s.H), vx = v0[0]-16;
+  g += `<line x1="${vx}" y1="${v0[1]}" x2="${vx}" y2="${v1[1]}" stroke="#E8701A" stroke-width="1.3"/>
+        <line x1="${vx-5}" y1="${v0[1]}" x2="${vx+5}" y2="${v0[1]}" stroke="#E8701A" stroke-width="1.3"/>
+        <line x1="${vx-5}" y1="${v1[1]}" x2="${vx+5}" y2="${v1[1]}" stroke="#E8701A" stroke-width="1.3"/>
+        <text x="${vx-4}" y="${(v0[1]+v1[1])/2}" text-anchor="middle" font-size="13" fill="#E8701A"
+              font-family="Barlow Condensed" font-weight="600"
+              transform="rotate(-90 ${vx-4} ${(v0[1]+v1[1])/2})">${nb(s.H)} mm</text>`;
+
+  const Hs = Math.round(oy + 46);
+  return `<svg viewBox="0 0 ${W} ${Hs}" xmlns="http://www.w3.org/2000/svg" role="img"
+            aria-label="Vue de biais : ${T} travées, ${s.N} niveaux, ${df?"double":"simple"} face">${g}</svg>`;
+}
+
+/* ---------- vue de côté : hauteurs de niveaux et porte-à-faux ---------- */
+function svgProfil(s, r){
+  const nv = niveaux(s), W=760, HMAX=430, mT=22, mB=54;
+  const df = s.face === "DF";
+  const A = sectionBras(r.g, r.sect);
+  const CD = PROF_COL[r.g];
+  const emprise = df ? 2*s.L + CD + 300 : s.L + CD + 250;
+  const k = Math.min((W-230)/emprise, (HMAX-mT-mB)/s.H);
+  const Hs = Math.round(s.H*k) + mT + mB;
+  const y0 = Hs - mB, px = mm => mm*k;
+  const cx = (df ? W/2 : W/2 - px(s.L)/2) + 40;
+  const cw = Math.max(5, px(CD));
+
+  let g = "";
+  g += `<line x1="40" y1="${y0}" x2="${W-40}" y2="${y0}" stroke="#9AA3AC" stroke-width="2"/>`;
+  for(let x=40; x<W-38; x+=9) g += `<line x1="${x}" y1="${y0}" x2="${x-5}" y2="${y0+6}" stroke="#C3CAD1" stroke-width="1.4"/>`;
+
+  const ebH = px(r.g==="LG"?150:200), ebL = px(s.L)+cw*0.7;
+  const ebX = df ? cx-ebL : cx-cw/2, ebW = df ? ebL*2 : ebL+cw/2;
+  g += `<rect x="${ebX}" y="${y0-ebH}" width="${ebW}" height="${ebH}" fill="#393D43" rx="1"/>`;
+  if(s.be){
+    g += `<rect x="${ebX+ebW-2.4}" y="${y0-ebH-px(100)}" width="2.4" height="${px(100)}" fill="#E8701A"/>`;
+    if(df) g += `<rect x="${ebX}" y="${y0-ebH-px(100)}" width="2.4" height="${px(100)}" fill="#E8701A"/>`;
+  }
+  g += `<rect x="${cx-cw/2}" y="${y0-px(s.H)}" width="${cw}" height="${px(s.H)}" fill="#54585F" rx="1"/>`;
+  for(let h=200; h<s.H; h+=100) g += `<circle cx="${cx}" cy="${y0-px(h)}" r="1.3" fill="#828992"/>`;
+
+  const bh = Math.max(3.5, px(A.h));
+  nv.forEach((h,i)=>{
+    const y = y0-px(h);
+    const draw = dir => {
+      const x = dir>0 ? cx+cw/2 : cx-cw/2-px(s.L);
+      g += `<rect x="${x}" y="${y-bh}" width="${px(s.L)}" height="${bh}" fill="#6A7078" rx="1"/>`;
+      if(s.bb){ const bx = dir>0 ? x+px(s.L)-2 : x+1;
+                g += `<rect x="${bx}" y="${y-bh-px(100)}" width="2.4" height="${px(100)}" fill="#E8701A"/>`; }
+    };
+    draw(1); if(df) draw(-1);
+    const tx = df ? cx - cw/2 - px(s.L) - 10 : cx - cw/2 - 10;
+    g += `<text x="${tx}" y="${y-2}" text-anchor="end" font-size="11.5"
+            fill="#8A9299" font-family="Barlow">N${i+1} · ${nb(h)} mm</text>`;
+  });
+
+  const xa = cx+cw/2, xb = xa+px(s.L), yc = y0+26;
+  g += `<line x1="${xa}" y1="${yc}" x2="${xb}" y2="${yc}" stroke="#E8701A" stroke-width="1.3"/>
+        <line x1="${xa}" y1="${yc-5}" x2="${xa}" y2="${yc+5}" stroke="#E8701A" stroke-width="1.3"/>
+        <line x1="${xb}" y1="${yc-5}" x2="${xb}" y2="${yc+5}" stroke="#E8701A" stroke-width="1.3"/>
+        <text x="${(xa+xb)/2}" y="${yc+18}" text-anchor="middle" font-size="13" fill="#E8701A"
+              font-family="Barlow Condensed" font-weight="600">${nb(s.L)} mm</text>`;
+
+  return `<svg viewBox="0 0 ${W} ${Hs}" xmlns="http://www.w3.org/2000/svg" role="img"
+            aria-label="Vue de côté d'une colonne">${g}</svg>`;
+}
+
+/* ===================== PANIER ===================== */
+let PANIER  = [];      // [{cfg, qte}]
+let EDITION = null;    // index de la ligne en cours de modification
+
+const cfgCourante = () => ({face:S.face, H:S.H, L:S.L, N:S.N, C:S.C,
+                            bays:S.bays.slice(), bb:S.bb, be:S.be});
+const majQte = v => { S.qte = v; $("Q").value = v; };
+const memeCfg = (a,b) => a.face===b.face && a.H===b.H && a.L===b.L && a.N===b.N &&
+                         a.C===b.C && a.bb===b.bb && a.be===b.be &&
+                         a.bays.length===b.bays.length && a.bays.every((v,i)=>v===b.bays[i]);
+
+// Résout et chiffre chaque ligne, puis agrège le devis complet.
+function devis(){
+  const lignes = PANIER.map(p => {
+    const r = resoudre(p.cfg);
+    return {cfg:p.cfg, qte:p.qte, r,
+            totalHT: r.ok ? +(r.totalHT*p.qte).toFixed(2) : 0,
+            poids:   r.ok ? +(r.poids*p.qte).toFixed(1)   : 0};
+  });
+  const materielHT = +lignes.reduce((a,l)=>a+l.totalHT,0).toFixed(2);
+  const poids      = +lignes.reduce((a,l)=>a+l.poids,0).toFixed(1);
+  const tr         = transport(S.dep, materielHT);
+  const port       = tr.ok ? tr.montant : 0;
+  const totalHT    = +(materielHT + port).toFixed(2);
+  return {lignes, materielHT, poids, tr, port, totalHT,
+          totalTTC: +(totalHT*(1+TVA)).toFixed(2)};
+}
+
+// Libellé court d'une configuration, pour l'écran comme pour le PDF.
+function intitule(cfg, r){
+  const t = cfg.bays.length;
+  return `Cantilever ${r && r.ok ? (r.g==="LG"?"léger":"mi-lourd") : ""} `+
+         `${cfg.face==="DF"?"double":"simple"} face`.replace(/\s+/g," ");
+}
+const uniformes = b => b.every(v => v === b[0]);
+function detail(cfg, r){
+  const t = cfg.bays.length;
+  const d = [`hauteur ${nb(cfg.H)} mm`, `bras ${nb(cfg.L)} mm`,
+             `${cfg.N} niveau${cfg.N>1?"x":""}`, `${nb(cfg.C)} kg par bras`,
+             uniformes(cfg.bays)
+               ? `${t} travée${t>1?"s":""} de ${nb(cfg.bays[0])} mm`
+               : `${t} travées : ${cfg.bays.map(v=>nb(v)).join(" / ")} mm`];
+  if(r && r.ok) d.push(`longueur ${nb(longueurHT(cfg,r))} mm`, `emprise ${nb(empriseSol(cfg,r))} mm`);
+  if(cfg.bb) d.push("butées de bras");
+  if(cfg.be) d.push("butées d'embase");
+  return d.join(" · ");
+}
+
+/* ===================== RENDU ===================== */
+let COURANT = null;
+
+function calculer(){
+  const s = S;
+  const r = resoudre(s);
+  COURANT = r;
+
+  dessiner(s, r);
+
+  // cotes
+  if(r.ok){
+    const nv = niveaux(s);
+    const pas = s.N>1 ? nv[1]-nv[0] : 0;
+    const emprise = empriseSol(s, r);
+    $("cotes").innerHTML = [
+      ["Longueur hors tout", nb(longueurHT(s,r))+" mm"],
+      ["Emprise au sol",     nb(emprise)+" mm"],
+      ["Entraxe des niveaux", pas ? nb(pas)+" mm" : "—"],
+      ["Charge totale",      nb(s.N*s.C*(s.face==="DF"?2:1)*(nbTravees(s)+1))+" kg"],
+      ["Charge maxi des bras", nb(r.capB)+" kg"]
+    ].map(([a,b])=>`<div><dt>${a}</dt><dd>${b}</dd></div>`).join("");
+  } else $("cotes").innerHTML = "";
+
+  // verdict
+  const vb = $("verdictBox");
+  if(!r.ok){
+    vb.innerHTML = `<div class="verdict err"><b>Cette combinaison n'existe pas au catalogue.</b>
+      <ul>${r.raisons.map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>`;
+  } else {
+    const nv = niveaux(s), pas = s.N>1 ? nv[1]-nv[0] : 0;
+    let extra = "";
+    if(s.N>1 && pas < 200) extra += `<div class="verdict warn" style="margin-top:8px">
+      Les niveaux sont espacés de ${nb(pas)} mm seulement. Réduisez le nombre de niveaux ou augmentez la hauteur.</div>`;
+    if(s.L > r.P) extra += "";
+    vb.innerHTML = `<div class="verdict">
+      Configuration retenue : <b>cantilever ${r.g==="LG"?"léger":"mi-lourd"}</b>,
+      colonne ${r.g==="LG"?"140 × 40 × 3":"200 × 80 × 3"} mm avec embase ${nb(r.P)} mm,
+      bras ${r.sect.replace(/X/g,' × ')} mm.<br>
+      Bras chargés à ${nb(s.C)} kg pour ${nb(r.capB)} kg admissibles ·
+      colonne à ${nb(r.chargeCol)} kg pour ${nb(r.capCol)} kg admissibles.
+      </div>${extra}`;
+  }
+
+  // prix
+  const pb = $("prixBox");
+  // La nomenclature appartient au devis : elle ne doit pas être vidée
+  // parce que la configuration en cours de réglage est momentanément invalide.
+  if(!r.ok){ pb.innerHTML = `<span class="quoi">Ce rayonnage</span><span class="tt">—</span>`; return; }
+
+  pb.innerHTML = `
+    <span class="quoi">Ce rayonnage</span>
+    <span class="pu">${eur(r.totalHT)}</span>
+    <span class="op">× ${s.qte} =</span>
+    <span class="tt">${eur(+(r.totalHT*s.qte).toFixed(2))}<em>&nbsp;HT</em></span>`;
+
+  ecrireUrl();
+}
+
+// Toutes les pièces du devis, regroupées par référence.
+function nomenclatureDevis(){
+  const m = new Map();
+  devis().lignes.forEach(l => { if(!l.r.ok) return;
+    l.r.lignes.forEach(x => {
+      const e = m.get(x.ref) || {ref:x.ref, lib:x.lib, pu:x.pu, pw:x.pw, q:0};
+      e.q += x.q * l.qte; m.set(x.ref, e);
+    });
+  });
+  return [...m.values()]
+    .map(e => ({...e, total:+(e.pu*e.q).toFixed(2), poids:+(e.pw*e.q).toFixed(2)}))
+    .sort((a,b) => a.ref.localeCompare(b.ref));
+}
+
+function rendreNomenclature(){
+  const t = $("nomen"), lignes = nomenclatureDevis();
+  if(!lignes.length){
+    t.querySelector("tbody").innerHTML =
+      `<tr><td colspan="6" class="vide">La nomenclature se remplit dès qu'un rayonnage est ajouté au devis.</td></tr>`;
+    t.querySelector("tfoot").innerHTML = ""; return;
+  }
+  t.querySelector("tbody").innerHTML = lignes.map(l=>`
+    <tr><td class="ref">${esc(l.ref)}</td><td>${esc(l.lib)}</td>
+        <td class="n">${l.q}</td><td class="n">${eur(l.pu)}</td>
+        <td class="n">${eur(l.total)}</td><td class="n">${nb(l.poids,1)} kg</td></tr>`).join("");
+  const q = lignes.reduce((a,l)=>a+l.q,0);
+  const ht = +lignes.reduce((a,l)=>a+l.total,0).toFixed(2);
+  const pd = +lignes.reduce((a,l)=>a+l.poids,0).toFixed(1);
+  t.querySelector("tfoot").innerHTML = `
+    <tr><td colspan="2">Total matériel HT — ${lignes.length} référence${lignes.length>1?"s":""}</td>
+        <td class="n">${q}</td><td></td>
+        <td class="n">${eur(ht)}</td><td class="n">${nb(pd,1)} kg</td></tr>`;
+}
+
+function rendrePanier(){
+  const box = $("panierBox"), d = devis();
+  if(!PANIER.length){
+    box.innerHTML = `<div class="vide">Aucun rayonnage dans le devis pour l'instant.<br>
+      Réglez votre configuration ci-dessus, puis cliquez sur <b>Ajouter au devis</b>.</div>
+      <div class="recap" id="recapBox"></div>`;
+    rendreNomenclature(); rendreTotaux(d); return;
+  }
+  box.innerHTML = `<table class="lignes"><tbody>${d.lignes.map((l,i)=>`
+    <tr class="${EDITION===i?"edit":""}">
+      <td>
+        <div class="titre">${i+1}. ${esc(intitule(l.cfg,l.r))}</div>
+        <div class="det">${esc(detail(l.cfg,l.r))}</div>
+        ${l.r.ok?"":`<div class="det" style="color:var(--rouge)">Configuration devenue invalide — modifiez-la.</div>`}
+      </td>
+      <td><input class="qte" type="number" min="1" max="99" value="${l.qte}" data-q="${i}"></td>
+      <td class="n" style="font-variant-numeric:tabular-nums;font-weight:600">${l.r.ok?eur(l.totalHT):"—"}</td>
+      <td class="act">
+        <button class="mini" data-m="${i}">Modifier</button>
+        <button class="mini sup" data-s="${i}">Supprimer</button>
+      </td>
+    </tr>`).join("")}</tbody></table>
+    <div class="recap" id="recapBox"></div>`;
+
+  box.querySelectorAll("[data-q]").forEach(inp => inp.addEventListener("input",()=>{
+    let v = parseInt(inp.value,10); if(isNaN(v)) return;
+    v = Math.min(99, Math.max(1, v)); inp.value = v;
+    const i = +inp.dataset.q;
+    PANIER[i].qte = v;
+    if(EDITION === i){ majQte(v); calculer(); }
+    rendrePanier(); ecrireUrl();
+  }));
+  rendreNomenclature();
+  box.querySelectorAll("[data-m]").forEach(b => b.addEventListener("click",()=>modifierLigne(+b.dataset.m)));
+  box.querySelectorAll("[data-s]").forEach(b => b.addEventListener("click",()=>supprimerLigne(+b.dataset.s)));
+  rendreTotaux(d);
+}
+
+function rendreTotaux(d){
+  const cible = $("recapBox"); if(!cible) return;
+  const vide = !PANIER.length;
+  const val = v => vide ? "—" : v;
+  cible.innerHTML = `
+    <div class="l"><span>Matériel HT</span><b>${val(eur(d.materielHT))}</b></div>
+    <div class="l"><span>Transport vers le <select id="DEP" class="dep"></select></span>
+      <b>${val(d.tr.ok?eur(d.port):"sur consultation")}</b></div>
+    <div class="l"><span>Poids total</span><b>${val(nb(d.poids,0)+" kg")}</b></div>
+    <div class="g"><span>Total HT</span><b>${val(eur(d.totalHT))}</b></div>
+    <div class="l" style="justify-content:flex-end;color:var(--gris)">${vide?"":`soit ${eur(d.totalTTC)} TTC${d.tr.ok?"":" — hors transport"}`}</div>
+    <div class="tools">
+      <button class="btn sec" type="button" id="btnPdf" ${vide?"disabled":""}>Devis en PDF</button>
+      <button class="btn sec" type="button" id="btnCsv" ${vide?"disabled":""}>Nomenclature (CSV)</button>
+      <button class="btn sec" type="button" id="btnLien">Copier le lien du devis</button>
+    </div>
+    <div class="small" id="lienMsg" style="margin-top:8px"></div>
+    <div class="hint" style="margin-top:12px">Livraison sur site, déchargement à la charge du client.
+      Le montage n'est pas inclus : indiquez-le dans votre demande si vous le souhaitez.</div>`;
+  remplirDepartements();
+  $("btnPdf").addEventListener("click", genererPdf);
+  $("btnCsv").addEventListener("click", telechargerCsv);
+  $("btnLien").addEventListener("click", copierLien);
+}
+
+function ajouterAuDevis(){
+  const msg = $("ajoutMsg");
+  if(!COURANT || !COURANT.ok){ msg.className="msg ko";
+    msg.textContent = "Corrigez la configuration avant de l'ajouter."; return; }
+  const cfg = cfgCourante();
+  if(EDITION !== null){
+    PANIER[EDITION].cfg = cfg; PANIER[EDITION].qte = S.qte;
+    const i = EDITION; sortirEdition();
+    msg.className="msg ok"; msg.textContent = `Ligne ${i+1} mise à jour.`;
+  } else {
+    const jumeau = PANIER.findIndex(p => memeCfg(p.cfg, cfg));
+    if(jumeau >= 0){
+      PANIER[jumeau].qte = Math.min(99, PANIER[jumeau].qte + S.qte);
+      msg.className="msg ok";
+      msg.textContent = `Rayonnage identique à la ligne ${jumeau+1} : quantité portée à ${PANIER[jumeau].qte}.`;
+    } else {
+      PANIER.push({cfg, qte:S.qte}); msg.className="msg ok";
+      msg.textContent = `Ajouté au devis en ligne ${PANIER.length}${S.qte>1?` (${S.qte} exemplaires)`:""}.`;
+    }
+    majQte(1);
+  }
+  calculer(); rendrePanier(); ecrireUrl();
+}
+
+function modifierLigne(i){
+  const c = PANIER[i].cfg;
+  Object.assign(S, {face:c.face, H:c.H, L:c.L, N:c.N, C:c.C, bays:c.bays.slice(),
+                    bb:c.bb, be:c.be, qte:PANIER[i].qte});
+  EDITION = i;
+  $("btnAjouter").textContent = `Mettre à jour la ligne ${i+1}`;
+  $("btnAnnuler").style.display = "";
+  $("ajoutMsg").className=""; $("ajoutMsg").textContent="";
+  dessinerTravees(); synchroniser(); calculer(); rendrePanier();
+  const cible = document.getElementById("segFace");
+  if(cible && cible.scrollIntoView) cible.scrollIntoView({behavior:"smooth", block:"start"});
+}
+function sortirEdition(){
+  EDITION = null;
+  $("btnAjouter").textContent = "Ajouter au devis";
+  $("btnAnnuler").style.display = "none";
+  majQte(1); calculer();
+}
+function supprimerLigne(i){
+  PANIER.splice(i,1);
+  if(EDITION === i) sortirEdition();
+  else if(EDITION !== null && EDITION > i) EDITION--;
+  rendrePanier(); ecrireUrl();
+}
+
+/* ===================== EXPORTS ===================== */
+// jsPDF n'accepte pas l'espace fine insécable des nombres français : format dédié.
+function eurPdf(v){
+  return v.toFixed(2).replace(".", ",").replace(/\B(?=(\d{3})+(?!\d))/g, " ") + " EUR";
+}
+const nbPdf = v => String(v).replace(/\B(?=(\d{3})+(?!\d))/g, " ");
+
+function csv(){
+  const d = devis(); if(!PANIER.length) return "";
+  const f = v => String(v).replace(".", ",");
+  const L = ["Rayonnage;Quantite rayonnage;Reference;Designation;Quantite;Prix unitaire HT;Total HT;Poids unitaire kg;Poids total kg"];
+  d.lignes.forEach((l,i)=>{
+    if(!l.r.ok) return;
+    l.r.lignes.forEach(x => L.push([
+      "Rack "+(i+1), l.qte, x.ref, x.lib.replace(/;/g,","), x.q*l.qte,
+      f(x.pu.toFixed(2)), f((x.total*l.qte).toFixed(2)),
+      f(x.pw.toFixed(3)), f((x.poids*l.qte).toFixed(2))].join(";")));
+  });
+  L.push(["","","","TOTAL MATERIEL HT","","",f(d.materielHT.toFixed(2)),"",f(d.poids.toFixed(2))].join(";"));
+  if(d.tr.ok) L.push(["","","","TRANSPORT HT","","",f(d.port.toFixed(2)),"",""].join(";"));
+  L.push(["","","","TOTAL HT","","",f(d.totalHT.toFixed(2)),"",""].join(";"));
+  return L.join("\r\n");
+}
+
+function htmlNomen(){
+  const d = devis(); if(!PANIER.length) return "";
+  const td = "padding:6px 9px;border-bottom:1px solid #e4e8ec;font-family:Arial,sans-serif;font-size:13px";
+  let s = "";
+  d.lignes.forEach((l,i)=>{
+    if(!l.r.ok) return;
+    s += `<h3 style="font-family:Arial,sans-serif;font-size:15px;color:#123A5E;margin:18px 0 6px">
+            Rack ${i+1}${l.qte>1?` — ${l.qte} exemplaires`:""} · ${esc(intitule(l.cfg,l.r))}</h3>
+          <p style="font-family:Arial,sans-serif;font-size:12px;color:#7C858F;margin:0 0 8px">${esc(detail(l.cfg,l.r))}</p>
+          <table style="border-collapse:collapse;width:100%">
+          <tr>${["Référence","Désignation","Qté","P.U. HT","Total HT"].map(x=>
+            `<th style="${td};text-align:left;background:#123A5E;color:#fff">${x}</th>`).join("")}</tr>
+          ${l.r.lignes.map(x=>`<tr>
+            <td style="${td}">${esc(x.ref)}</td><td style="${td}">${esc(x.lib)}</td>
+            <td style="${td};text-align:right">${x.q*l.qte}</td>
+            <td style="${td};text-align:right">${eur(x.pu)}</td>
+            <td style="${td};text-align:right">${eur(+(x.total*l.qte).toFixed(2))}</td></tr>`).join("")}
+          </table>`;
+  });
+  s += `<table style="border-collapse:collapse;width:100%;margin-top:16px">
+    <tr><td style="${td};text-align:right">Matériel HT</td>
+        <td style="${td};text-align:right;width:120px">${eur(d.materielHT)}</td></tr>
+    <tr><td style="${td};text-align:right">Transport HT</td>
+        <td style="${td};text-align:right">${d.tr.ok?eur(d.port):"sur consultation"}</td></tr>
+    <tr><td style="${td};text-align:right;font-weight:bold">Total HT</td>
+        <td style="${td};text-align:right;font-weight:bold">${eur(d.totalHT)}</td></tr></table>`;
+  return s;
+}
+
+function reference(){
+  const d = new Date(), p = n => String(n).padStart(2,"0");
+  return `CAN-${p(d.getDate())}${p(d.getMonth()+1)}${String(d.getFullYear()).slice(2)}-`+
+         String(Math.floor(Math.random()*10000)).padStart(4,"0");
+}
+
+function telechargerCsv(){
+  const c = csv(); if(!c) return;
+  const blob = new Blob(["\uFEFF"+c], {type:"text/csv;charset=utf-8"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob); a.download = "devis-cantilever.csv"; a.click();
+  URL.revokeObjectURL(a.href);
+}
+function copierLien(){
+  const m = $("lienMsg"); if(!m) return;
+  navigator.clipboard.writeText(location.href).then(
+    ()=> m.textContent = "Lien copié. Il rouvre le devis complet, prêt à être modifié.",
+    ()=> m.textContent = location.href);
+}
+
+/* ---------- PDF ---------- */
+// Rastérise un SVG autonome via un blob same-origin : le canvas n'est pas souillé.
+function svgVersPng(svg, largeurPx){
+  return new Promise((res, rej)=>{
+    const vb = svg.match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/);
+    const w = parseFloat(vb[1]), hh = parseFloat(vb[2]);
+    const url = URL.createObjectURL(new Blob([svg], {type:"image/svg+xml;charset=utf-8"}));
+    const img = new Image();
+    // Sans filet, un rendu d'image qui n'aboutit jamais figerait tout le PDF.
+    const minuteur = setTimeout(()=>{ URL.revokeObjectURL(url); rej(new Error("délai dépassé")); }, 5000);
+    img.onload = () => {
+      clearTimeout(minuteur);
+      const cv = document.createElement("canvas");
+      cv.width = Math.round(largeurPx); cv.height = Math.round(largeurPx*hh/w);
+      const cx = cv.getContext("2d");
+      cx.fillStyle = "#fff"; cx.fillRect(0,0,cv.width,cv.height);
+      cx.drawImage(img, 0, 0, cv.width, cv.height);
+      URL.revokeObjectURL(url);
+      res({data: cv.toDataURL("image/png"), ratio: hh/w});
+    };
+    img.onerror = e => { clearTimeout(minuteur); URL.revokeObjectURL(url); rej(e); };
+    img.src = url;
+  });
+}
+
+async function genererPdf(){
+  const m = $("lienMsg");
+  if(!PANIER.length){ if(m) m.textContent = "Ajoutez au moins un rayonnage au devis."; return; }
+  if(!(window.jspdf && window.jspdf.jsPDF)){
+    if(m) m.textContent = "La librairie PDF n'a pas pu être chargée. Vérifiez votre connexion."; return; }
+
+  const btn = $("btnPdf"); btn.disabled = true; btn.textContent = "Génération…";
+  try{
+    const {jsPDF} = window.jspdf;
+    const doc = new jsPDF({unit:"mm", format:"a4"});
+    // jsPDF encode en WinAnsi : l'espace fine insécable des nombres français
+    // sort en « / » et l'euro en caractère vide. On assainit à la source.
+    const propre = t => String(t).replace(/[\u202F\u2009\u00A0]/g, " ")
+                                 .replace(/\u20AC/g, "EUR")
+                                 .replace(/[\u2018\u2019]/g, "'")
+                                 .replace(/[\u201C\u201D]/g, '"')
+                                 .replace(/[\u2013\u2014]/g, "-");
+    const brutText  = doc.text.bind(doc);
+    const brutSplit = doc.splitTextToSize.bind(doc);
+    doc.text = (t, x, y, o) => brutText(Array.isArray(t) ? t.map(propre) : propre(t), x, y, o);
+    doc.splitTextToSize = (t, w, o) => brutSplit(propre(t), w, o);
+    const PG_L = 210, PG_H = 297, MG = 15, LARG = PG_L - 2*MG;
+    const d = devis(), ref = reference();
+    let y = 0;
+
+    const entete = titre => {
+      doc.setFillColor(18,58,94); doc.rect(0,0,PG_L,20,"F");
+      doc.setTextColor(255); doc.setFont("helvetica","bold"); doc.setFontSize(15);
+      doc.text("RSL", MG, 13);
+      doc.setFont("helvetica","normal"); doc.setFontSize(11);
+      doc.text(titre, MG+18, 13);
+      doc.setFontSize(8.5); doc.setTextColor(200,215,230);
+      doc.text(ref, PG_L-MG, 13, {align:"right"});
+      doc.setTextColor(26,34,44); y = 30;
+    };
+    const saut = besoin => { if(y + besoin > PG_H - 16){ doc.addPage(); entete("Devis cantilever (suite)"); } };
+    const pied = () => {
+      const n = doc.getNumberOfPages();
+      for(let i=1;i<=n;i++){
+        doc.setPage(i); doc.setFontSize(7.5); doc.setTextColor(140,148,158);
+        doc.text("RSL - Rayonnages Services Lorraine - prix indicatifs HT, hors montage - tarif au 01/09/2026",
+                 MG, PG_H-9);
+        doc.text(i+" / "+n, PG_L-MG, PG_H-9, {align:"right"});
+      }
+    };
+    // tableau simple avec coupure de page
+    const tableau = (colonnes, rangees) => {
+      const xs = []; let acc = MG;
+      colonnes.forEach(c => { xs.push(acc); acc += c.w; });
+      const enTete = () => {
+        doc.setFillColor(18,58,94); doc.rect(MG, y, LARG, 7, "F");
+        doc.setTextColor(255); doc.setFont("helvetica","bold"); doc.setFontSize(8.5);
+        colonnes.forEach((c,i)=> doc.text(c.t, c.a==="r" ? xs[i]+c.w-2 : xs[i]+2, y+4.8, {align:c.a==="r"?"right":"left"}));
+        y += 7; doc.setTextColor(26,34,44); doc.setFont("helvetica","normal");
+      };
+      enTete();
+      rangees.forEach(rg => {
+        const hauteurs = colonnes.map((c,i)=> doc.splitTextToSize(String(rg[i]), c.w-4).length);
+        const hl = Math.max(...hauteurs)*3.9 + 3;
+        if(y + hl > PG_H - 18){ doc.addPage(); entete("Devis cantilever (suite)"); enTete(); }
+        doc.setFontSize(8.5);
+        colonnes.forEach((c,i)=>{
+          const txt = doc.splitTextToSize(String(rg[i]), c.w-4);
+          doc.text(txt, c.a==="r" ? xs[i]+c.w-2 : xs[i]+2, y+4, {align:c.a==="r"?"right":"left"});
+        });
+        y += hl;
+        doc.setDrawColor(228,232,236); doc.line(MG, y, MG+LARG, y);
+      });
+      y += 3;
+    };
+
+    /* ---- page 1 : récapitulatif ---- */
+    entete("Devis cantilever");
+    doc.setFontSize(9); doc.setTextColor(110,118,128);
+    doc.text("Etabli le "+new Date().toLocaleDateString("fr-FR"), MG, y); y += 5;
+
+    const cli = [["Societe",$("cSoc").value],["Nom",$("cNom").value],
+                 ["E-mail",$("cMail").value],["Telephone",$("cTel").value],
+                 ["Chantier",[$("cCp").value,$("cVille").value].filter(Boolean).join(" ")]]
+                .filter(([,v]) => v && v.trim());
+    if(cli.length){
+      doc.setTextColor(26,34,44); doc.setFontSize(9);
+      cli.forEach(([k,v]) => { doc.setTextColor(130,138,148); doc.text(k, MG, y);
+        doc.setTextColor(26,34,44); doc.text(v, MG+28, y); y += 4.6; });
+      y += 3;
+    }
+    doc.setTextColor(26,34,44); doc.setFont("helvetica","bold"); doc.setFontSize(11);
+    doc.text("Recapitulatif", MG, y); y += 4;
+    doc.setFont("helvetica","normal");
+
+    tableau([{t:"Rayonnage",w:110,a:"l"},{t:"Qte",w:14,a:"r"},
+             {t:"PU HT",w:28,a:"r"},{t:"Total HT",w:28,a:"r"}],
+      d.lignes.map((l,i)=>[
+        `${i+1}. ${intitule(l.cfg,l.r)}\n${detail(l.cfg,l.r)}`,
+        l.qte,
+        l.r.ok ? eurPdf(l.r.totalHT) : "-",
+        l.r.ok ? eurPdf(l.totalHT)   : "-"]));
+
+    saut(34);
+    const tot = (lib, val, gras) => {
+      doc.setFont("helvetica", gras?"bold":"normal"); doc.setFontSize(gras?11:9.5);
+      doc.text(lib, MG+LARG-52, y, {align:"right"});
+      doc.text(val, MG+LARG, y, {align:"right"}); y += gras?7:5.2;
+    };
+    tot("Materiel HT", eurPdf(d.materielHT));
+    tot("Transport HT", d.tr.ok ? eurPdf(d.port) : "sur consultation");
+    tot("Poids total", nbPdf(Math.round(d.poids))+" kg");
+    doc.setDrawColor(190,198,206); doc.line(MG+LARG-72, y-3, MG+LARG, y-3);
+    tot("TOTAL HT", eurPdf(d.totalHT), true);
+    doc.setFontSize(9); doc.setTextColor(130,138,148);
+    doc.text("soit "+eurPdf(d.totalTTC)+" TTC", MG+LARG, y, {align:"right"});
+
+    /* ---- une page par rayonnage ---- */
+    for(let i=0;i<d.lignes.length;i++){
+      const l = d.lignes[i]; if(!l.r.ok) continue;
+      doc.addPage(); entete(`Rayonnage ${i+1} sur ${d.lignes.length}`);
+      doc.setFont("helvetica","bold"); doc.setFontSize(12);
+      doc.text(intitule(l.cfg,l.r) + (l.qte>1 ? ` - ${l.qte} exemplaires` : ""), MG, y); y += 5.5;
+      doc.setFont("helvetica","normal"); doc.setFontSize(8.5); doc.setTextColor(110,118,128);
+      doc.splitTextToSize(detail(l.cfg,l.r), LARG).forEach(t => { doc.text(t, MG, y); y += 4; });
+      doc.setTextColor(26,34,44); y += 3;
+
+      try{
+        const svg = svgAxo(Object.assign({}, l.cfg, {vue:"axo"}), l.r);
+        const img = await svgVersPng(svg, 1520);
+        const hImg = Math.min(LARG*img.ratio, 88);
+        doc.addImage(img.data, "PNG", MG, y, hImg/img.ratio, hImg);
+        y += hImg + 6;
+      }catch(e){ /* le PDF reste valable sans le schéma */ }
+
+      saut(30);
+      doc.setFont("helvetica","bold"); doc.setFontSize(10);
+      doc.text("Nomenclature", MG, y); y += 4;
+      doc.setFont("helvetica","normal");
+      tableau([{t:"Reference",w:36,a:"l"},{t:"Designation",w:78,a:"l"},
+               {t:"Qte",w:12,a:"r"},{t:"PU HT",w:26,a:"r"},{t:"Total HT",w:28,a:"r"}],
+        l.r.lignes.map(x=>[x.ref, x.lib, x.q*l.qte, eurPdf(x.pu), eurPdf(+(x.total*l.qte).toFixed(2))]));
+      saut(12);
+      doc.setFont("helvetica","bold"); doc.setFontSize(9.5);
+      doc.text("Sous-total HT", MG+LARG-40, y, {align:"right"});
+      doc.text(eurPdf(l.totalHT), MG+LARG, y, {align:"right"});
+    }
+
+    pied();
+    doc.save("devis-cantilever-"+ref+".pdf");
+    if(m) m.textContent = "PDF genere sous la reference "+ref+".";
+  }catch(e){
+    if(m) m.textContent = "La generation du PDF a echoue. Reessayez ou telechargez le CSV.";
+  }finally{ btn.disabled = false; btn.textContent = "Devis en PDF"; }
+}
+
+/* ===================== LIEN PARTAGEABLE ===================== */
+function ecrireUrl(){
+  const enc = c => [c.face,c.H,c.L,c.N,c.C,c.bays.join("."),(c.bb?1:0)+""+(c.be?1:0)].join("-");
+  const parts = [S.dep, "E"+enc(cfgCourante())+"-"+S.qte]
+    .concat(PANIER.map(p => enc(p.cfg) + "-" + p.qte));
+  history.replaceState(null, "", "?devis=" + parts.join("_"));
+}
+function lireUrl(){
+  const src = new URLSearchParams(location.search).get("devis"); if(!src) return;
+  const parts = src.split("_");
+  const dep = parts.shift();
+  if(TRANSPORT.hasOwnProperty(dep) || dep === "AUTRE") S.dep = dep;
+
+  const dec = t => {
+    const p = t.split("-"); if(p.length < 7) return null;
+    if(p[0] !== "SF" && p[0] !== "DF") return null;
+    if(!HAUTEURS.includes(+p[1]) || !LONGS.includes(+p[2])) return null;
+    const bays = p[5].split(".").map(Number).filter(v => ENTRAXES.includes(v));
+    if(!bays.length) return null;
+    return {face:p[0], H:+p[1], L:+p[2], N:+p[3], C:+p[4], bays,
+            bb:p[6][0]==="1", be:p[6][1]==="1"};
+  };
+  parts.forEach(t => {
+    if(t.charAt(0) === "E"){                     // configuration en cours d'édition
+      const seg = t.slice(1).split("-"), q = +seg.pop();
+      const c = dec(seg.join("-"));
+      if(c){ Object.assign(S, c); S.qte = q>0 && q<100 ? q : 1; }
+    } else {                                     // ligne du devis
+      const seg = t.split("-"), qte = +seg.pop();
+      const c = dec(seg.join("-"));
+      if(c) PANIER.push({cfg:c, qte: qte>0 && qte<100 ? qte : 1});
+    }
+  });
+}
+
+/* ===================== ENVOI DEVIS ===================== */
+async function envoyer(){
+  const msg = $("envoiMsg");
+  const req = {cNom:"votre nom", cSoc:"votre société", cMail:"votre e-mail"};
+  for(const [id,lib] of Object.entries(req))
+    if(!$(id).value.trim()){ msg.className="msg ko"; msg.textContent = "Merci d'indiquer "+lib+"."; $(id).focus(); return; }
+  if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test($("cMail").value)){
+    msg.className="msg ko"; msg.textContent="L'adresse e-mail n'est pas valide."; return; }
+  if(!$("cRgpd").checked){ msg.className="msg ko"; msg.textContent="Merci d'accepter l'utilisation de vos informations."; return; }
+  if(!PANIER.length){ msg.className="msg ko"; msg.textContent="Ajoutez au moins un rayonnage au devis."; return; }
+
+  const d = devis();
+  if(d.lignes.some(l => !l.r.ok)){
+    msg.className="msg ko"; msg.textContent="Une ligne du devis n'est plus valide, corrigez-la avant d'envoyer."; return; }
+
+  const ref = reference();
+  const payload = {
+    source: SOURCE, flux: "demande_devis", reference: ref,
+    date: new Date().toISOString(),
+    client: { nom:$("cNom").value.trim(), societe:$("cSoc").value.trim(), email:$("cMail").value.trim(),
+              telephone:$("cTel").value.trim(), code_postal:$("cCp").value.trim(), ville:$("cVille").value.trim(),
+              message:$("cMsg").value.trim() },
+    lien_devis: location.href,
+    departement_livraison: S.dep,
+    nb_rayonnages: PANIER.length,
+    racks: d.lignes.map((l,i)=>({
+      rang: i+1, quantite: l.qte,
+      intitule: intitule(l.cfg, l.r), detail: detail(l.cfg, l.r),
+      gamme: l.r.g === "LG" ? "Cantilever léger" : "Cantilever mi-lourd",
+      face: l.cfg.face === "DF" ? "Double face" : "Simple face",
+      hauteur_colonne_mm: l.cfg.H, profondeur_embase_mm: l.r.P, longueur_bras_mm: l.cfg.L,
+      section_bras: l.r.sect, niveaux: l.cfg.N, charge_par_bras_kg: l.cfg.C,
+      travees: l.cfg.bays.length, largeurs_travees_mm: l.cfg.bays.slice(),
+      longueur_hors_tout_mm: longueurHT(l.cfg, l.r), emprise_au_sol_mm: empriseSol(l.cfg, l.r),
+      butees_bras: l.cfg.bb, butees_embase: l.cfg.be,
+      total_ht: l.totalHT, poids_kg: l.poids,
+      nomenclature: l.r.lignes.map(x=>({reference:x.ref, designation:x.lib, quantite:x.q*l.qte,
+                                        prix_unitaire_ht:x.pu, total_ht:+(x.total*l.qte).toFixed(2),
+                                        poids_kg:+(x.poids*l.qte).toFixed(2)}))
+    })),
+    montants: { materiel_ht: d.materielHT, transport_ht: d.tr.ok ? d.port : null,
+                total_ht: d.totalHT, total_ttc: d.totalTTC,
+                poids_total_kg: d.poids, transport_sur_consultation: !d.tr.ok },
+    csv_nomenclature: csv(),
+    html_nomenclature: htmlNomen()
+  };
+
+  const b = $("btnEnvoi"); b.disabled = true; b.textContent = "Envoi en cours…";
+  msg.className=""; msg.textContent="";
+  try{
+    const res = await fetch(WEBHOOK_DEVIS, {method:"POST", headers:{"Content-Type":"application/json"},
+                                            body: JSON.stringify(payload)});
+    if(!res.ok) throw new Error(res.status);
+    msg.className="msg ok";
+    msg.textContent = `Demande envoyée sous la référence ${ref}. Vous recevez le récapitulatif par e-mail, un technicien RSL vous rappelle sous 48 h.`;
+  }catch(e){
+    msg.className="msg ko";
+    msg.textContent = "L'envoi a échoué. Réessayez, ou écrivez-nous à s.degardin@rsl.eu en joignant le lien de votre devis.";
+  }finally{ b.disabled=false; b.textContent="Envoyer ma demande de devis"; }
+}
+
+/* ===================== INITIALISATION ===================== */
+function dessinerTravees(){
+  $("bays").innerHTML = S.bays.map((e,i)=>`
+    <div class="b"><span>Travée ${i+1}</span>
+      <select data-i="${i}">${ENTRAXES.map(v=>
+        `<option value="${v}"${v===e?" selected":""}>${nb(v)} mm</option>`).join("")}</select></div>`).join("");
+  $("bays").querySelectorAll("select").forEach(sel =>
+    sel.addEventListener("change", () => { S.bays[+sel.dataset.i] = +sel.value; calculer(); }));
+}
+function redimensionnerTravees(n){
+  const dernier = S.bays[S.bays.length-1] || 1000;
+  while(S.bays.length < n) S.bays.push(dernier);
+  S.bays.length = n;
+  dessinerTravees();
+}
+
+// Le sélecteur vit dans le récapitulatif, reconstruit à chaque rendu.
+function remplirDepartements(){
+  const sel = $("DEP"); if(!sel) return;
+  sel.innerHTML = Object.keys(TRANSPORT).sort((a,b)=>+a-+b)
+      .map(d=>`<option value="${d}">${esc(nomDept(d))}</option>`).join("")
+    + `<option value="AUTRE">Autre / outre-mer</option>`;
+  sel.value = S.dep;
+  sel.addEventListener("change", ()=>{ S.dep = sel.value; calculer(); rendrePanier(); });
+}
+
+function remplirSelects(){
+  $("H").innerHTML = HAUTEURS.map(h=>`<option value="${h}">${nb(h)} mm</option>`).join("");
+  $("L").innerHTML = LONGS.map(l=>`<option value="${l}">${nb(l)} mm</option>`).join("");
+
+}
+function synchroniser(){
+  $("H").value=S.H; $("L").value=S.L;
+  if($("DEP")) $("DEP").value=S.dep;
+  $("N").value=S.N; $("C").value=S.C; $("T").value=nbTravees(S); $("Q").value=S.qte;
+  $("optBB").checked=S.bb; $("optBE").checked=S.be;
+  document.querySelectorAll("#segFace button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.v===S.face));
+  document.querySelectorAll(".vtabs button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.v===S.vue));
+}
+// Champ numérique encadré de deux boutons − / +.
+function incrementeur(id, min, max, appliquer){
+  const inp = $(id);
+  const poser = v => { v = Math.min(max, Math.max(min, v)); inp.value = v; appliquer(v); };
+  inp.addEventListener("input", ()=>{ const v = parseInt(inp.value,10); if(!isNaN(v)) poser(v); });
+  inp.addEventListener("blur",  ()=>{ if(isNaN(parseInt(inp.value,10))) poser(min); });
+  inp.parentNode.querySelectorAll("[data-d]").forEach(b =>
+    b.addEventListener("click", ()=> poser((parseInt(inp.value,10) || min) + (+b.dataset.d))));
+}
+
+function brancher(){
+  $("C").addEventListener("input",()=>{
+    let v = parseInt($("C").value,10); if(isNaN(v)) return;
+    v = Math.min(800, Math.max(10, v)); S.C=v; $("C").value=v; calculer(); });
+  incrementeur("N", 1, 10, v => { S.N = v; calculer(); });
+  incrementeur("T", 1, 30, v => { redimensionnerTravees(v); calculer(); });
+  incrementeur("Q", 1, 99, v => {
+    S.qte = v;
+    if(EDITION !== null){ PANIER[EDITION].qte = v; rendrePanier(); }
+    calculer();
+  });
+  $("btnUnif").addEventListener("click",()=>{
+    S.bays = S.bays.map(()=>S.bays[0]); dessinerTravees(); calculer();
+  });
+  ["H","L"].forEach(id => $(id).addEventListener("change",()=>{ S[id]=+$(id).value; calculer(); }));
+  $("optBB").addEventListener("change",()=>{ S.bb=$("optBB").checked; calculer(); });
+  $("optBE").addEventListener("change",()=>{ S.be=$("optBE").checked; calculer(); });
+  document.querySelectorAll("#segFace button").forEach(b=>b.addEventListener("click",()=>{
+    S.face=b.dataset.v; synchroniser(); calculer(); }));
+  document.querySelectorAll(".vtabs button").forEach(b=>b.addEventListener("click",()=>{
+    S.vue=b.dataset.v; synchroniser(); dessiner(S,COURANT); }));
+
+  $("btnAjouter").addEventListener("click", ajouterAuDevis);
+  $("btnAnnuler").addEventListener("click",()=>{ sortirEdition(); rendrePanier();
+    $("ajoutMsg").className=""; $("ajoutMsg").textContent=""; });
+  $("btnEnvoi").addEventListener("click", envoyer);
+}
+
+remplirSelects();
+lireUrl();
+dessinerTravees();
+synchroniser();
+brancher();
+calculer();
+rendrePanier();
+</script>
+</body>
+</html>
