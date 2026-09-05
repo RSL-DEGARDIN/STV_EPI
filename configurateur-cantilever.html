@@ -47,9 +47,9 @@ select,input[type=number],input[type=text],input[type=email],input[type=tel],tex
   width:100%;padding:9px 10px;border:1px solid var(--trait);border-radius:3px;font-family:inherit;font-size:15px;background:#fff;color:var(--texte)}
 select:focus,input:focus,textarea:focus{outline:2px solid var(--bleu2);outline-offset:-1px;border-color:var(--bleu2)}
 .row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px}
+.row3{display:grid;grid-template-columns:repeat(auto-fit,minmax(146px,1fr));gap:14px}
 .f{margin-bottom:16px}
-@media(max-width:520px){.row,.row3{grid-template-columns:1fr}}
+@media(max-width:520px){.row{grid-template-columns:1fr}}
 
 /* segmented */
 .seg{display:flex;border:1px solid var(--trait);border-radius:3px;overflow:hidden}
@@ -64,7 +64,7 @@ select:focus,input:focus,textarea:focus{outline:2px solid var(--bleu2);outline-o
 .bays select{padding:7px 8px;font-size:14px}
 .lien{background:none;border:0;padding:0;color:var(--bleu2);font:inherit;font-size:12.5px;text-decoration:underline;cursor:pointer}
 .step{display:flex;align-items:stretch;border:1px solid var(--trait);border-radius:3px;overflow:hidden}
-.step button{width:42px;flex:none;border:0;background:#F1F4F7;cursor:pointer;color:var(--bleu);
+.step button{width:38px;flex:none;border:0;background:#F1F4F7;cursor:pointer;color:var(--bleu);
   font-family:'Barlow Condensed',sans-serif;font-size:22px;font-weight:600;line-height:1;padding:0}
 .step button:hover{background:var(--bleu-pale)}
 .step button:active{background:var(--bleu);color:#fff}
@@ -187,7 +187,7 @@ footer{text-align:center;padding:26px;color:var(--gris);font-size:12.5px}
           </div>
         </div>
 
-        <div class="row">
+        <div class="row3">
           <div class="f">
             <label for="H">Hauteur des colonnes</label>
             <select id="H"></select>
@@ -195,11 +195,16 @@ footer{text-align:center;padding:26px;color:var(--gris);font-size:12.5px}
           <div class="f">
             <label for="L">Profondeur des bras</label>
             <select id="L"></select>
-            <div class="hint">Longueur du bras en porte-à-faux.</div>
+            <div class="hint">Porte-à-faux du bras.</div>
+          </div>
+          <div class="f">
+            <label for="C">Charge par bras</label>
+            <input type="number" id="C" min="10" max="800" step="10" value="200">
+            <div class="hint">En kg, soit la charge d'un niveau sur une travée divisée par 2.</div>
           </div>
         </div>
 
-        <div class="row">
+        <div class="row3">
           <div class="f">
             <label for="N">Niveaux de bras</label>
             <div class="step">
@@ -207,16 +212,8 @@ footer{text-align:center;padding:26px;color:var(--gris);font-size:12.5px}
               <input type="number" id="N" min="1" max="10" step="1" value="4">
               <button type="button" data-d="1" aria-label="Un niveau de plus">+</button>
             </div>
-            <div class="hint">Le sol (sur embase) fait un niveau de stockage en plus.</div>
+            <div class="hint">Le sol, sur embase, en ajoute un.</div>
           </div>
-          <div class="f">
-            <label for="C">Charge par bras</label>
-            <input type="number" id="C" min="10" max="800" step="10" value="200">
-            <div class="hint">En kg. Soit environ la charge d'un niveau sur une travée, divisée par 2.</div>
-          </div>
-        </div>
-
-        <div class="row">
           <div class="f">
             <label for="T">Nombre de travées</label>
             <div class="step">
@@ -224,7 +221,7 @@ footer{text-align:center;padding:26px;color:var(--gris);font-size:12.5px}
               <input type="number" id="T" min="1" max="30" step="1" value="3">
               <button type="button" data-d="1" aria-label="Une travée de plus">+</button>
             </div>
-            <div class="hint">1 travée = 2 colonnes. Chaque travée en plus ajoute 1 colonne.</div>
+            <div class="hint">1 travée = 2 colonnes, chaque travée en plus ajoute 1 colonne.</div>
           </div>
           <div class="f">
             <label for="Q">Cantilevers identiques</label>
@@ -233,7 +230,7 @@ footer{text-align:center;padding:26px;color:var(--gris);font-size:12.5px}
               <input type="number" id="Q" min="1" max="99" step="1" value="1">
               <button type="button" data-d="1" aria-label="Un cantilever de plus">+</button>
             </div>
-            <div class="hint">Nombre d'exemplaires de ce rayonnage dans le devis.</div>
+            <div class="hint">Exemplaires de ce rayonnage dans le devis.</div>
           </div>
         </div>
 
@@ -480,8 +477,11 @@ function chiffrer(s, c){
   const br = TARIF.bras[c.g][c.sect][s.L];
   add(br, nbCol * s.N * nbFace, `Bras ${c.sect.replace(/X/g,' × ')} mm — L. ${s.L} mm (${c.capB} kg max)`);
 
+  // 1 fixation par colonne en simple face, 2 en double face.
+  // Aucun décompte dans le libellé : il est réutilisé tel quel dans la nomenclature
+  // consolidée, où les quantités sont multipliées par le nombre d'exemplaires.
   const lots = Math.ceil(nbCol * nbFace / 2);
-  add(TARIF.goujon, lots, `Goujons d'ancrage au sol — lot de 2 (${nbCol*nbFace} fixations)`);
+  add(TARIF.goujon, lots, `Goujons d'ancrage au sol — lot de 2`);
 
   if(s.bb){
     const bb = TARIF.butees.bras[BUTEE_BRAS[c.g][c.sect]];
@@ -552,11 +552,17 @@ function svgAxo(s, r){
   const EH  = r.g === "LG" ? 150 : 200;      // hauteur du profilé d'embase
   const EW  = LARG_EMB[r.g];                 // largeur du profilé d'embase
   const A   = sectionBras(r.g, r.sect);
-  const yC0 = s.L, yC1 = s.L + CD;                       // colonne
-  const yMax = df ? 2*s.L + CD : s.L + CD;
+  // L'embase peut être plus profonde que le bras (bras 300 sur embase 400) :
+  // on cale la géométrie sur l'embase pour que le dessin colle à l'emprise annoncée.
+  const yC0 = r.P, yC1 = r.P + CD;                       // faces avant / arrière de la colonne
+  const yBras = yC0 - s.L;                               // nez du bras avant
+  const yMax = df ? 2*r.P + CD : r.P + CD;               // = emprise au sol
 
   const T = nbTravees(s), xs = abscisses(s, r), LT = longueurHT(s, r);
-  const W = 760, HMAX = 442, mL = 72, mR = 14, mT = 38, mB = 50;
+  // Le libellé d'emprise se prolonge à droite de la cote : la marge droite s'y adapte.
+  const libEmprise = `${nb(yMax)} mm`;
+  const W = 760, HMAX = 442, mL = 72, mT = 38, mB = 54;
+  const mR = Math.round(26 + libEmprise.length * 3.4);
   const FX = 0.46, FZ = 0.30;                            // fuite oblique
   const wMM = LT + yMax*FX;
   const hMM = s.H + yMax*FZ;
@@ -628,8 +634,8 @@ function svgAxo(s, r){
 
   // --- 5. bras avant ---
   for(let i=0;i<=T;i++) nv.forEach(z=>{
-    g += box(ax0(i),ax1(i), 0, yC0, z, z+A.h, BRA);
-    if(s.bb) g += butee((ax0(i)+ax1(i))/2, 0, z+A.h);
+    g += box(ax0(i),ax1(i), yBras, yC0, z, z+A.h, BRA);
+    if(s.bb) g += butee((ax0(i)+ax1(i))/2, yBras, z+A.h);
   });
 
   // --- 6. embases, partie avant (devant la colonne) ---
@@ -638,29 +644,34 @@ function svgAxo(s, r){
     if(s.be) g += butee((ex0(i)+ex1(i))/2, 0, EH);
   }
 
-  // --- cote de profondeur, portée par le bras en haut à gauche ---
-  {
-    const zc = nv[nv.length-1] + A.h, xm = (ax0(0)+ax1(0))/2;
-    const a = P(xm, 0, zc), b = P(xm, yC0, zc);
+  // --- cote suivant la fuite : entre deux profondeurs, à x et z fixés ---
+  // dec < 0 décale d'un côté de la ligne, dec > 0 de l'autre ; cote < 0 place le texte au-dessus.
+  const coteFuite = (x, ya, yb, z, dec, cote, libelle, ancre) => {
+    const a = P(x, ya, z), b = P(x, yb, z);
     const dx = b[0]-a[0], dy = b[1]-a[1], lg = Math.hypot(dx,dy) || 1;
-    const px_ = -dy/lg, py_ = dx/lg;                    // normale à la ligne de cote
-    const dec = -18;                                    // négatif : la cote passe au-dessus du bras
-    const s1 = [a[0]+px_*dec, a[1]+py_*dec], s2 = [b[0]+px_*dec, b[1]+py_*dec];
-    const tick = (p,q) => `<line x1="${(p[0]-px_*5).toFixed(1)}" y1="${(p[1]-py_*5).toFixed(1)}"
-        x2="${(p[0]+px_*5).toFixed(1)}" y2="${(p[1]+py_*5).toFixed(1)}"
-        stroke="#E8701A" stroke-width="1.3"/>`;
-    const mx = (s1[0]+s2[0])/2, my = (s1[1]+s2[1])/2;
+    const nx = -dy/lg, ny = dx/lg;
+    const s1 = [a[0]+nx*dec, a[1]+ny*dec], s2 = [b[0]+nx*dec, b[1]+ny*dec];
+    const tick = p => `<line x1="${(p[0]-nx*5).toFixed(1)}" y1="${(p[1]-ny*5).toFixed(1)}"
+        x2="${(p[0]+nx*5).toFixed(1)}" y2="${(p[1]+ny*5).toFixed(1)}" stroke="#E8701A" stroke-width="1.3"/>`;
+    const att = (p,q) => `<line x1="${p[0].toFixed(1)}" y1="${p[1].toFixed(1)}"
+        x2="${q[0].toFixed(1)}" y2="${q[1].toFixed(1)}" stroke="#E8701A" stroke-width=".7" stroke-dasharray="2 2"/>`;
+    // « fin » prolonge le texte au-delà de la cote, pour dégager les zones encombrées
+    const fin = ancre === "fin";
+    const mx = fin ? s2[0] + dx/lg*7 : (s1[0]+s2[0])/2;
+    const my = fin ? s2[1] + dy/lg*7 : (s1[1]+s2[1])/2;
     const ang = Math.atan2(dy,dx)*180/Math.PI;
-    g += `<line x1="${a[0].toFixed(1)}" y1="${a[1].toFixed(1)}" x2="${s1[0].toFixed(1)}" y2="${s1[1].toFixed(1)}"
-            stroke="#E8701A" stroke-width=".7" stroke-dasharray="2 2"/>
-          <line x1="${b[0].toFixed(1)}" y1="${b[1].toFixed(1)}" x2="${s2[0].toFixed(1)}" y2="${s2[1].toFixed(1)}"
-            stroke="#E8701A" stroke-width=".7" stroke-dasharray="2 2"/>
-          <line x1="${s1[0].toFixed(1)}" y1="${s1[1].toFixed(1)}" x2="${s2[0].toFixed(1)}" y2="${s2[1].toFixed(1)}"
-            stroke="#E8701A" stroke-width="1.3"/>${tick(s1)}${tick(s2)}
-          <text x="${mx.toFixed(1)}" y="${(my-7).toFixed(1)}" text-anchor="middle" font-size="12.5" fill="#E8701A"
-            font-family="Barlow Condensed" font-weight="600"
-            transform="rotate(${ang.toFixed(1)} ${mx.toFixed(1)} ${my.toFixed(1)})">${nb(s.L)} mm</text>`;
-  }
+    return att(a,s1) + att(b,s2) +
+      `<line x1="${s1[0].toFixed(1)}" y1="${s1[1].toFixed(1)}" x2="${s2[0].toFixed(1)}" y2="${s2[1].toFixed(1)}"
+         stroke="#E8701A" stroke-width="1.3"/>${tick(s1)}${tick(s2)}
+       <text x="${mx.toFixed(1)}" y="${(my+cote).toFixed(1)}" text-anchor="${fin?"start":"middle"}"
+         font-size="12.5" fill="#E8701A" font-family="Barlow Condensed" font-weight="600"
+         transform="rotate(${ang.toFixed(1)} ${mx.toFixed(1)} ${my.toFixed(1)})">${libelle}</text>`;
+  };
+
+  // profondeur de bras, portée par le bras en haut à gauche
+  g += coteFuite((ax0(0)+ax1(0))/2, yBras, yC0, nv[nv.length-1]+A.h, -18, -7, `${nb(s.L)} mm`);
+  // emprise au sol, le long de l'embase de droite
+  g += coteFuite(ex1(T), 0, yMax, 0, 20, 14, libEmprise);
 
   // --- cotes d'encombrement ---
   const c1 = P(0,0,0), c2 = P(LT,0,0), yc = Math.max(c1[1],c2[1]) + 24;
@@ -739,6 +750,13 @@ function svgProfil(s, r){
 let PANIER  = [];      // [{cfg, qte}]
 let EDITION = null;    // index de la ligne en cours de modification
 
+// Repère de ligne : A, B, … Z, puis AA, AB… Partagé entre l'écran, le PDF et le CSV.
+function repere(i){
+  let s = "", n = i;
+  do { s = String.fromCharCode(65 + (n % 26)) + s; n = Math.floor(n/26) - 1; } while(n >= 0);
+  return s;
+}
+
 const cfgCourante = () => ({face:S.face, H:S.H, L:S.L, N:S.N, C:S.C,
                             bays:S.bays.slice(), bb:S.bb, be:S.be});
 const majQte = v => { S.qte = v; $("Q").value = v; };
@@ -777,7 +795,7 @@ function detail(cfg, r){
              uniformes(cfg.bays)
                ? `${t} travée${t>1?"s":""} de ${nb(cfg.bays[0])} mm`
                : `${t} travées : ${cfg.bays.map(v=>nb(v)).join(" / ")} mm`];
-  if(r && r.ok) d.push(`longueur ${nb(longueurHT(cfg,r))} mm`, `emprise ${nb(empriseSol(cfg,r))} mm`);
+  if(r && r.ok) d.push(`longueur ${nb(longueurHT(cfg,r))} mm`, `profondeur ${nb(empriseSol(cfg,r))} mm`);
   if(cfg.bb) d.push("butées de bras");
   if(cfg.be) d.push("butées d'embase");
   return d.join(" · ");
@@ -797,12 +815,12 @@ function calculer(){
   if(r.ok){
     const nv = niveaux(s);
     const pas = s.N>1 ? nv[1]-nv[0] : 0;
-    const emprise = empriseSol(s, r);
+    const emprise = empriseSol(s, r), nbCol = nbTravees(s) + 1;
     $("cotes").innerHTML = [
       ["Longueur hors tout", nb(longueurHT(s,r))+" mm"],
-      ["Emprise au sol",     nb(emprise)+" mm"],
+      ["Profondeur hors tout", nb(emprise)+" mm"],
       ["Entraxe des niveaux", pas ? nb(pas)+" mm" : "—"],
-      ["Charge totale",      nb(s.N*s.C*(s.face==="DF"?2:1)*(nbTravees(s)+1))+" kg"],
+      [`Charge maxi d'un niveau horizontal de ${nbCol} bras`, nb(r.capB*nbCol)+" kg"],
       ["Charge maxi des bras", nb(r.capB)+" kg"]
     ].map(([a,b])=>`<div><dt>${a}</dt><dd>${b}</dd></div>`).join("");
   } else $("cotes").innerHTML = "";
@@ -819,7 +837,8 @@ function calculer(){
       Les niveaux sont espacés de ${nb(pas)} mm seulement. Réduisez le nombre de niveaux ou augmentez la hauteur.</div>`;
     if(s.L > r.P) extra += "";
     vb.innerHTML = `<div class="verdict">
-      Configuration retenue : <b>cantilever ${r.g==="LG"?"léger":"mi-lourd"}</b>,
+      <b><u>Configuration retenue :</u></b><br>
+      cantilever ${r.g==="LG"?"léger":"mi-lourd"},
       colonne ${r.g==="LG"?"140 × 40 × 3":"200 × 80 × 3"} mm avec embase ${nb(r.P)} mm,
       bras ${r.sect.replace(/X/g,' × ')} mm.<br>
       Bras chargés à ${nb(s.C)} kg pour ${nb(r.capB)} kg admissibles ·
@@ -887,7 +906,7 @@ function rendrePanier(){
   box.innerHTML = `<table class="lignes"><tbody>${d.lignes.map((l,i)=>`
     <tr class="${EDITION===i?"edit":""}">
       <td>
-        <div class="titre">${i+1}. ${esc(intitule(l.cfg,l.r))}</div>
+        <div class="titre">${repere(i)}. ${esc(intitule(l.cfg,l.r))}</div>
         <div class="det">${esc(detail(l.cfg,l.r))}</div>
         ${l.r.ok?"":`<div class="det" style="color:var(--rouge)">Configuration devenue invalide — modifiez-la.</div>`}
       </td>
@@ -947,16 +966,16 @@ function ajouterAuDevis(){
   if(EDITION !== null){
     PANIER[EDITION].cfg = cfg; PANIER[EDITION].qte = S.qte;
     const i = EDITION; sortirEdition();
-    msg.className="msg ok"; msg.textContent = `Ligne ${i+1} mise à jour.`;
+    msg.className="msg ok"; msg.textContent = `Ligne ${repere(i)} mise à jour.`;
   } else {
     const jumeau = PANIER.findIndex(p => memeCfg(p.cfg, cfg));
     if(jumeau >= 0){
       PANIER[jumeau].qte = Math.min(99, PANIER[jumeau].qte + S.qte);
       msg.className="msg ok";
-      msg.textContent = `Rayonnage identique à la ligne ${jumeau+1} : quantité portée à ${PANIER[jumeau].qte}.`;
+      msg.textContent = `Rayonnage identique à la ligne ${repere(jumeau)} : quantité portée à ${PANIER[jumeau].qte}.`;
     } else {
       PANIER.push({cfg, qte:S.qte}); msg.className="msg ok";
-      msg.textContent = `Ajouté au devis en ligne ${PANIER.length}${S.qte>1?` (${S.qte} exemplaires)`:""}.`;
+      msg.textContent = `Ajouté au devis en ligne ${repere(PANIER.length-1)}${S.qte>1?` (${S.qte} exemplaires)`:""}.`;
     }
     majQte(1);
   }
@@ -968,7 +987,7 @@ function modifierLigne(i){
   Object.assign(S, {face:c.face, H:c.H, L:c.L, N:c.N, C:c.C, bays:c.bays.slice(),
                     bb:c.bb, be:c.be, qte:PANIER[i].qte});
   EDITION = i;
-  $("btnAjouter").textContent = `Mettre à jour la ligne ${i+1}`;
+  $("btnAjouter").textContent = `Mettre à jour la ligne ${repere(i)}`;
   $("btnAnnuler").style.display = "";
   $("ajoutMsg").className=""; $("ajoutMsg").textContent="";
   dessinerTravees(); synchroniser(); calculer(); rendrePanier();
@@ -1002,7 +1021,7 @@ function csv(){
   d.lignes.forEach((l,i)=>{
     if(!l.r.ok) return;
     l.r.lignes.forEach(x => L.push([
-      "Rack "+(i+1), l.qte, x.ref, x.lib.replace(/;/g,","), x.q*l.qte,
+      "Rack "+repere(i), l.qte, x.ref, x.lib.replace(/;/g,","), x.q*l.qte,
       f(x.pu.toFixed(2)), f((x.total*l.qte).toFixed(2)),
       f(x.pw.toFixed(3)), f((x.poids*l.qte).toFixed(2))].join(";")));
   });
@@ -1019,7 +1038,7 @@ function htmlNomen(){
   d.lignes.forEach((l,i)=>{
     if(!l.r.ok) return;
     s += `<h3 style="font-family:Arial,sans-serif;font-size:15px;color:#123A5E;margin:18px 0 6px">
-            Rack ${i+1}${l.qte>1?` — ${l.qte} exemplaires`:""} · ${esc(intitule(l.cfg,l.r))}</h3>
+            Rack ${repere(i)}${l.qte>1?` — ${l.qte} exemplaires`:""} · ${esc(intitule(l.cfg,l.r))}</h3>
           <p style="font-family:Arial,sans-serif;font-size:12px;color:#7C858F;margin:0 0 8px">${esc(detail(l.cfg,l.r))}</p>
           <table style="border-collapse:collapse;width:100%">
           <tr>${["Référence","Désignation","Qté","P.U. HT","Total HT"].map(x=>
@@ -1176,10 +1195,10 @@ async function genererPdf(){
     doc.text("Recapitulatif", MG, y); y += 4;
     doc.setFont("helvetica","normal");
 
-    tableau([{t:"Rayonnage",w:110,a:"l"},{t:"Qte",w:14,a:"r"},
+    tableau([{t:"Repère et rayonnage",w:110,a:"l"},{t:"Qte",w:14,a:"r"},
              {t:"PU HT",w:28,a:"r"},{t:"Total HT",w:28,a:"r"}],
       d.lignes.map((l,i)=>[
-        `${i+1}. ${intitule(l.cfg,l.r)}\n${detail(l.cfg,l.r)}`,
+        `${repere(i)}. ${intitule(l.cfg,l.r)}\n${detail(l.cfg,l.r)}`,
         l.qte,
         l.r.ok ? eurPdf(l.r.totalHT) : "-",
         l.r.ok ? eurPdf(l.totalHT)   : "-"]));
@@ -1201,9 +1220,9 @@ async function genererPdf(){
     /* ---- une page par rayonnage ---- */
     for(let i=0;i<d.lignes.length;i++){
       const l = d.lignes[i]; if(!l.r.ok) continue;
-      doc.addPage(); entete(`Rayonnage ${i+1} sur ${d.lignes.length}`);
+      doc.addPage(); entete(`Rayonnage ${repere(i)}`);
       doc.setFont("helvetica","bold"); doc.setFontSize(12);
-      doc.text(intitule(l.cfg,l.r) + (l.qte>1 ? ` - ${l.qte} exemplaires` : ""), MG, y); y += 5.5;
+      doc.text(repere(i) + ". " + intitule(l.cfg,l.r) + (l.qte>1 ? ` - ${l.qte} exemplaires` : ""), MG, y); y += 5.5;
       doc.setFont("helvetica","normal"); doc.setFontSize(8.5); doc.setTextColor(110,118,128);
       doc.splitTextToSize(detail(l.cfg,l.r), LARG).forEach(t => { doc.text(t, MG, y); y += 4; });
       doc.setTextColor(26,34,44); y += 3;
@@ -1211,7 +1230,15 @@ async function genererPdf(){
       try{
         const svg = svgAxo(Object.assign({}, l.cfg, {vue:"axo"}), l.r);
         const img = await svgVersPng(svg, 1520);
-        const hImg = Math.min(LARG*img.ratio, 88);
+        // Repère au-dessus du plan : le coin haut-gauche du dessin porte déjà une cote.
+        doc.setFillColor(232,112,26); doc.roundedRect(MG, y, 9, 9, 1.2, 1.2, "F");
+        doc.setTextColor(255); doc.setFont("helvetica","bold"); doc.setFontSize(11);
+        doc.text(repere(i), MG+4.5, y+6.5, {align:"center"});
+        doc.setTextColor(120,128,138); doc.setFont("helvetica","normal"); doc.setFontSize(8.5);
+        doc.text("Plan du rayonnage " + repere(i), MG+12.5, y+6.2);
+        doc.setTextColor(26,34,44);
+        y += 12;
+        const hImg = Math.min(LARG*img.ratio, 84);
         doc.addImage(img.data, "PNG", MG, y, hImg/img.ratio, hImg);
         y += hImg + 6;
       }catch(e){ /* le PDF reste valable sans le schéma */ }
@@ -1298,14 +1325,14 @@ async function envoyer(){
     departement_livraison: S.dep,
     nb_rayonnages: PANIER.length,
     racks: d.lignes.map((l,i)=>({
-      rang: i+1, quantite: l.qte,
+      rang: i+1, repere: repere(i), quantite: l.qte,
       intitule: intitule(l.cfg, l.r), detail: detail(l.cfg, l.r),
       gamme: l.r.g === "LG" ? "Cantilever léger" : "Cantilever mi-lourd",
       face: l.cfg.face === "DF" ? "Double face" : "Simple face",
       hauteur_colonne_mm: l.cfg.H, profondeur_embase_mm: l.r.P, longueur_bras_mm: l.cfg.L,
       section_bras: l.r.sect, niveaux: l.cfg.N, charge_par_bras_kg: l.cfg.C,
       travees: l.cfg.bays.length, largeurs_travees_mm: l.cfg.bays.slice(),
-      longueur_hors_tout_mm: longueurHT(l.cfg, l.r), emprise_au_sol_mm: empriseSol(l.cfg, l.r),
+      longueur_hors_tout_mm: longueurHT(l.cfg, l.r), profondeur_hors_tout_mm: empriseSol(l.cfg, l.r),
       butees_bras: l.cfg.bb, butees_embase: l.cfg.be,
       total_ht: l.totalHT, poids_kg: l.poids,
       nomenclature: l.r.lignes.map(x=>({reference:x.ref, designation:x.lib, quantite:x.q*l.qte,
