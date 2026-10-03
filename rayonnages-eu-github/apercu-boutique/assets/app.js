@@ -62,7 +62,7 @@
     cartEl.querySelector('[data-empty]').hidden = c.length > 0;
     form.hidden = c.length === 0;
     ul.innerHTML = c.map((l, i) => `<li>
-      ${l.photo ? `<img src="${esc(l.photo)}" alt="">` : '<span class="ph"></span>'}
+      ${l.photo ? `<img src="${esc(String(l.photo).startsWith('/') ? BASE + l.photo.slice(1) : l.photo)}" alt="">` : '<span class="ph"></span>'}
       <div><h3><a href="${esc(BASE + String(l.url).replace(/^\//, '') + 'index.html')}">${esc(l.nom)}</a></h3>
         <div class="meta">${esc([l.refLabel, l.opt].filter(Boolean).join(' · '))}</div>
         <div class="meta">${l.prix != null ? `${eur(l.prix)} HT l’unité` : 'Prix sur devis'}</div>
