@@ -33,6 +33,16 @@
     document.querySelectorAll('.js-thumb').forEach(x => x.classList.toggle('on', x === b));
   }));
 
+  // vignette d'une référence : l'affiche en grand et repère la ligne
+  document.querySelectorAll('.js-ref-ph').forEach(b => b.addEventListener('click', () => {
+    if (!main) return;
+    main.src = b.dataset.src;
+    document.querySelectorAll('.js-thumb').forEach(x => x.classList.remove('on'));
+    document.querySelectorAll('.refs tr.sel').forEach(r => r.classList.remove('sel'));
+    b.closest('tr').classList.add('sel');
+    if (main.getBoundingClientRect().top < 0) main.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }));
+
   // fiche avec tableau de références
   const addRefs = document.querySelector('.js-add-refs');
   addRefs?.addEventListener('click', () => {
