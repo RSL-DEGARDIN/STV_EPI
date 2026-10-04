@@ -117,9 +117,11 @@ main { padding-bottom: 32px; }
 .prose { max-width: 70ch; color: var(--muted); }
 .prose.cols { max-width: none; }
 .prose h3 { font-size: 20px; color: var(--fg); margin: 18px 0 6px; break-after: avoid; }
-.prose h3:first-child { margin-top: 0; }
+.prose h3:first-child, .prose .sec:first-child h3 { margin-top: 0; }
+.prose .sec { break-inside: avoid; }
 .prose p { margin: 0 0 12px; }
 .prose ul { margin: 0 0 12px; padding-left: 20px; }
+.prose ul:has(> .ral) { padding-left: 0; } .prose li.ral { display: inline-flex; align-items: center; gap: 6px; margin: 0 16px 6px 0; color: var(--fg); } .prose .ral .sw { width: 20px; height: 20px; border-radius: 4px; }
 
 /* fiche */
 .fiche { display: grid; gap: 32px; margin-top: 16px !important; }
@@ -208,24 +210,25 @@ input[type=radio] { accent-color: var(--red); width: 16px; height: 16px; }
 .ftr-note { margin: 0; padding: 14px 16px; text-align: center; font-size: 12px; color: #93a3ae; border-top: 1px solid #343e47; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 
-.refs .mono { white-space: nowrap; }
+.refs .art .mono { display: block; font-size: 12px; color: var(--muted); white-space: nowrap; letter-spacing: .02em; }
+.refs .art span { display: block; line-height: 1.35; margin-top: 1px; }
+.refs td.prix { white-space: nowrap; font-weight: 600; }
 .fiche > * { min-width: 0; }
 .refs td.ph { width: 56px; padding-right: 0; }
 .ref-ph { display: block; width: 48px; height: 48px; padding: 0; border: 1px solid var(--line); background: #fff; cursor: zoom-in; }
 .ref-ph img { width: 100%; height: 100%; object-fit: contain; }
 .ref-ph:hover { border-color: var(--red); }
 .refs tr.sel td { background: var(--soft); }
-/* mobile : chaque référence sur deux lignes (photo | réf. + désignation | prix + qté), sans défilement horizontal */
+/* mobile : photo | réf. + désignation, puis prix et quantité dessous, sans défilement horizontal */
 @media (max-width: 599px) {
   .refs thead { display: none; }
-  .refs tr { display: grid; grid-template-columns: auto 1fr auto; grid-template-areas: "ph code prix" "ph des qty"; gap: 2px 10px; align-items: center; padding: 10px 8px; border-top: 1px solid var(--line); }
+  .refs tr { display: grid; grid-template-columns: auto 1fr auto; grid-template-areas: "ph art art" "ph prix q"; gap: 6px 10px; align-items: center; padding: 10px 8px; border-top: 1px solid var(--line); }
   .refs tr:first-child { border-top: 0; }
   .refs td { padding: 0; border: 0; }
-  .refs td.ph { grid-area: ph; width: auto; }
-  .refs td.mono { grid-area: code; font-size: 12px; color: var(--muted); }
-  .refs td:nth-last-child(3) { grid-area: des; }
-  .refs td:nth-last-child(2) { grid-area: prix; }
-  .refs td:last-child { grid-area: qty; }
+  .refs td.ph { grid-area: ph; width: auto; align-self: start; }
+  .refs td.art { grid-area: art; }
+  .refs td.prix { grid-area: prix; text-align: left; }
+  .refs td.q { grid-area: q; }
   .refs tr.sel { background: var(--soft); }
 }
 
@@ -283,3 +286,6 @@ input[type=radio] { accent-color: var(--red); width: 16px; height: 16px; }
 .cat-main > .fiche { margin-top: 4px !important; } .cat-main > section { margin-block: 48px; }
 .cart-lines .back { margin-top: 16px; }
 .cart-lines ul:empty { display: none; }
+.fr { display: inline-flex; align-items: center; gap: 8px; font: 500 12px var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--fg); }
+.fr svg { flex: none; outline: 1px solid var(--line); }
+.side > .fr { margin-top: 18px; }
