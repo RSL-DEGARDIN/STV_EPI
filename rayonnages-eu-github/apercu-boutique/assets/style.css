@@ -77,10 +77,11 @@ main { padding-bottom: 32px; }
 .hero { display: grid; gap: 32px; align-items: center; margin-top: 32px; }
 .hero h1 { font-size: clamp(42px, 7vw, 66px); letter-spacing: -.01em; margin-bottom: 16px; }
 .hero h1 span { color: var(--red); }
-.hero-img { margin: 0; border: 1px solid var(--line); background: var(--card); }
-.hero-img img { aspect-ratio: 4/3; width: 100%; object-fit: cover; }
-.hero-img figcaption { padding: 10px 14px; font: 12px var(--mono); color: var(--muted); border-top: 1px solid var(--line); }
 @media (min-width: 900px) { .hero { grid-template-columns: 1.05fr 1fr; } }
+.facts { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+.facts li { background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--red); padding: 18px 20px; }
+.facts b { display: block; font: 600 26px/1.1 var(--display); margin-bottom: 4px; }
+.facts span { color: var(--muted); }
 .band { display: grid; gap: 24px; background: var(--dark); color: var(--dark-fg); padding: 28px; }
 .band .eyebrow, .band p { color: #c3ccd3; }
 .band h2 { color: #fff; }
@@ -90,8 +91,6 @@ main { padding-bottom: 32px; }
 .cfg-list small { display: block; font: 11px var(--mono); text-transform: uppercase; letter-spacing: .1em; color: #9fb0bc; }
 .cfg-list b { font: 600 19px/1.15 var(--display); }
 @media (min-width: 900px) { .band { grid-template-columns: 1fr 1.3fr; padding: 40px; } }
-.about { display: grid; gap: 16px; } .about p { color: var(--muted); max-width: 65ch; }
-@media (min-width: 900px) { .about { grid-template-columns: 1fr 1.4fr; } }
 
 /* grilles et cartes */
 .grid { display: grid; gap: 16px; grid-template-columns: 1fr; }
