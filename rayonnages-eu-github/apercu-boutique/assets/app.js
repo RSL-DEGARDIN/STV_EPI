@@ -56,10 +56,53 @@
     add(lines); done(msg, lines.reduce((t, l) => t + l.qty, 0));
   });
 
+  // fiche avec choix (dimensions, coloris…) : un bouton par valeur, la référence et le prix suivent
+  document.querySelectorAll('.js-pick').forEach(f => {
+    const arts = JSON.parse(f.dataset.arts);
+    const axes = [...f.querySelectorAll('[data-axis]')].map(x => x.dataset.axis);
+    const radios = a => [...f.querySelectorAll('input[type=radio]')].filter(i => i.name === a);
+    const fits = (x, s) => axes.every(a => x.v[a] === s[a]);
+    let cur = arts[0];
+    function sync(changed) {
+      const s = Object.fromEntries(axes.map(a => [a, radios(a).find(i => i.checked)?.value]));
+      cur = arts.find(x => fits(x, s));
+      if (!cur) { // combinaison non fabriquée : l'article le plus proche qui garde la valeur cliquée
+        const score = x => axes.filter(a => x.v[a] === s[a]).length;
+        cur = arts.filter(x => x.v[changed] === s[changed]).sort((p, q) => score(q) - score(p))[0] || arts[0];
+        axes.forEach(a => radios(a).forEach(i => { i.checked = i.value === cur.v[a]; }));
+      }
+      axes.forEach(a => {
+        radios(a).forEach(i => i.parentElement.classList.toggle('off', !arts.some(x => fits(x, { ...cur.v, [a]: i.value }))));
+        f.querySelector(`[data-axis="${CSS.escape(a)}"] [data-cur]`).textContent = cur.v[a];
+      });
+      f.querySelector('[data-code]').textContent = cur.code;
+      f.querySelector('[data-des]').textContent = [cur.des, cur.col].filter(Boolean).join(' · ');
+      f.querySelector('[data-price]').innerHTML = cur.prix != null
+        ? `<span class="from">Prix unitaire</span><b>${eur(cur.prix)}</b> <span class="ht">HT</span>`
+        : '<b class="quote">Sur devis</b><span class="muted">Ajoutez-le à votre demande, nous vous envoyons le prix sous 48 h.</span>';
+      f.querySelector('[data-btn]').textContent = cur.prix != null ? 'Ajouter au panier' : 'Ajouter à ma demande';
+      if (main && cur.photo && changed) {
+        main.src = cur.photo;
+        document.querySelectorAll('.js-thumb').forEach(x => x.classList.toggle('on', x.dataset.src === cur.photo));
+      }
+    }
+    f.addEventListener('change', e => { if (e.target.type === 'radio') sync(e.target.name); });
+    f.addEventListener('submit', e => {
+      e.preventDefault();
+      const qty = Math.max(1, Math.floor(+f.querySelector('.qty').value) || 1);
+      add([{ ...cur.line, opt: '', qty }]);
+      done(f.querySelector('[data-msg]'), qty);
+    });
+    sync();
+  });
+
   // fiche simple (avec options éventuelles)
+  document.querySelectorAll('.js-add-one').forEach(f => f.addEventListener('change', e => {
+    if (e.target.type === 'radio') e.target.closest('fieldset').querySelector('[data-cur]').textContent = e.target.value;
+  }));
   document.querySelectorAll('.js-add-one').forEach(f => f.addEventListener('submit', e => {
     e.preventDefault();
-    const opt = [...f.querySelectorAll('select')].map(s => `${s.name} : ${s.value}`).join(' · ');
+    const opt = [...f.querySelectorAll('select, input[type=radio]:checked')].map(s => `${s.name} : ${s.value}`).join(' · ');
     const qty = Math.max(1, Math.floor(+f.querySelector('.qty').value) || 1);
     add([{ ...JSON.parse(f.dataset.line), opt, qty }]);
     done(f.querySelector('[data-msg]'), qty);
