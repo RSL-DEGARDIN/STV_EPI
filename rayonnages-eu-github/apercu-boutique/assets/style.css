@@ -102,7 +102,6 @@ main { padding-bottom: 32px; }
 .card-img { position: relative; background: var(--soft); }
 .card-img img { width: 100%; aspect-ratio: 4/3; object-fit: cover; }
 .card .card-img { background: #fff; } .card .card-img img { object-fit: contain; }
-.tag { position: absolute; left: 12px; top: 12px; background: var(--hazard); color: #15191d; padding: 2px 8px; font: 500 10px/1.6 var(--mono); text-transform: uppercase; letter-spacing: .08em; }
 .card-body { display: flex; flex-direction: column; gap: 6px; padding: 16px; flex: 1; }
 .card-body h3 { font-size: 22px; font-weight: 600; }
 .card:hover h3, .rub:hover h3 { color: var(--red); }
@@ -125,7 +124,8 @@ main { padding-bottom: 32px; }
 
 /* fiche */
 .fiche { display: grid; gap: 32px; margin-top: 16px !important; }
-@media (min-width: 960px) { .fiche { grid-template-columns: 1.1fr 1fr; gap: 48px; } .gallery { position: sticky; top: 150px; align-self: start; } }
+.cat-main { container-type: inline-size; } /* la fiche se met sur 2 colonnes selon la place laissée par le menu de gauche */
+@container (min-width: 720px) { .fiche { grid-template-columns: 1.1fr 1fr; gap: 40px; } .gallery { position: sticky; top: 150px; align-self: start; } }
 .main-img { background: var(--card); border: 1px solid var(--line); }
 .main-img img { width: 100%; aspect-ratio: 4/3; object-fit: contain; background: #fff; }
 .main-img.empty { aspect-ratio: 4/3; display: grid; place-items: center; color: var(--muted); }
@@ -263,7 +263,7 @@ input[type=radio] { accent-color: var(--red); width: 16px; height: 16px; }
 
 /* fiche : un bouton par dimension / coloris */
 .pick .axis { border: 0; margin: 0; padding: 0; min-width: 0; }
-.pick legend { padding: 0; margin-bottom: 8px; font-size: 14px; color: var(--muted); }
+.pick legend { padding: 0; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: var(--red); }
 .pick legend b { color: var(--fg); font-weight: 600; }
 .pills { display: flex; flex-wrap: wrap; gap: 8px; }
 .pill { position: relative; }
@@ -281,3 +281,6 @@ input[type=radio] { accent-color: var(--red); width: 16px; height: 16px; }
 .all-refs summary { padding: 6px 0; font-weight: 500; cursor: pointer; }
 .all-refs > .box { margin-top: 8px; }
 .cat-main > .guide { margin-top: 40px; }
+.cat-main > .fiche { margin-top: 4px !important; } .cat-main > section { margin-block: 48px; }
+.cart-lines .back { margin-top: 16px; }
+.cart-lines ul:empty { display: none; }
