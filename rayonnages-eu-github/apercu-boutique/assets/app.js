@@ -82,8 +82,8 @@
         : '<b class="quote">Sur devis</b><span class="muted">Ajoutez-le à votre demande, nous vous envoyons le prix sous 48 h.</span>';
       f.querySelector('[data-btn]').textContent = cur.prix != null ? 'Ajouter au panier' : 'Ajouter à ma demande';
       if (main && cur.photo && changed) {
-        main.src = cur.photo;
-        document.querySelectorAll('.js-thumb').forEach(x => x.classList.toggle('on', x.dataset.src === cur.photo));
+        main.src = cur.photo.startsWith('/') ? BASE + cur.photo.slice(1) : cur.photo;
+        document.querySelectorAll('.js-thumb').forEach(x => x.classList.toggle('on', new URL(x.dataset.src, location.href).href === main.src));
       }
     }
     f.addEventListener('change', e => { if (e.target.type === 'radio') sync(e.target.name); });
