@@ -276,6 +276,7 @@ input[type=radio] { accent-color: var(--red); width: 16px; height: 16px; }
 .pill input:focus-visible + span { outline: 2px solid var(--red); outline-offset: 2px; }
 .pill.off span { color: var(--muted); border-style: dashed; }
 .pick-res { border-top: 1px solid var(--line); padding-top: 12px; }
+.pick > .pick-res:first-child { border-top: 0; padding-top: 0; }
 .pick-res p { margin: 0 0 8px; font-size: 14px; }
 .sw { display: inline-block; flex: none; width: 16px; height: 16px; border-radius: 50%; background: var(--sw); border: 1px solid rgba(0, 0, 0, .3); }
 .dots { display: flex; gap: 5px; }
