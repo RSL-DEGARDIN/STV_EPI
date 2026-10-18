@@ -107,9 +107,9 @@
   <div class="card" id="cardUpload">
     <h2><span class="tag">PDF</span> Factures fournisseurs — plusieurs fichiers acceptés</h2>
     <div class="dropzone" id="dropzone">
-      <p class="big">Déposez une ou plusieurs factures PDF</p>
+      <p class="big">Déposez une ou plusieurs factures PDF ou photos</p>
       <p>ou cliquez pour parcourir — DKV, Orange, EDF, Grand Nancy, Amazon…</p>
-      <input type="file" id="fileInput" accept="application/pdf" multiple>
+      <input type="file" id="fileInput" accept="application/pdf,image/*" multiple>
       <div class="queue" id="queue"></div>
     </div>
     <div class="field" style="max-width:420px;margin-top:12px">
@@ -297,16 +297,16 @@ function addFiles(files){
   hideStatus('statusExtract');
   let rejected=0;
   Array.from(files).forEach(file=>{
-    if(file.type!=='application/pdf'||file.size>25*1024*1024){rejected++;return;}
+    if(!(file.type==='application/pdf'||file.type.startsWith('image/'))||file.size>25*1024*1024){rejected++;return;}
     if(queue.some(q=>q.name===file.name&&q.size===file.size))return; // doublon dans la file
     const r=new FileReader();
     r.onload=()=>{
-      queue.push({name:file.name,size:file.size,b64:r.result.split(',')[1],state:'pending'});
+      queue.push({name:file.name,size:file.size,mime:file.type,b64:r.result.split(',')[1],state:'pending'});
       renderQueue();
     };
     r.readAsDataURL(file);
   });
-  if(rejected)showStatus('statusExtract','err',rejected+' fichier(s) ignoré(s) : PDF uniquement, 25 Mo maximum.');
+  if(rejected)showStatus('statusExtract','err',rejected+' fichier(s) ignoré(s) : PDF ou photo uniquement, 25 Mo maximum.');
 }
 function renderQueue(){
   const q=$('queue');q.innerHTML='';
@@ -336,7 +336,7 @@ $('btnExtract').addEventListener('click',async()=>{
   for(const f of todo){
     showStatus('statusExtract','info','<span class="spinner"></span>Analyse de « '+esc(f.name)+' » ('+(done+failed+1)+'/'+todo.length+')…');
     try{
-      const d=await extractOne(f.b64);
+      const d=await extractOne(f.b64,f.mime);
       addInvoice(d,f.name);
       f.state='done';done++;
     }catch(err){
@@ -352,8 +352,8 @@ $('btnExtract').addEventListener('click',async()=>{
   if(done)$('cardTxt').scrollIntoView({behavior:'smooth'});
 });
 
-async function extractOne(b64){
-  const prompt=`Tu es un assistant comptable français. Analyse cette facture fournisseur PDF.
+async function extractOne(b64,mime){
+  const prompt=`Tu es un assistant comptable français. Analyse cette facture fournisseur (PDF ou photo).
 Réponds UNIQUEMENT avec un objet JSON valide, sans backticks Markdown, sans texte avant ou après :
 {
   "fournisseur": "nom court en MAJUSCULES (ex: DKV, ORANGE, EDF, GRAND NANCY, AMAZON)",
@@ -368,14 +368,14 @@ Réponds UNIQUEMENT avec un objet JSON valide, sans backticks Markdown, sans tex
 }
 Une ligne de TVA par taux présent (eau/gaz : souvent 5,5% et 10% ; télécoms : 20%). Σ lignes_ht + Σ lignes_tva = montant_ttc. Regroupe les lignes HT par catégorie (max 5). Valeur absente → null ou []. Nombres décimaux avec un point, sans symbole €.`;
   const key=$('fGeminiKey').value.trim();
-  if(key)return extractGemini(b64,prompt,key);
+  if(key)return extractGemini(b64,mime,prompt,key);
   // Sans clé : API Anthropic, qui ne répond que dans un artefact claude.ai
   const resp=await fetch("https://api.anthropic.com/v1/messages",{
     method:"POST",headers:{"Content-Type":"application/json"},
     body:JSON.stringify({
       model:"claude-sonnet-4-6",max_tokens:1500,
       messages:[{role:"user",content:[
-        {type:"document",source:{type:"base64",media_type:"application/pdf",data:b64}},
+        {type:mime==="application/pdf"?"document":"image",source:{type:"base64",media_type:mime,data:b64}},
         {type:"text",text:prompt}
       ]}]
     })
@@ -392,11 +392,11 @@ const GEMINI_MODEL="gemini-flash-latest";
 try{$('fGeminiKey').value=localStorage.getItem('geminiKey')||'';}catch(e){}
 $('fGeminiKey').addEventListener('change',()=>{try{localStorage.setItem('geminiKey',$('fGeminiKey').value.trim());}catch(e){}});
 
-async function extractGemini(b64,prompt,key){
+async function extractGemini(b64,mime,prompt,key){
   const resp=await fetch(GEMINI_URL+"/models/"+GEMINI_MODEL+":generateContent",{
     method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":key},
     body:JSON.stringify({
-      contents:[{parts:[{inline_data:{mime_type:"application/pdf",data:b64}},{text:prompt}]}],
+      contents:[{parts:[{inline_data:{mime_type:mime,data:b64}},{text:prompt}]}],
       generationConfig:{responseMimeType:"application/json"}
     })
   });
