@@ -180,6 +180,7 @@
     </div>
     <div class="actions">
       <button class="btn btn-txt" id="btnDownloadTxt">✓ Exporter tout en 1 fichier TXT</button>
+      <button class="btn btn-txt" id="btnDownloadCsv">Exporter en CSV</button>
       <button class="btn btn-ok" id="btnSend">Envoyer la sélection vers Airtable</button>
       <button class="btn btn-ghost" id="btnReset">Tout effacer</button>
     </div>
@@ -703,30 +704,35 @@ function toCP1252(str){
   return new Uint8Array(bytes);
 }
 
-$('btnDownloadTxt').addEventListener('click',()=>{
+// CSV : séparateur ";" (Excel français), champs contenant ; ou " entre guillemets
+function exportFile(ext){
+  const sep=ext==='csv'?';':'\t';
+  const cell=x=>{x=String(x??'');return ext==='csv'&&/[;"\r\n]/.test(x)?'"'+x.replace(/"/g,'""')+'"':x;};
   if(!invoices.length){showStatus('statusSend','err','Aucune facture à exporter.');return;}
   const bad=invoices.filter(v=>!balOf(v).ok);
   if(bad.length){
     showStatus('statusSend','err',bad.length+' facture(s) non équilibrée(s) : pièce '+bad.map(v=>v.rows[0].cols[CI.piece]).join(', ')+'. Corrigez avant l\'export.');
     return;
   }
-  const lines=[HEADERS.join('\t')]; // ligne de titres
+  const lines=[HEADERS.map(cell).join(sep)]; // ligne de titres
   invoices.forEach(v=>v.rows.forEach(r=>{
     const c=r.cols;
     // Mappage : A journal, B vide, C pièce, D date, E compte, F vide, G tiers, H vide,
     // I référence, J vide, K libellé, L débit, M crédit, N lettrage, O n° facture
-    lines.push([c[0],'',c[1],c[2],c[3],'',c[4],'',c[5],'',c[6],numSage(c[7]),numSage(c[8]),c[9],v.numero||''].join('\t'));
+    lines.push([c[0],'',c[1],c[2],c[3],'',c[4],'',c[5],'',c[6],numSage(c[7]),numSage(c[8]),c[9],v.numero||''].map(cell).join(sep));
   }));
   const blob=new Blob([toCP1252(lines.join('\r\n')+'\r\n')],{type:'text/plain;charset=windows-1252'});
   const p1=invoices[0].rows[0].cols[CI.piece], p2=invoices[invoices.length-1].rows[0].cols[CI.piece];
   const name=invoices.length===1
-    ? 'import_sage_'+invoices[0].fournisseur.replace(/[^A-Za-z0-9&-]+/g,'_')+'_'+(invoices[0].numero||p1)+'.txt'
-    : 'import_sage_'+invoices.length+'factures_pieces_'+p1+'-'+p2+'.txt';
+    ? 'import_sage_'+invoices[0].fournisseur.replace(/[^A-Za-z0-9&-]+/g,'_')+'_'+(invoices[0].numero||p1)+'.'+ext
+    : 'import_sage_'+invoices.length+'factures_pieces_'+p1+'-'+p2+'.'+ext;
   const a=document.createElement('a');
   a.href=URL.createObjectURL(blob);a.download=name;
   document.body.appendChild(a);a.click();URL.revokeObjectURL(a.href);a.remove();
-  showStatus('statusSend','ok','✓ Fichier TXT téléchargé : '+invoices.length+' facture(s), '+(lines.length-1)+' écritures + ligne de titres.');
-});
+  showStatus('statusSend','ok','✓ Fichier '+ext.toUpperCase()+' téléchargé : '+invoices.length+' facture(s), '+(lines.length-1)+' écritures + ligne de titres.');
+}
+$('btnDownloadTxt').addEventListener('click',()=>exportFile('txt'));
+$('btnDownloadCsv').addEventListener('click',()=>exportFile('csv'));
 
 /* ================= Envoi Airtable (facture sélectionnée) ================= */
 $('btnSend').addEventListener('click',async()=>{
