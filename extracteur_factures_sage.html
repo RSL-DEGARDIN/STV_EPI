@@ -112,6 +112,10 @@
       <input type="file" id="fileInput" accept="application/pdf" multiple>
       <div class="queue" id="queue"></div>
     </div>
+    <div class="field" style="max-width:420px;margin-top:12px">
+      <label for="fGeminiKey">Clé IA Google Gemini (gratuite : aistudio.google.com/apikey)</label>
+      <input id="fGeminiKey" type="password" autocomplete="off" placeholder="Collez votre clé — gardée dans ce navigateur uniquement">
+    </div>
     <div class="actions">
       <button class="btn btn-primary" id="btnExtract" disabled>Analyser et ajouter au tableau</button>
       <span class="note" style="margin:0" id="hintPiece"></span>
@@ -362,6 +366,9 @@ Réponds UNIQUEMENT avec un objet JSON valide, sans backticks Markdown, sans tex
   "detail_tarifaire": "prix unitaire principal avec son unité s'il figure sur la facture, au format français avec virgule (ex: \\"0,05871€/kWh\\", \\"1,689€/L\\"), sinon null"
 }
 Une ligne de TVA par taux présent (eau/gaz : souvent 5,5% et 10% ; télécoms : 20%). Σ lignes_ht + Σ lignes_tva = montant_ttc. Regroupe les lignes HT par catégorie (max 5). Valeur absente → null ou []. Nombres décimaux avec un point, sans symbole €.`;
+  const key=$('fGeminiKey').value.trim();
+  if(key)return extractGemini(b64,prompt,key);
+  // Sans clé : API Anthropic, qui ne répond que dans un artefact claude.ai
   const resp=await fetch("https://api.anthropic.com/v1/messages",{
     method:"POST",headers:{"Content-Type":"application/json"},
     body:JSON.stringify({
@@ -375,6 +382,26 @@ Une ligne de TVA par taux présent (eau/gaz : souvent 5,5% et 10% ; télécoms :
   if(!resp.ok)throw new Error("Erreur API ("+resp.status+")");
   const data=await resp.json();
   const text=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n');
+  return JSON.parse(text.replace(/```json|```/g,'').trim());
+}
+
+/* Gemini (clé gratuite). Pour passer à FreeLLMAPI : remplacer GEMINI_URL par son adresse /v1beta. */
+const GEMINI_URL="https://generativelanguage.googleapis.com/v1beta";
+const GEMINI_MODEL="gemini-flash-latest";
+try{$('fGeminiKey').value=localStorage.getItem('geminiKey')||'';}catch(e){}
+$('fGeminiKey').addEventListener('change',()=>{try{localStorage.setItem('geminiKey',$('fGeminiKey').value.trim());}catch(e){}});
+
+async function extractGemini(b64,prompt,key){
+  const resp=await fetch(GEMINI_URL+"/models/"+GEMINI_MODEL+":generateContent",{
+    method:"POST",headers:{"Content-Type":"application/json","x-goog-api-key":key},
+    body:JSON.stringify({
+      contents:[{parts:[{inline_data:{mime_type:"application/pdf",data:b64}},{text:prompt}]}],
+      generationConfig:{responseMimeType:"application/json"}
+    })
+  });
+  if(!resp.ok)throw new Error("Erreur Gemini ("+resp.status+") : "+(await resp.text()).slice(0,300));
+  const data=await resp.json();
+  const text=((data.candidates||[])[0]?.content?.parts||[]).map(p=>p.text||'').join('\n');
   return JSON.parse(text.replace(/```json|```/g,'').trim());
 }
 
