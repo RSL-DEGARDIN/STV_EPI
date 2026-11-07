@@ -15,7 +15,7 @@ Application web locale de gestion commerciale et de stock, développée pour RSL
 ## Lancement sous Windows
 
 1. Décompresser le dossier dans un répertoire local.
-2. Les fichiers Excel sources sont fournis dans le dossier `sources`.
+2. Copier `Clients.xlsx` et `produits euro.xlsx` dans le dossier `sources` (ils ne sont pas dans le dépôt : données clients).
 3. Double-cliquer sur `start_windows.bat`.
 4. Ouvrir `http://127.0.0.1:8000` dans le navigateur.
 

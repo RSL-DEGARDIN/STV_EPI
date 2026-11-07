@@ -59,7 +59,7 @@ def reserved(product_id):
 @app.get('/',response_class=HTMLResponse)
 def home(request:Request):
  stats={ 'clients':one('select count(*) n from clients')['n'], 'products':one('select count(*) n from products')['n'], 'quotes':one("select count(*) n from quotes where status!='Annulé'")['n'], 'orders':one("select count(*) n from orders where status!='Livrée' and status!='Annulée'")['n'], 'stock_alerts':one('select count(*) n from products where stock<=COALESCE(stock_min,0) and stock>0')['n'] }
- return templates.TemplateResponse('index.html',{'request':request,'stats':stats})
+ return templates.TemplateResponse(request,'index.html',{'stats':stats})
 
 @app.get('/api/clients')
 def clients(q:str=''):
