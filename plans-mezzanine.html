@@ -1,0 +1,2130 @@
+<meta charset="utf-8">
+<title>Plans mezzanine RSL</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout : bandeau outil (marque + projets), puis plan sur fond papier à gauche et fiche projet à droite ; une colonne sur téléphone. */
+:root {
+  --bg: #edf0f4; --surface: #ffffff; --paper: #fbfcfe; --ink: #172031; --muted: #5a6577; --line: #d4dae3;
+  --rsl: #1f4fa3; --rsl-soft: #e3ebf8;
+  --steel: #dde3ea; --steel-ink: #3a4553; --solive: #4c8b5b; --gc: #e06c17; --stair: #8a5728; --cote: #1f4fa3; --croix: #2445c4; --dxf: #d3336c;
+  --ok: #2c7a51; --ok-soft: #e2f3ea; --warn: #9a6512; --warn-soft: #fbf0d9; --ground: #e2e7ee; --cote3d: #d42a2a; --bulb: #f6c445; --bulb-ink: #a77a07;
+  --f-display: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --f-body: "Barlow", "Segoe UI", system-ui, sans-serif;
+  --f-mono: "IBM Plex Mono", ui-monospace, "Consolas", monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f141b; --surface: #171f29; --paper: #131a23; --ink: #e6ebf2; --muted: #98a4b5; --line: #2a3543;
+  --rsl: #84a7ff; --rsl-soft: #1c2a45;
+  --steel: #2a3441; --steel-ink: #c0cad7; --solive: #78c08b; --gc: #ff8f3f; --stair: #dd9d5e; --cote: #8fb0ff; --croix: #8da4ff; --dxf: #ff6d9c;
+  --ok: #63d39d; --ok-soft: #173426; --warn: #f0c35a; --warn-soft: #3a2f14; --ground: #1c242f; --cote3d: #ff6b6b; --bulb: #ffd45c; --bulb-ink: #ffd45c; color-scheme: dark;
+} }
+:root[data-theme="dark"] {
+  --bg: #0f141b; --surface: #171f29; --paper: #131a23; --ink: #e6ebf2; --muted: #98a4b5; --line: #2a3543;
+  --rsl: #84a7ff; --rsl-soft: #1c2a45;
+  --steel: #2a3441; --steel-ink: #c0cad7; --solive: #78c08b; --gc: #ff8f3f; --stair: #dd9d5e; --cote: #8fb0ff; --croix: #8da4ff; --dxf: #ff6d9c;
+  --ok: #63d39d; --ok-soft: #173426; --warn: #f0c35a; --warn-soft: #3a2f14; --ground: #1c242f; --cote3d: #ff6b6b; --bulb: #ffd45c; --bulb-ink: #ffd45c; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+#cot3d { accent-color: var(--cote3d); }
+#light3d { padding: 5px 9px; }
+#light3d .glass { fill: none; }
+#light3d[aria-pressed="true"] .glass { fill: var(--bulb); stroke: var(--bulb-ink); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); }
+.seg button { font: 600 15px var(--f-display); letter-spacing: .03em; padding: 7px 16px; border: 0; background: transparent; color: var(--muted); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--rsl); color: var(--surface); }
+#devis[aria-pressed="true"] { background: var(--rsl); border-color: var(--rsl); color: var(--surface); }
+.seg button:focus-visible, .ghost:focus-visible { outline: 2px solid var(--rsl); outline-offset: 2px; }
+.tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+.ghost { display: inline-flex; align-items: center; gap: 6px; font: 500 14px var(--f-body); padding: 6px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; }
+#pl3d { accent-color: var(--rsl); }
+#bat-card .share-row label { flex: 0 0 auto; display: flex; align-items: center; gap: 6px; }
+#bat-card .share-row input { width: 92px; }
+.planbox.zoomed svg { cursor: grab; }
+#batmode { font: 500 14px var(--f-body); padding: 4px 6px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--ink); }
+.v3d { position: relative; height: min(72vh, 760px); min-height: 360px; touch-action: none; }
+.v3d canvas { display: block; width: 100%; height: 100%; cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cg fill='none' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M26 16a10 10 0 1 1-2.9-7.1' stroke='%23fff' stroke-width='6'/%3E%3Cpath d='M24.5 4.5v5.5H19' stroke='%23fff' stroke-width='6'/%3E%3Cpath d='M26 16a10 10 0 1 1-2.9-7.1' stroke='%231f4fa3' stroke-width='2.6'/%3E%3Cpath d='M24.5 4.5v5.5H19' stroke='%231f4fa3' stroke-width='2.6'/%3E%3Ccircle cx='16' cy='16' r='2' fill='%231f4fa3' stroke='%23fff' stroke-width='1.5'/%3E%3C/g%3E%3C/svg%3E") 16 16, grab; } /* flèche circulaire : on comprend qu'on peut faire tourner */
+.v3d-msg { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; padding: 24px; text-align: center; color: var(--muted); }
+[hidden] { display: none !important; }
+@media (min-width: 1081px) { .sheet { position: sticky; top: max(16px, env(safe-area-inset-top, 0px)); } }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--f-body); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 16px 32px; }
+.wrap { max-width: 1440px; margin: 0 auto; display: grid; gap: 16px; }
+.wrap:has(#devis-box:not([hidden])) { max-width: 1760px; } /* devis ouvert : la place en plus va à la colonne « Poste » */
+header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 20px; }
+.brand { display: flex; align-items: baseline; gap: 12px; }
+.brand b { font: 700 34px/1 var(--f-display); color: var(--rsl); letter-spacing: .02em; }
+.brand h1 { margin: 0; font: 600 22px/1.1 var(--f-display); letter-spacing: .01em; text-wrap: balance; }
+.brand span { color: var(--muted); font-size: 13px; }
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 9px 14px; border-radius: 8px; border: 1px solid var(--rsl); background: var(--rsl); color: var(--surface); font: 600 14px var(--f-body); cursor: pointer; }
+.btn:hover { filter: brightness(1.08); }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.share-row { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+.share-row + .share-row { margin-top: 10px; }
+.share-row label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); flex: 1 1 200px; min-width: 0; }
+.share-row input { font: 15px var(--f-body); padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); min-width: 0; }
+#sh-url { flex: 1 1 300px; font: 13px var(--f-mono); }
+.share-row a.ghost { text-decoration: none; }
+.btn:focus-within, .btn:focus-visible, .tab:focus-visible, input:focus-visible + span { outline: 2px solid var(--rsl); outline-offset: 2px; }
+.tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; flex: 1 1 280px; min-width: 0; } /* dans la ligne du titre */
+.tab { flex: none; text-align: left; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); cursor: pointer; font: inherit; }
+.tab b { display: block; font: 600 16px/1.2 var(--f-display); letter-spacing: .02em; }
+.tab small { color: var(--muted); font: 12px var(--f-mono); }
+.tab[aria-selected="true"] { border-color: var(--rsl); background: var(--rsl-soft); box-shadow: inset 0 -3px 0 var(--rsl); }
+.msg { padding: 10px 14px; border-radius: 8px; background: var(--warn-soft); color: var(--warn); font-size: 14px; }
+.main { display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 16px; align-items: start; }
+@media (min-width: 1081px) { .main > aside { grid-column: 2; grid-row: 1 / span 2; } }
+#devis-box { grid-column: 1; }
+.main:has(> #devis-box:not([hidden])) .sheet { position: static; } /* le devis est sous la vue : elle ne reste plus collée en haut */
+.main.vide > :not(#devis-box) { display: none; } /* devis Word sans projet ouvert */
+@media (max-width: 1080px) { .main { grid-template-columns: minmax(0, 1fr); } }
+.sheet { background: var(--paper); border: 1px solid var(--line); border-radius: 10px; min-width: 0; }
+.sheet-head { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px 16px; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+.sheet-head h2 { margin: 0; font: 600 18px var(--f-display); letter-spacing: .02em; }
+.toggle { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); cursor: pointer; }
+.toggle input { accent-color: var(--dxf); width: 16px; height: 16px; }
+.planbox { padding: 12px; overflow-x: auto; }
+.plan { display: block; width: 100%; height: auto; max-height: min(76vh, 960px); min-width: 520px; font-family: var(--f-display); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 10px 16px 14px; border-top: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+.legend i { display: inline-block; width: 18px; height: 10px; margin-right: 6px; vertical-align: -1px; border-radius: 2px; }
+aside { display: grid; gap: 16px; min-width: 0; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; min-width: 0; }
+.card h3 { margin: 0 0 10px; font: 600 13px var(--f-body); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+dl { display: grid; grid-template-columns: auto 1fr; gap: 6px 14px; margin: 0; }
+dt { color: var(--muted); font-size: 14px; }
+dd { margin: 0; font-weight: 500; text-align: right; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.mono { font-family: var(--f-mono); font-size: 13px; }
+.cart-title { font: 700 26px/1.1 var(--f-display); letter-spacing: .02em; margin-bottom: 2px; }
+.cart-ref { font: 500 14px var(--f-mono); color: var(--rsl); margin-bottom: 12px; }
+.swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px 12px; }
+.sw { display: flex; align-items: center; gap: 10px; font-size: 13px; }
+.sw i { flex: none; width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--line); }
+.sw span { color: var(--muted); display: block; line-height: 1.2; }
+.sw b { font: 500 13px var(--f-mono); }
+.checks { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.checks li { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-size: 14px; }
+.pill { flex: none; white-space: nowrap; padding: 1px 9px; border-radius: 999px; font: 500 12px var(--f-mono); }
+.pill.ok { background: var(--ok-soft); color: var(--ok); }
+.pill.ko { background: var(--warn-soft); color: var(--warn); }
+.nomen-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; }
+th { text-align: left; font: 600 12px var(--f-body); color: var(--muted); text-transform: uppercase; letter-spacing: .06em; padding: 0 6px 6px; border-bottom: 1px solid var(--line); }
+td { padding: 7px 6px; border-bottom: 1px solid var(--line); vertical-align: top; }
+td.q { text-align: right; font: 600 15px var(--f-display); font-variant-numeric: tabular-nums; white-space: nowrap; }
+td .det { display: block; color: var(--muted); font-size: 13px; }
+tr.grp td { padding-top: 14px; font: 600 15px var(--f-display); letter-spacing: .03em; color: var(--rsl); border-bottom: 1px solid var(--line); }
+.src { font: 500 10px var(--f-mono); padding: 1px 5px; border-radius: 4px; border: 1px solid var(--line); color: var(--muted); }
+.src.dxf { border-color: var(--solive); color: var(--solive); }
+.note { color: var(--muted); font-size: 13px; margin: 10px 0 0; }
+.dv-imp { margin: 0 0 12px; }
+.dv-head { margin: 14px 0 6px; }
+.dv-dims { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 6px 14px; margin: 0 0 12px; }
+.dv-dims dt { font-size: 12px; color: var(--muted); }
+.dv-dims dd { margin: 0; font-weight: 600; text-align: left; }
+.dv-dims .large { grid-column: 1 / -1; }
+.dv input[type=number] { width: 84px; text-align: right; font: 14px var(--f-body); padding: 4px 6px; border: 1px solid var(--line); border-radius: 6px; background: var(--paper); color: var(--ink); }
+.dv .pas { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
+.dv .pas button { width: 24px; height: 26px; padding: 0; justify-content: center; font: 600 16px/1 var(--f-body); }
+.dv .pas input { width: 42px; text-align: center; -moz-appearance: textfield; }
+.dv .pas.prix input { width: 50px; }
+.dv .ar { display: inline-flex; align-items: center; gap: 4px; margin-left: 8px; font: 400 13px var(--f-body); color: var(--muted); }
+.dv .ar input { width: 52px; }
+.dv th, .dv td { width: 1%; white-space: nowrap; padding-left: 5px; padding-right: 5px; }
+.dv th:nth-child(2), .dv td:nth-child(2) { width: auto; white-space: normal; min-width: 136px; }
+.dv .pu { text-align: left; }
+.dv td.jr > span { display: inline-flex; align-items: center; margin-right: 14px; }
+.dv .x { margin-right: 4px; color: var(--muted); font: 600 15px var(--f-body); }
+#dv-marge { width: 72px; }
+.dv .pas input::-webkit-inner-spin-button, .dv .pas input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.dv .u { margin-left: 4px; color: var(--muted); font: 400 13px var(--f-body); }
+.dv tr.off td:not(:first-child) { opacity: .45; }
+.dv tfoot td { font-weight: 700; border-bottom: 0; }
+.dv tr.st td { font-weight: 700; background: var(--paper); }
+.dv .ral { display: flex; align-items: center; gap: 6px; white-space: nowrap; font-size: 13px; }
+.dv .ral + .ral { margin-top: 3px; }
+.dv .ral .lab { width: 48px; color: var(--muted); }
+.dv .ral.nb { justify-content: flex-end; min-height: 16px; }
+.dv .ral i { flex: none; width: 14px; height: 14px; border-radius: 3px; border: 1px solid var(--line); }
+
+/* Plan SVG (unités = mm) */
+.plan path, .plan rect, .plan circle { vector-effect: non-scaling-stroke; }
+.g-solive rect { fill: color-mix(in srgb, var(--solive) 12%, transparent); stroke: var(--solive); stroke-width: 1; }
+.g-solive path { fill: none; stroke: var(--solive); stroke-width: 1; }
+.g-lisse rect { fill: var(--steel); stroke: var(--steel-ink); stroke-width: 1.2; }
+.g-semi rect { fill: var(--paper); stroke: var(--steel-ink); stroke-width: 1; }
+.g-croix path, .g-jdf path, .g-jdf circle { fill: none; stroke: var(--croix); stroke-width: 1.4; }
+.g-gc path { fill: none; stroke: var(--gc); stroke-width: 6; stroke-linecap: round; }
+.g-pole .platine { fill: none; stroke: var(--steel-ink); stroke-width: 1; stroke-dasharray: 3 2; }
+.g-pole .tube { fill: var(--ral, var(--steel-ink)); stroke: var(--ink); stroke-width: 1.2; }
+.g-pole .x { fill: none; stroke: var(--paper); stroke-width: 1; }
+.g-stair path, .g-stair circle, .g-stair-dim path { fill: none; stroke: var(--stair); stroke-width: 1.1; }
+.g-stair .pl, .g-stair-dim .pl { fill: var(--stair); stroke: none; }
+.g-stair text, .g-stair-dim text { fill: var(--stair); }
+.g-cote path { fill: none; stroke: var(--cote); stroke-width: 1; }
+.g-cote text { fill: var(--cote); font-weight: 600; }
+.g-dxf path, .g-dxf circle { fill: none; stroke: var(--ink); stroke-width: 1; }
+.g-dxf .pl { fill: var(--ink); stroke: none; }
+.g-dxf text { fill: var(--ink); }
+.g-dxf .c1 { stroke: var(--dxf); } .g-dxf text.c1, .g-dxf .pl.c1 { fill: var(--dxf); }
+.g-dxf .c5 { stroke: var(--cote); } .g-dxf text.c5, .g-dxf .pl.c5 { fill: var(--cote); }
+.g-dxf .c30 { stroke: var(--gc); stroke-width: 3; }
+.legend.dxf > span { display: none; } .legend.dxf::before { content: "Cotes en mm"; }
+.plan .g-bat path, .plan .g-bat rect, .plan .g-bat circle { vector-effect: none; } /* épaisseurs PlanCoté en mm, à l'échelle */
+.g-bat [fill="#ffffff"] { fill: var(--paper); } /* ouvertures PlanCoté : fond du plan, y compris en thème sombre */
+@media (prefers-reduced-motion: no-preference) { .tab, .btn { transition: background-color .15s, border-color .15s; } }
+.client .internal { display: none !important; }
+/* Dossier client imprimable : n'existe qu'à l'impression (A4, 2 pages) */
+#dossier { display: none; }
+@media print {
+  @page { size: A4; margin: 0; }
+  body { padding: 0 !important; background: #fff !important; }
+  body > *:not(#dossier) { display: none !important; }
+  #dossier { display: block; }
+}
+#dossier { color: #172031; font: 10pt/1.45 var(--f-body); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+#dossier .page { width: 210mm; height: 297mm; padding: 13mm 14mm 11mm; display: flex; flex-direction: column; gap: 6mm; break-after: page; background: #fff; overflow: hidden; }
+#dossier .page:last-child { break-after: auto; }
+#dossier header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 1.2mm solid #1f4fa3; padding-bottom: 4mm; }
+#dossier header img { height: 17mm; }
+#dossier .who { text-align: right; }
+#dossier .eyebrow { font: 600 8.5pt var(--f-body); letter-spacing: .12em; text-transform: uppercase; color: #1f4fa3; }
+#dossier h1 { margin: 1mm 0 0; font: 700 24pt/1 var(--f-display); }
+#dossier .meta { color: #5a6577; font-size: 9.5pt; margin-top: 1.5mm; }
+#dossier h2 { margin: 0 0 2.5mm; font: 600 13pt var(--f-display); letter-spacing: .03em; color: #1f4fa3; text-transform: uppercase; }
+#dossier .hero { width: 100%; height: 128mm; object-fit: cover; border-radius: 2mm; background: #f1f4f8; }
+#dossier .tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3mm; }
+#dossier .tile { background: #f1f4f8; border-radius: 2mm; padding: 3mm 3.5mm; }
+#dossier .tile span { display: block; font-size: 8pt; color: #5a6577; text-transform: uppercase; letter-spacing: .06em; }
+#dossier .tile b { display: block; font: 700 17pt/1.15 var(--f-display); margin-top: 1mm; }
+#dossier .tile small { color: #5a6577; font-size: 8.5pt; }
+#dossier .row { display: grid; grid-template-columns: 1fr 72mm; gap: 6mm; align-items: start; }
+#dossier .dsw { display: grid; grid-template-columns: repeat(2, 1fr); gap: 2.5mm 5mm; }
+#dossier .dsw div { display: flex; align-items: center; gap: 3mm; }
+#dossier .dsw i { width: 9mm; height: 9mm; border-radius: 1.5mm; border: .3mm solid #d4dae3; flex: none; }
+#dossier .dsw span { display: block; font-size: 8.5pt; color: #5a6577; line-height: 1.2; }
+#dossier .dsw b { font-weight: 600; }
+#dossier .link3d { border: .4mm solid #1f4fa3; border-radius: 2.5mm; padding: 4mm; }
+#dossier .link3d b { font: 700 13pt/1.1 var(--f-display); color: #1f4fa3; }
+#dossier .link3d p { margin: 1.5mm 0 2.5mm; font-size: 9pt; }
+#dossier .link3d a { display: inline-block; font: 600 10pt var(--f-body); color: #fff; background: #1f4fa3; border-radius: 1.5mm; padding: 1.8mm 3.5mm; text-decoration: none; }
+#dossier .planimg { flex: 0 0 98mm; display: flex; justify-content: center; }
+#dossier .planimg svg { width: 100%; height: 98mm; min-width: 0; max-height: none; }
+#dossier .duo { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; }
+#dossier .duo img { width: 100%; height: 48mm; object-fit: contain; border-radius: 2mm; background: #f1f4f8; display: block; }
+#dossier figure { margin: 0; }
+#dossier figcaption { font-size: 8.5pt; color: #5a6577; margin-top: 1mm; }
+#dossier table { width: 100%; border-collapse: collapse; font-size: 9.5pt; }
+#dossier td { padding: 1.2mm 0; border-bottom: .25mm solid #d4dae3; vertical-align: top; }
+#dossier td:first-child { color: #5a6577; width: 45mm; }
+#dossier td:last-child { font-weight: 500; }
+#dossier footer { margin-top: auto; display: flex; justify-content: space-between; gap: 6mm; font-size: 7.5pt; color: #5a6577; border-top: .25mm solid #d4dae3; padding-top: 2.5mm; }
+#dossier footer span:last-child { white-space: nowrap; }
+
+.logo { height: 46px; width: auto; display: block; background: #fff; border-radius: 6px; padding: 3px 6px; } /* le logo a un fond blanc : on l'assume en pastille */
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="brand"><b id="brand-rsl">RSL</b><div><h1 id="h1">Plans mezzanine</h1><span id="sub">Plan coté et nomenclature à partir du JSON et du DXF</span></div></div>
+    <nav class="tabs internal" id="tabs" role="tablist" aria-label="Projets"></nav>
+    <div class="actions"><button class="ghost" id="print" type="button">📄 Dossier PDF</button></div>
+    <div class="actions internal">
+      <button class="ghost" id="share" type="button">🔗 Lien 3D</button>
+      <button class="ghost" id="devis" type="button" aria-pressed="false">🧾 Devis client</button>
+      <label class="ghost" for="imp-mezz">📂 Ouvrir<input id="imp-mezz" type="file" accept=".mezz" hidden></label>
+      <button class="ghost" id="save" type="button">💾 Enregistrer</button>
+      <label class="btn" for="imp-json">Importer un JSON<input id="imp-json" type="file" accept=".json,application/json" hidden></label>
+      <label class="ghost" for="imp-dxf">Ajouter le DXF<input id="imp-dxf" type="file" accept=".dxf" hidden></label>
+      <label class="ghost" for="imp-obj">Ajouter la 3D (.obj)<input id="imp-obj" type="file" accept=".obj" hidden></label>
+      <label class="ghost" for="imp-bat">Ajouter le bâtiment<input id="imp-bat" type="file" accept=".json,application/json" hidden></label>
+    </div>
+  </header>
+  <div class="card internal" id="share-box" hidden>
+    <h3>Lien 3D pour le client</h3>
+    <div class="share-row">
+      <label>Nom du client<input id="sh-nom" type="text" autocomplete="off"></label>
+      <label>Projet (facultatif)<input id="sh-projet" type="text" autocomplete="off"></label>
+      <button class="btn" id="sh-go" type="button">Créer le lien</button>
+    </div>
+    <div class="share-row">
+      <label>Jeton GitHub « gist » (saisi une fois, gardé sur ce poste)<input id="sh-tok" type="password" autocomplete="off" spellcheck="false"></label>
+    </div>
+    <div class="share-row" id="sh-out" hidden>
+      <input id="sh-url" type="text" readonly aria-label="Lien 3D à envoyer au client">
+      <button class="ghost" id="sh-copy" type="button">Copier</button>
+      <a class="ghost" id="sh-open" target="_blank" rel="noopener">Ouvrir</a>
+    </div>
+    <p class="note">Avec le jeton, le lien est court : le projet (plateforme, cotes, couleurs, sans vos codes fournisseur ni votre compte) est rangé dans un gist secret de votre compte GitHub ; supprimer le gist désactive le lien. Sans jeton, le projet est contenu dans le lien, que Outlook et certaines messageries coupent au-delà d'environ 2 000 caractères.</p>
+  </div>
+  <div class="msg" id="msg" role="status" hidden></div>
+  <div class="main" id="main">
+    <section class="sheet" aria-labelledby="plan-h">
+      <div class="sheet-head">
+        <h2 id="plan-h" class="sr">Vue de la plateforme</h2>
+        <div class="seg" role="group" aria-label="Type de vue"><button id="vw-3d" type="button" aria-pressed="true">Vue 3D</button><button id="vw-plan" type="button" aria-pressed="false">Vue 2D</button></div>
+        <div class="tools">
+          <label class="toggle" id="cot-wrap"><input id="cot3d" type="checkbox"><span>Cotes</span></label>
+          <label class="toggle" id="sas-wrap" hidden><input id="sas3d" type="checkbox"><span>Basculer le sas</span></label>
+          <label class="toggle" id="gate-wrap" hidden><input id="gate3d" type="checkbox"><span>Ouverture</span></label>
+          <label class="toggle" id="pl-wrap"><input id="pl3d" type="checkbox" checked><span>Plancher</span></label>
+          <label class="toggle" id="bat-wrap" hidden><span>Bâtiment</span><select id="batmode"><option value="masque">masqué</option><option value="sol">au sol (2D)</option><option value="translucide" selected>3D translucide</option><option value="opaque">3D opaque</option></select></label>
+          <label class="toggle" id="bat2d-wrap" hidden><input id="bat2d" type="checkbox" checked><span>Bâtiment</span></label>
+          <button class="ghost" id="light3d" type="button" aria-pressed="true" aria-label="Ombres" title="Ombres affichées"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path class="glass" d="M12 3a6 6 0 0 0-3.6 10.8c.7.5 1.1 1.3 1.1 2.2h5c0-.9.4-1.7 1.1-2.2A6 6 0 0 0 12 3z"/><path d="M9.5 18.5h5M10.5 21h3"/></svg></button>
+          <button class="ghost" id="re3d" type="button">Recentrer</button>
+          <button class="ghost" id="faceL3d" type="button" aria-label="Tourner la vue à gauche" title="Tourner la vue à gauche"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+          <button class="ghost" id="face3d" type="button">Face</button>
+          <button class="ghost" id="faceR3d" type="button" aria-label="Tourner la vue à droite" title="Tourner la vue à droite"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg></button>
+          <button class="ghost" id="zout2d" type="button" aria-label="Dézoomer le plan" title="Dézoomer"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 20 20M7.5 10.5h6"/></svg></button>
+          <button class="ghost" id="zin2d" type="button" aria-label="Zoomer dans le plan" title="Zoomer (ou molette sur le plan)"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5 20 20M7.5 10.5h6M10.5 7.5v6"/></svg></button>
+          <button class="ghost" id="rot2d" type="button" aria-label="Tourner le plan de 90°"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.34-5.66"/><path d="M20 4v5h-5"/></svg>Tourner 90°</button>
+        </div>
+      </div>
+      <div class="planbox" id="planbox"></div>
+      <div class="v3d" id="v3d"><p class="v3d-msg" id="v3d-msg" hidden></p></div>
+      <div class="legend" id="hint3d">Glisser pour tourner (on peut passer sous le sol pour voir le dessous du plancher) · molette ou pincement pour zoomer · clic droit ou deux doigts pour déplacer.<span class="internal" id="hint-est"> Solives : hauteur estimée d'après leur largeur (exacte avec la 3D .obj du fournisseur).</span></div>
+      <div class="legend" id="legend">
+        <span><i id="lg-pole"></i>Poteau et platine</span>
+        <span><i style="background:var(--steel);border:1px solid var(--steel-ink)"></i>Lisse</span>
+        <span><i style="background:var(--paper);border:1px solid var(--steel-ink)"></i>Semi-lisse</span>
+        <span><i style="border:1px solid var(--solive)"></i>Solive, entretoise</span>
+        <span><i style="background:var(--gc);height:5px;vertical-align:2px"></i>Garde-corps</span>
+        <span><i style="border:1px solid var(--stair)"></i>Escalier</span>
+        <span><i style="border:1px solid var(--croix)"></i>Croisillon, jambe de force</span>
+      </div>
+    </section>
+    <div class="card internal" id="devis-box" hidden>
+      <h3>Devis client</h3>
+      <p class="dv-imp"><label class="btn" for="imp-docx">Importer le devis Word Manorga<input id="imp-docx" type="file" accept=".docx" hidden></label></p>
+      <div id="dv-body"></div>
+      <p class="note">Le devis Word est lu dans ce navigateur : rien n'est envoyé ni rangé sur GitHub, et le lien 3D client ne l'emporte jamais. Marge et taux restent sur ce poste.</p>
+    </div>
+    <aside>
+      <div class="card" id="cartouche"></div>
+      <div class="card internal" id="bat-card" hidden>
+        <h3>Bâtiment</h3>
+        <div class="cart-ref" id="bat-name"></div>
+        <p class="note">Position de la mezzanine (angle hors tout platine) depuis l'angle haut gauche du bâtiment, en mm.</p>
+        <div class="share-row"><label>X<input id="bat-x" type="number" step="10"></label><label>Y<input id="bat-y" type="number" step="10"></label></div>
+        <div class="share-row"><button class="ghost" id="bat-rot" type="button">Tourner la mezzanine 90°</button><button class="ghost" id="bat-mid" type="button">Centrer</button><button class="ghost" id="bat-del" type="button">Retirer</button></div>
+      </div>
+      <div class="card"><h3>Caractéristiques</h3><dl id="carac"></dl></div>
+      <div class="card"><h3>Couleurs</h3><div class="swatches" id="couleurs"></div></div>
+      <div class="card internal" id="checks-card"><h3>Contrôles JSON / DXF</h3><ul class="checks" id="checks"></ul></div>
+      <div class="card internal"><h3>Nomenclature</h3><div class="nomen-wrap"><table><thead><tr><th>Élément</th><th style="text-align:right">Qté</th><th>Source</th></tr></thead><tbody id="nomen"></tbody></table></div>
+        <p class="note">Longueurs de lisses recalculées depuis le JSON. Solives et entretoises telles que dessinées dans le DXF du fournisseur : leur section exacte n'est pas dans les fichiers.</p></div>
+    </aside>
+  </div>
+</div>
+<section id="dossier" aria-hidden="true"></section>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/OBJLoader.js"></script>
+<script>// Moteur plan mezzanine : structure depuis le JSON, solives / entretoises / garde-corps / escalier depuis le DXF fournisseur.
+(function (root) {
+  'use strict';
+
+  // ---------- Lecture DXF (sections BLOCKS et ENTITIES uniquement) ----------
+  function decode(e) {
+    const o = { type: e.type, color: 256, p: [], flags: 0 };
+    let last = null;
+    for (const [c, v] of e.c) {
+      const n = parseFloat(v);
+      if (c >= 10 && c <= 13) { last = [n, 0]; o.p.push(last); o['k' + c] = last; }
+      else if (c >= 20 && c <= 23) { if (last) last[1] = n; }
+      else if (c === 40) o.h = n; else if (c === 41) o.sx = n; else if (c === 42) o.sy = n;
+      else if (c === 43) o.width = n; else if (c === 50) o.rot = n;
+      else if (c === 62) o.color = n; else if (c === 70) o.flags = n;
+      else if (c === 71) o.attach = n; else if (c === 72) o.ha = n; else if (c === 73) o.va = n;
+      else if (c === 1) o.text = v; else if (c === 2) o.name = v;
+    }
+    return o;
+  }
+
+  function parseDXF(text) {
+    const L = text.split(/\r?\n/), raw = {}, top = [];
+    let section = '', block = null, ent = null;
+    for (let i = 0; i + 1 < L.length; i += 2) {
+      const c = parseInt(L[i], 10), v = L[i + 1].trim();
+      if (c === 0) {
+        ent = null;
+        if (v === 'SECTION') { section = (L[i + 3] || '').trim(); continue; }
+        if (v === 'ENDSEC') { section = ''; continue; }
+        if (section === 'BLOCKS') {
+          if (v === 'BLOCK') { block = { name: '', ents: [] }; ent = { type: 'BLOCK', c: [] }; }
+          else if (v === 'ENDBLK') { if (block) raw[block.name] = block.ents; block = null; }
+          else if (block) { ent = { type: v, c: [] }; block.ents.push(ent); }
+        } else if (section === 'ENTITIES') { ent = { type: v, c: [] }; top.push(ent); }
+        continue;
+      }
+      if (!ent) continue;
+      if (ent.type === 'BLOCK') { if (c === 2) block.name = v; continue; }
+      ent.c.push([c, v]);
+    }
+    const blocks = {};
+    for (const k in raw) blocks[k] = raw[k].map(decode);
+    return { blocks, entities: top.map(decode) };
+  }
+
+  // ---------- Dessin générique d'entités DXF (blocs imbriqués, cotes) en coordonnées plan (Y vers le bas) ----------
+  const fx = v => (Math.round(v * 10) / 10).toString();
+  const esc = s => String(s).replace(/[&<>"]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[ch]));
+  const pathD = (pts, close) => 'M' + pts.map(p => fx(p[0]) + ' ' + fx(p[1])).join('L') + (close ? 'Z' : '');
+  const mul = (m, n) => [m[0] * n[0] + m[2] * n[1], m[1] * n[0] + m[3] * n[1], m[0] * n[2] + m[2] * n[3], m[1] * n[2] + m[3] * n[3], m[0] * n[4] + m[2] * n[5] + m[4], m[1] * n[4] + m[3] * n[5] + m[5]];
+  const ID = [1, 0, 0, 1, 0, 0];
+
+  function insertM(o) {
+    const r = (o.rot || 0) * Math.PI / 180, sx = o.sx || 1, sy = o.sy || 1, c = Math.cos(r), s = Math.sin(r);
+    return [c * sx, s * sx, -s * sy, c * sy, o.k10[0], o.k10[1]];
+  }
+
+  function drawDXF(ents, blocks, m, out, bb, depth, col) {
+    if ((depth || 0) > 8) return;
+    const P = q => { const x = m[0] * q[0] + m[2] * q[1] + m[4], y = -(m[1] * q[0] + m[3] * q[1] + m[5]); if (bb) grow(bb, x, y); return [x, y]; };
+    const sc = Math.hypot(m[0], m[1]), ang = Math.atan2(m[1], m[0]) * 180 / Math.PI;
+    for (const o of ents) {
+      // couleur AutoCAD : 0 = celle du bloc parent ; rouge (1), bleu (5) et orange (30, garde-corps) gardés, le reste à l'encre
+      const k = o.color === 0 ? col : o.color, cl = (x => x ? ` class="${x}"` : '')([o.type === 'SOLID' && 'pl', [1, 5, 30].includes(k) && 'c' + k].filter(Boolean).join(' '));
+      if (o.type === 'LWPOLYLINE' && o.p.length > 1) out.push(`<path${cl} d="${pathD(o.p.map(P), o.flags & 1)}"/>`);
+      else if (o.type === 'LINE') out.push(`<path${cl} d="${pathD([P(o.k10), P(o.k11)])}"/>`);
+      else if (o.type === 'SOLID') { const q = o.p.map(P); out.push(`<path${cl} d="${pathD([q[0], q[1], q[3] || q[2], q[2]], true)}"/>`); }
+      else if (o.type === 'CIRCLE') { const c = P(o.k10); out.push(`<circle${cl} cx="${fx(c[0])}" cy="${fx(c[1])}" r="${fx(o.h * sc)}"/>`); }
+      else if ((o.type === 'TEXT' || o.type === 'MTEXT') && o.text) {
+        const tp = o.type === 'TEXT' && (o.ha || o.va) && o.k11 ? o.k11 : o.k10, [x, y] = P(tp);
+        let anchor = 'start', base = 'auto';
+        if (o.type === 'MTEXT') {
+          const a = (o.attach || 1) - 1;
+          anchor = ['start', 'middle', 'end'][a % 3]; base = ['hanging', 'central', 'auto'][Math.floor(a / 3)];
+        } else {
+          anchor = o.ha === 1 || o.ha === 4 ? 'middle' : o.ha === 2 ? 'end' : 'start';
+          base = o.va === 2 ? 'central' : o.va === 3 ? 'hanging' : 'auto';
+        }
+        const rot = -(ang + (o.rot || 0));
+        out.push(`<text${cl} x="${fx(x)}" y="${fx(y)}" font-size="${fx((o.h || 100) * sc)}" text-anchor="${anchor}" dominant-baseline="${base}"${Math.abs(rot) > 0.01 ? ` transform="rotate(${fx(rot)} ${fx(x)} ${fx(y)})"` : ''}>${esc(o.text.replace(/\\P/g, ' '))}<\/text>`);
+      }
+      else if (o.type === 'INSERT' && blocks[o.name]) drawDXF(blocks[o.name], blocks, mul(m, insertM(o)), out, bb, (depth || 0) + 1, k);
+      else if (o.type === 'DIMENSION' && blocks[o.name]) drawDXF(blocks[o.name], blocks, m, out, bb, (depth || 0) + 1, k);
+    }
+  }
+
+  function grow(bb, x, y) { bb.x0 = Math.min(bb.x0, x); bb.y0 = Math.min(bb.y0, y); bb.x1 = Math.max(bb.x1, x); bb.y1 = Math.max(bb.y1, y); }
+  const growRect = (bb, r) => { grow(bb, r[0], r[1]); grow(bb, r[2], r[3]); };
+
+  // ---------- Règles de géométrie tirées des 3 projets (PEP2610-1250-A, PEP2610-846-A, PEP2609-510-F) ----------
+  const DIR = { nord: [0, -1], sud: [0, 1], est: [1, 0], ouest: [-1, 0] };
+  const nums = s => String(s).split('x').map(Number);
+  const code5 = s => { const m = /T(\d{5})/.exec(s || ''); return m ? +m[1] : null; };
+  // Accessoires du catalogue fournisseur (accessoire_mezzanine.xlsx de RSL), référence complète de 17 caractères :
+  // les 2 derniers chiffres donnent le coloris (Coloris.xlsx). Le JSON n'en garde que les 15 premiers.
+  const COLORIS = { '00': 'sans', '01': 'RAL 5015', '02': 'RAL 7035', '03': 'RAL 7024', '05': 'RAL 5010', '06': 'RAL 9005', '07': 'RAL 1013',
+    '10': 'RAL 2004', '12': 'RAL 9010', '13': 'RAL 3000', '16': 'RAL 1028', '98': 'RAL 7040', '99': 'galva' };
+  const ACCESSOIRES = {
+    AI04048122R000099: 'Plaque de déchargement palettes 480 × 1200 × 2 mm, tôle perforée anti-dérapante',
+    AI25018015ED00016: 'Sas de sécurité H. 1800 × L. 1500 mm', AI25018023ED00016: 'Sas de sécurité H. 1800 × L. 2300 mm', AI25018030ED00016: 'Sas de sécurité H. 1800 × L. 3000 mm',
+    AI04D44020D000016: 'Protection de poteau H. 440, 4 faces, platine 200', AI04D44020D000116: 'Protection de poteau H. 440, 2 pièces, platine 200',
+    AI04D44030D000016: 'Protection de poteau H. 440, 4 faces, platine 300', AI04D44030D000116: 'Protection de poteau H. 440, 2 pièces, platine 300',
+    AIZ0015011A000016: 'Portillon à retour automatique avec vérins L. 1500 mm', AIZ0020011A000016: 'Portillon à retour automatique avec vérins L. 2000 mm',
+  };
+
+  function buildPlan(J, D) {
+    let env = J.environement || {};
+    const S = J.structure || {}, warn = [], hasJson = !!J.structure; // DXF importé seul, sans JSON : poteaux/lisses inconnus, nomenclature non fiable
+
+    const poles = {};
+    for (const p of S.poteaux || []) {
+      const [w, h] = nums(p.section);
+      poles[p.id] = Object.assign({}, p, { w, h: h || w, cx: p.x + w / 2, cy: p.y + (h || w) / 2, pl: nums(p.platine && p.platine.taille || '0')[0] || 0 });
+    }
+
+    // Lisse : le dos (âme) est au ras de la face extérieure du poteau si « intérieur », sinon à 15 mm de son axe ;
+    // la semelle part vers « direction ». Arrêt à 27,5 mm du poteau si « intérieur » (27 ou 28 dans le DXF selon le sens), 5 mm sinon,
+    // et contre le dos de la lisse d'appui quand l'extrémité est une lisse.
+    const defs = {}; for (const l of S.lisses || []) defs[l.id] = l;
+    const lisses = {};
+    function lisse(id, seen) {
+      if (lisses[id]) return lisses[id];
+      const l = defs[id];
+      seen = seen || new Set();
+      if (!l || seen.has(id)) throw new Error(`lisse ${id} introuvable ou référencée en boucle`);
+      seen.add(id);
+      const [ht, fl] = nums(l.section), d = l.orientation && l.orientation.direction;
+      const int = l.orientation && l.orientation.position === 'interieur';
+      if (!DIR[d]) throw new Error(`lisse ${id} : direction « ${d} » inconnue`);
+      const H = d === 'nord' || d === 'sud', sg = d === 'sud' || d === 'est' ? 1 : -1;
+      const sup = [l.origine, l.fin].map(e => e.objet === 'poteau' ? null : lisse(e.id, seen));
+      const ends = [l.origine, l.fin].map((e, i) => sup[i] ? { web: sup[i].web } : { pole: poles[e.id] });
+      if (ends.some(e => 'pole' in e && !e.pole)) throw new Error(`lisse ${id} : poteau d'extrémité introuvable`);
+      const ref = (ends.find(e => e.pole) || {}).pole;
+      // Lisse posée entre deux lisses (PEP2611-184, lisse 14) : son axe vient de « position » sur chaque lisse d'appui, comptée
+      // depuis le bout où la semelle d'appui est à main droite (y vers le sud), jusqu'au milieu de sa semelle. Les 2 appuis
+      // tombent sur la même cote, au mm près de l'OBJ fournisseur.
+      // shortcut: convention relevée sur une seule lisse ; à revoir si un autre projet donne 2 cotes différentes.
+      const along = [l.origine, l.fin].map((e, i) => sup[i] && e.position != null ? ((sup[i].H ? sup[i].sg > 0 : sup[i].sg < 0) ? sup[i].a0 + e.position : sup[i].a1 - e.position) : null).filter(v => v != null);
+      if (!ref && !along.length) throw new Error(`lisse ${id} : aucune extrémité sur un poteau`);
+      const mid = along.length ? along.reduce((a, b) => a + b) / along.length : null;
+      const web = ref ? (H ? ref.cy : ref.cx) - sg * (int ? (H ? ref.h : ref.w) / 2 : 15) : mid - sg * fl / 2, gap = int ? 27.5 : 5;
+      const pos = ends.map(e => e.pole ? (H ? e.pole.cx : e.pole.cy) : e.web);
+      const lo = pos[0] <= pos[1] ? 0 : 1, hi = 1 - lo, half = e => (H ? e.pole.w : e.pole.h) / 2;
+      const a0 = ends[lo].pole ? pos[lo] + half(ends[lo]) + gap : pos[lo];
+      const a1 = ends[hi].pole ? pos[hi] - half(ends[hi]) - gap : pos[hi];
+      const b0 = Math.min(web, web + sg * fl), b1 = Math.max(web, web + sg * fl);
+      // Pour le plancher et la 3D : lisse prolongée jusqu'à la face extérieure des poteaux, et son axe entre centres d'appui.
+      const e0 = ends[lo].pole ? pos[lo] - half(ends[lo]) : a0, e1 = ends[hi].pole ? pos[hi] + half(ends[hi]) : a1, cr = ref ? (H ? ref.cy : ref.cx) : mid;
+      return (lisses[id] = {
+        id, def: l, section: l.section, ht, fl, H, sg, web, a0, a1, len: a1 - a0, rect: H ? [a0, b0, a1, b1] : [b0, a0, b1, a1],
+        ext: H ? [e0, b0, e1, b1] : [b0, e0, b1, e1], axis: H ? [[pos[lo], cr], [pos[hi], cr]] : [[cr, pos[lo]], [cr, pos[hi]]],
+      });
+    }
+    for (const id in defs) { try { lisse(+id); } catch (e) { warn.push(e.message); } }
+    const L = Object.values(lisses);
+
+    // Semi-lisses : 250 mm vers l'extérieur depuis le dos, « position » comptée depuis le début de la lisse.
+    const semi = [];
+    for (const s of S['semi-lisses'] || []) {
+      const l = lisses[s.lisse]; if (!l) { warn.push(`semi-lisse sur lisse ${s.lisse} inconnue`); continue; }
+      const u = l.a0 + s.position, w = 80; // shortcut: largeur du symbole fixée à 80 mm (le DXF dessine 80 ou 95 selon le côté)
+      const o0 = l.web, o1 = l.web - l.sg * s.section, b0 = Math.min(o0, o1), b1 = Math.max(o0, o1);
+      semi.push({ s, rect: l.H ? [u, b0, u + w, b1] : [b0, u, b1, u + w] });
+    }
+
+    // Plancher : cellules de la grille des lisses entourées de lisses dans les 4 directions, plus le débord des semi-lisses.
+    const floor = floorRects(L.map(l => l.ext));
+    for (const id of new Set(semi.map(x => x.s.lisse))) {
+      const rs = semi.filter(x => x.s.lisse === id).map(x => x.rect);
+      floor.push([Math.min(...rs.map(r => r[0])), Math.min(...rs.map(r => r[1])), Math.max(...rs.map(r => r[2])), Math.max(...rs.map(r => r[3]))]);
+    }
+
+    const croix = L.filter(l => l.def.croisillon).map(l => ({ l, mid: (l.a0 + l.a1) / 2, cross: l.web + l.sg * l.fl / 2 }));
+    const jdf = Object.values(poles).filter(p => DIR[p.jdf]).map(p => ({ p, u: DIR[p.jdf] }));
+
+    // ---------- Ce que seul le DXF contient ----------
+    const ents = D ? D.entities : [];
+    const near = (a, b) => a.every((v, i) => Math.abs(v - b[i]) <= 2);
+    const solives = [], entretoises = [], gc = [], stair = [], stairDims = [], sas = [], foundLisses = new Set();
+    let dxfSousLisse = null;
+    for (const o of ents) {
+      if (o.type === 'LWPOLYLINE' && o.color === 30) {
+        const pts = o.p.map(q => [q[0], -q[1]]);
+        let len = 0; for (let i = 1; i < pts.length; i++) len += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
+        gc.push({ pts, len, modules: Math.ceil(len / 1000 - 1e-6) });
+      } else if (o.type === 'LWPOLYLINE' && (o.flags & 1) && o.p.length === 4 && new Set(o.p.map(q => q[0])).size === 2 && new Set(o.p.map(q => q[1])).size === 2) {
+        const xs = o.p.map(q => q[0]), ys = o.p.map(q => -q[1]);
+        const r = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
+        const hit = L.find(l => near(l.rect, r));
+        // shortcut: tout rectangle fermé qui n'est pas une lisse est pris pour une solive (vrai sur les 3 projets).
+        if (hit) foundLisses.add(hit.id);
+        else solives.push({ rect: r, w: Math.min(r[2] - r[0], r[3] - r[1]), len: Math.max(r[2] - r[0], r[3] - r[1]) });
+      } else if (o.type === 'LWPOLYLINE' && o.p.length === 2 && o.color === 0 && !o.width) {
+        const a = [o.p[0][0], -o.p[0][1]], b = [o.p[1][0], -o.p[1][1]], len = Math.hypot(b[0] - a[0], b[1] - a[1]);
+        // shortcut: les traits d'axe des semi-lisses font 75 mm ; au-delà de 150 mm c'est une entretoise.
+        if (len > 150) entretoises.push({ a, b, len });
+      } else if (o.type === 'INSERT' && /^(STAIR|RECEPTION)_/.test(o.name || '')) stair.push(o);
+      else if (o.type === 'INSERT' && /^MEASURE_/.test(o.name || '')) stairDims.push(o);
+      else if (o.type === 'INSERT' && /^SECURITY_LOCK/.test(o.name || '')) sas.push({ c: [o.k10[0], -o.k10[1]], m: insertM(o), L: +((/(\d{4})$/.exec(o.name) || [])[1] || 1500) }); // c : centre de l'ouverture
+      else if (o.type === 'TEXT' && /sous lisse/i.test(o.text || '')) dxfSousLisse = +((/(\d+)\s*mm/.exec(o.text) || [])[1]);
+    }
+
+    // Escalier et palier pour la 3D, lus dans les blocs du DXF (repère du bloc : arrivée en (0,0), descente vers -Y).
+    const stairs3d = [], landing = { poles: [], beams: [], gc: [], rect: null };
+    for (const o of stair) {
+      const m = insertM(o), pls = (D.blocks[o.name] || []).filter(e => e.type === 'LWPOLYLINE');
+      const T = q => [m[0] * q[0] + m[2] * q[1] + m[4], -(m[1] * q[0] + m[3] * q[1] + m[5])];
+      const Vd = q => { const x = m[0] * q[0] + m[2] * q[1], y = -(m[1] * q[0] + m[3] * q[1]), n = Math.hypot(x, y); return [x / n, y / n]; };
+      if (/^STAIR_/.test(o.name)) {
+        const len = Math.max(...pls.flatMap(e => e.p.map(q => -q[1])));
+        const spans0 = pls.filter(e => (e.flags & 1) && Math.min(...e.p.map(q => q[0])) < 0 && Math.max(...e.p.map(q => q[0])) > 0);
+        const steps = pls.filter(e => !(e.flags & 1) && e.p.length === 2 && Math.abs(e.p[0][1] - e.p[1][1]) < 1 && -e.p[0][1] > 1 && -e.p[0][1] < len - 1).map(e => -e.p[0][1]).sort((a, b) => a - b);
+        stairs3d.push({
+          top: T([0, 0]), dir: Vd([0, -1]), lat: Vd([1, 0]), L: len, steps,
+          halfOut: Math.max(...pls.flatMap(e => e.p.map(q => Math.abs(q[0])))),
+          halfIn: spans0.length ? Math.max(...spans0.flatMap(e => e.p.map(q => Math.abs(q[0])))) : 400,
+        });
+      } else {
+        const r = (pls.find(e => e.flags & 1) || pls[0]).p.map(T), xs = r.map(q => q[0]), ys = r.map(q => q[1]);
+        const box = [Math.min(...xs), Math.min(...ys), Math.max(...xs), Math.max(...ys)];
+        if (/^RECEPTION_LEVEL_POLE/.test(o.name)) landing.poles.push([(box[0] + box[2]) / 2, (box[1] + box[3]) / 2]);
+        else if (/^RECEPTION_LEVEL_BEAM/.test(o.name)) landing.beams.push(box);
+      }
+    }
+    if (landing.poles.length) {
+      const rs = landing.beams.concat(landing.poles.map(([x, y]) => [x - 50, y - 50, x + 50, y + 50]));
+      const b = landing.rect = [Math.min(...rs.map(r => r[0])), Math.min(...rs.map(r => r[1])), Math.max(...rs.map(r => r[2])), Math.max(...rs.map(r => r[3]))];
+      const inFloor = (x, y) => floor.some(r => x > r[0] && x < r[2] && y > r[1] && y < r[3]);
+      // Garde-corps du palier : tous les côtés sauf celui contre la plateforme, moins le passage de l'escalier.
+      for (const [p, q, n] of [[[b[0], b[1]], [b[2], b[1]], [0, -1]], [[b[2], b[1]], [b[2], b[3]], [1, 0]], [[b[2], b[3]], [b[0], b[3]], [0, 1]], [[b[0], b[3]], [b[0], b[1]], [-1, 0]]]) {
+        if (inFloor((p[0] + q[0]) / 2 + n[0] * 60, (p[1] + q[1]) / 2 + n[1] * 60)) continue;
+        const len = Math.hypot(q[0] - p[0], q[1] - p[1]), t = [(q[0] - p[0]) / len, (q[1] - p[1]) / len];
+        let segs = [[0, len]];
+        for (const s of stairs3d) {
+          if (Math.abs((s.top[0] - p[0]) * n[0] + (s.top[1] - p[1]) * n[1]) > 120) continue;
+          const c = (s.top[0] - p[0]) * t[0] + (s.top[1] - p[1]) * t[1], c0 = c - s.halfOut, c1 = c + s.halfOut;
+          segs = segs.flatMap(([u, v]) => [[u, Math.min(v, c0)], [Math.max(u, c1), v]]).filter(([u, v]) => v - u > 100);
+        }
+        for (const [u, v] of segs) landing.gc.push([[p[0] + t[0] * u, p[1] + t[1] * u], [p[0] + t[0] * v, p[1] + t[1] * v]]);
+      }
+    }
+
+    const ep = code5(env.plancher), maxHt = Math.max(0, ...L.map(l => l.ht));
+    // « souslisse » vrai : la hauteur saisie est le dégagement sous lisse, on la ramène au dessus du plancher (PEP2611-04 : 2200 sous lisse → 2538, escalier 38° comme le DXF)
+    if (env.souslisse && env.hauteur && ep != null) env = { ...env, hauteur: env.hauteur + maxHt + ep };
+    const sousLisse = env.hauteur && ep != null && L.length ? env.hauteur - maxHt - ep : null;
+    const gcAcc = (J.accessoires || []).find(a => /^P.29T/.test(a.codearticle || '')); // shortcut: garde-corps = article P?29T…, constaté sur 3 projets
+    // Un tronçon par polyligne, sauf de part et d'autre d'un sas : le fournisseur en fait un seul garde-corps
+    // (PEP2611-182 : 522 + 2276 mm → 3 modules, pas 1 + 3). Escalier ou tronçons bout à bout restent séparés (PEP2610-1250, -846).
+    const run = gc.map((g, i) => i), root = i => run[i] === i ? i : root(run[i]);
+    for (const { c } of sas) {
+      // shortcut: bouts alignés sur le centre du sas à moins de 1,7 m (sas de 3000 au plus), revoir si un sas touche un angle
+      const ends = gc.map((g, i) => [i, g.pts[0], g.pts[g.pts.length - 1]]).filter(([, a, b]) => [a, b].some(p =>
+        (Math.abs(p[0] - c[0]) < 5 || Math.abs(p[1] - c[1]) < 5) && Math.hypot(p[0] - c[0], p[1] - c[1]) < 1700)).map(([i]) => i);
+      if (ends.length === 2) run[root(ends[1])] = root(ends[0]);
+    }
+    const runs = {};
+    gc.forEach((g, i) => { runs[root(i)] = (runs[root(i)] || 0) + g.len; });
+    const gcModules = Object.values(runs).reduce((s, l) => s + Math.ceil(l / 1000 - 1e-6), 0);
+
+    const checks = D ? [
+      hasJson ? { ok: foundLisses.size === L.length, label: 'Lisses recalculées et retrouvées dans le DXF', val: `${foundLisses.size} / ${L.length}` } : null,
+      gcAcc ? { ok: gcModules === gcAcc.count, label: 'Modules de garde-corps = quantité du JSON', val: `${gcModules} / ${gcAcc.count}` } : null,
+      hasJson && dxfSousLisse ? { ok: dxfSousLisse === sousLisse, label: 'Hauteur sous lisse = cartouche fournisseur', val: `${sousLisse} / ${dxfSousLisse} mm` } : null,
+    ].filter(Boolean) : [];
+
+    // ---------- Nomenclature ----------
+    const rows = [], groupBy = (arr, key) => arr.reduce((m, x) => { const k = key(x); (m[k] = m[k] || []).push(x); return m; }, {});
+    const byKey = (arr, key, fn) => Object.entries(groupBy(arr, key)).sort((a, b) => a[0].localeCompare(b[0], 'fr', { numeric: true })).forEach(([k, xs]) => fn(k, xs));
+    const P = Object.values(poles);
+    byKey(P, p => p.section, (k, xs) => rows.push({ g: 'Structure', el: `Poteau ${k}`, det: `hauteur plancher ${env.hauteur} mm`, q: xs.length, src: 'JSON' }));
+    byKey(P, p => `${p.platine && p.platine.taille}|${p.platine && p.platine.position}`, (k, xs) => { const [t, pos] = k.split('|'); rows.push({ g: 'Structure', el: `Platine ${t}`, det: `position ${pos}`, q: xs.length, src: 'JSON' }); });
+    byKey(L, l => `${l.section}|${String(Math.round(l.len)).padStart(6, '0')}`, (k, xs) => rows.push({ g: 'Structure', el: `Lisse ${xs[0].section}`, det: `L ${Math.round(xs[0].len)} mm`, q: xs.length, src: 'JSON' }));
+    if (semi.length) byKey(semi, x => String(x.s.section), (k, xs) => rows.push({ g: 'Structure', el: 'Semi-lisse', det: `${k} mm en débord`, q: xs.length, src: 'JSON' }));
+    if (jdf.length) rows.push({ g: 'Structure', el: 'Jambe de force', det: jdf.map(j => `poteau ${j.p.id} → ${j.p.jdf}`).join(' · '), q: jdf.length, src: 'JSON' });
+    if (croix.length) rows.push({ g: 'Structure', el: `Croisillon ${env.croisillon || ''}`.trim(), det: croix.map(c => `lisse ${c.l.id}`).join(' · '), q: croix.length, src: 'JSON' });
+    if (hasJson) rows.push({ g: 'Plancher', el: `Plancher ${env.plancher || '?'}`, det: `ép. ${ep} mm · solivage ${String(env.solivage || '').toLowerCase()}`, q: null, src: 'JSON' });
+    // sans JSON, solives et lisses ne sont pas discernables dans le DXF (le plan reste dessiné tel quel, mais pas la nomenclature)
+    if (hasJson) byKey(solives, s => `${String(Math.round(s.w)).padStart(4, '0')}|${String(Math.round(s.len)).padStart(6, '0')}`, (k, xs) => rows.push({ g: 'Plancher', el: `Solive, ${Math.round(xs[0].w)} mm de large`, det: `L ${Math.round(xs[0].len)} mm`, q: xs.length, src: 'DXF' }));
+    if (entretoises.length) byKey(entretoises, e => String(Math.round(e.len)).padStart(6, '0'), (k, xs) => rows.push({ g: 'Plancher', el: 'Entretoise', det: `L ${Math.round(xs[0].len)} mm`, q: xs.length, src: 'DXF' }));
+    if (gc.length) rows.push({ g: 'Sécurité et accès', el: 'Garde-corps', det: `${(gc.reduce((s, g) => s + g.len, 0) / 1000).toFixed(2).replace('.', ',')} ml en ${gc.length} tronçon${gc.length > 1 ? 's' : ''}`, q: gcModules, src: 'DXF' });
+    for (const e of S.escalier || []) rows.push({ g: 'Sécurité et accès', el: `Escalier ${e.modele}`, det: [`emmarchement ${code5(e.modele)} mm`, `sur lisse ${e.lisse}, vers ${/^[eo]/.test(e.orientation) ? "l'" : 'le '}${e.orientation}`].concat(e.options || []).join(' · '), q: 1, src: 'JSON' });
+    for (const a of J.accessoires || []) {
+      // shortcut: une seule teinte par article au catalogue ; s'il en vient deux, la première l'emporte
+      const ref = Object.keys(ACCESSOIRES).find(r => r.slice(0, 15) === (a.codearticle || '').slice(0, 15));
+      const det = ref && `${ref} · ${COLORIS[ref.slice(-2)] || 'coloris ' + ref.slice(-2)}`;
+      rows.push({ g: 'Accessoires', el: ref ? ACCESSOIRES[ref] : a.codearticle, det: [det, a === gcAcc && 'modules de garde-corps'].filter(Boolean).join(' · '), q: a.count, src: 'JSON', mono: !ref });
+    }
+
+    // ---------- Encombrement ----------
+    const bb = { x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity };
+    for (const p of P) { const h = Math.max(p.pl, p.w) / 2; growRect(bb, [p.cx - h, p.cy - h, p.cx + h, p.cy + h]); }
+    L.forEach(l => growRect(bb, l.rect)); semi.forEach(s => growRect(bb, s.rect));
+    jdf.forEach(j => grow(bb, j.p.cx + j.u[0] * 1025, j.p.cy + j.u[1] * 1025));
+    const stairSVG = [], stairDimSVG = [];
+    if (D) { drawDXF(stair, D.blocks, ID, stairSVG, bb); drawDXF(stairDims, D.blocks, ID, stairDimSVG, bb); }
+
+    return { J, env, poles: P, lisses: L, semi, croix, jdf, solives, entretoises, gc, stairSVG, stairDimSVG, rows, checks, warn, bb, sousLisse, ep, D, floor, stairs3d, sas, landing: landing.poles.length ? landing : null };
+  }
+
+  // shortcut: une plateforme en U pourrait voir son échancrure remplie (test « entouré dans les 4 directions ») ; passer à un vrai contour si un projet le montre.
+  function floorRects(els) {
+    const uq = vs => vs.sort((a, b) => a - b).filter((v, i, a) => !i || v - a[i - 1] > 0.5);
+    const xs = uq(els.flatMap(r => [r[0], r[2]])), ys = uq(els.flatMap(r => [r[1], r[3]]));
+    const inside = (cx, cy) => els.some(r => cx > r[0] && cx < r[2] && cy > r[1] && cy < r[3]) || (
+      els.some(r => r[2] <= cx && cy > r[1] && cy < r[3]) && els.some(r => r[0] >= cx && cy > r[1] && cy < r[3]) &&
+      els.some(r => r[3] <= cy && cx > r[0] && cx < r[2]) && els.some(r => r[1] >= cy && cx > r[0] && cx < r[2]));
+    const out = [];
+    for (let j = 0; j + 1 < ys.length; j++) {
+      let run = null;
+      for (let i = 0; i + 1 < xs.length; i++) {
+        if (inside((xs[i] + xs[i + 1]) / 2, (ys[j] + ys[j + 1]) / 2)) { if (run) run[2] = xs[i + 1]; else run = [xs[i], ys[j], xs[i + 1], ys[j + 1]]; }
+        else if (run) { out.push(run); run = null; }
+      }
+      if (run) out.push(run);
+    }
+    return out;
+  }
+
+  // ---------- Rendu SVG ----------
+  function renderSVG(M) {
+    // Plan du fournisseur tel quel, cotes comprises, sans son cartouche (cadre, tableau, textes de l'espace objet).
+    // Sans cotes (DXF allégé des anciens liens 3D) ou sans DXF : plan redessiné depuis le JSON.
+    if (M.D && M.D.entities.some(o => o.type === 'DIMENSION')) {
+      const box = () => ({ x0: Infinity, y0: Infinity, x1: -Infinity, y1: -Infinity }), cart = box(), b = box(), dx = [];
+      drawDXF(M.D.entities.filter(o => o.type === 'INSERT' && /^(MINI|POLE)_BOX$/.test(o.name || '')), M.D.blocks, ID, [], cart);
+      for (const o of M.D.entities) {
+        if (o.type === 'TEXT' || o.type === 'MTEXT' || (o.type === 'INSERT' && /_BOX$/.test(o.name || ''))) continue;
+        const e = [], eb = box();
+        drawDXF([o], M.D.blocks, ID, e, eb);
+        if (eb.y0 > cart.y0) continue; // sous le haut du cartouche : cotes du détail de poteau
+        dx.push(...e); growRect(b, [eb.x0, eb.y0, eb.x1, eb.y1]);
+      }
+      // textes du DXF à l'échelle d'un A3 : on les grossit pour qu'ils se lisent à l'écran sans zoomer
+      const span = Math.max(b.x1 - b.x0, b.y1 - b.y0), mg = span * 0.03, fmin = span / 85, ref = M.J.client && M.J.client.reference_interne || '';
+      const body = dx.join('').replace(/font-size="([\d.]+)"/g, (m, v) => `font-size="${fx(Math.max(+v, fmin))}"`);
+      return `<svg xmlns="http://www.w3.org/2000/svg" class="plan dxf" viewBox="${fx(b.x0 - mg)} ${fx(b.y0 - mg)} ${fx(b.x1 - b.x0 + 2 * mg)} ${fx(b.y1 - b.y0 + 2 * mg)}" role="img" aria-label="Plan coté de la mezzanine ${esc(ref)}"><g class="g-dxf">${body}<\/g><\/svg>`;
+    }
+    const bb = M.bb, span = Math.max(bb.x1 - bb.x0, bb.y1 - bb.y0, 3000), fs = Math.round(span / 75);
+    const rect = (r, cls) => `<rect${cls ? ` class="${cls}"` : ''} x="${fx(r[0])}" y="${fx(r[1])}" width="${fx(r[2] - r[0])}" height="${fx(r[3] - r[1])}"/>`;
+    const out = [];
+
+    out.push(`<g class="g-solive">${M.solives.map(s => rect(s.rect)).join('')}${M.entretoises.map(e => `<path d="${pathD([e.a, e.b])}"/>`).join('')}<\/g>`);
+    out.push(`<g class="g-lisse">${M.lisses.map(l => rect(l.rect)).join('')}<\/g>`);
+    out.push(`<g class="g-semi">${M.semi.map(s => rect(s.rect)).join('')}<\/g>`);
+    out.push(`<g class="g-croix">${M.croix.map(c => {
+      const pt = (u, v) => c.l.H ? [c.mid + u, c.cross + v] : [c.cross + v, c.mid + u];
+      return `<path d="${pathD([pt(-457.5, 100), pt(-229.5, 100), pt(229.5, -100), pt(457.5, -100)])}"/><path d="${pathD([pt(-457.5, -100), pt(-229.5, -100), pt(229.5, 100), pt(457.5, 100)])}"/>`;
+    }).join('')}<\/g>`);
+    out.push(`<g class="g-gc">${M.gc.map(g => `<path d="${pathD(g.pts)}"/>`).join('')}<\/g>`);
+    out.push(`<g class="g-jdf">${M.jdf.map(({ p, u }) => {
+      const v = [-u[1], u[0]], pt = (a, b) => [p.cx + u[0] * a + v[0] * b, p.cy + u[1] * a + v[1] * b];
+      const holes = [[850, 75], [1000, 75], [850, -75], [1000, -75]].map(([a, b]) => { const q = pt(a, b); return `<circle cx="${fx(q[0])}" cy="${fx(q[1])}" r="10"/>`; }).join('');
+      return `<path d="${pathD([pt(50, 25), pt(965, 25), pt(965, -25), pt(50, -25)], true)}"/><path d="${pathD([pt(825, -100), pt(1025, -100), pt(1025, 100), pt(825, 100)], true)}"/>${holes}`;
+    }).join('')}<\/g>`);
+    const ral = (M.env.couleurs || {}).poteaux || '';
+    out.push(`<g class="g-pole" data-ral="${esc(ral)}">${M.poles.map(p => {
+      const h = p.pl / 2, a = [p.x, p.y], b = [p.x + p.w, p.y + p.h];
+      return (p.pl ? rect([p.cx - h, p.cy - h, p.cx + h, p.cy + h], 'platine') : '') + rect([a[0], a[1], b[0], b[1]], 'tube') + `<path class="x" d="${pathD([a, b])}M${fx(a[0])} ${fx(b[1])}L${fx(b[0])} ${fx(a[1])}"/>`;
+    }).join('')}<\/g>`);
+    out.push(`<g class="g-stair">${M.stairSVG.join('')}<\/g><g class="g-stair-dim">${M.stairDimSVG.join('')}<\/g>`);
+
+    // Cotes : entraxes des poteaux en haut et à gauche, puis hors tout platine.
+    const uniq = vs => vs.sort((a, b) => a - b).filter((v, i, a) => !i || v - a[i - 1] > 1);
+    const xs = uniq(M.poles.map(p => p.cx)), ys = uniq(M.poles.map(p => p.cy));
+    const pl = Math.max(0, ...M.poles.map(p => p.pl)) / 2, t = fs * 0.45, cot = [];
+    const tick = (x, y) => `M${fx(x - t)} ${fx(y + t)}L${fx(x + t)} ${fx(y - t)}`;
+    const dimH = (x0, x1, y, txt) => {
+      cot.push(`<path d="M${fx(x0)} ${fx(bb.y0 - fs * 0.6)}L${fx(x0)} ${fx(y - t)}M${fx(x1)} ${fx(bb.y0 - fs * 0.6)}L${fx(x1)} ${fx(y - t)}M${fx(x0 - t)} ${fx(y)}L${fx(x1 + t)} ${fx(y)}${tick(x0, y)}${tick(x1, y)}"/>`);
+      cot.push(`<text x="${fx((x0 + x1) / 2)}" y="${fx(y - fs * 0.35)}" font-size="${fs}" text-anchor="middle">${esc(txt)}<\/text>`);
+    };
+    const dimV = (y0, y1, x, txt) => {
+      cot.push(`<path d="M${fx(bb.x0 - fs * 0.6)} ${fx(y0)}L${fx(x - t)} ${fx(y0)}M${fx(bb.x0 - fs * 0.6)} ${fx(y1)}L${fx(x - t)} ${fx(y1)}M${fx(x)} ${fx(y0 - t)}L${fx(x)} ${fx(y1 + t)}${tick(x, y0)}${tick(x, y1)}"/>`);
+      const tx = x - fs * 0.35, ty = (y0 + y1) / 2;
+      cot.push(`<text x="${fx(tx)}" y="${fx(ty)}" font-size="${fs}" text-anchor="middle" transform="rotate(-90 ${fx(tx)} ${fx(ty)})">${esc(txt)}<\/text>`);
+    };
+    if (xs.length > 1) for (let i = 1; i < xs.length; i++) dimH(xs[i - 1], xs[i], bb.y0 - fs * 2, Math.round(xs[i] - xs[i - 1]));
+    if (ys.length > 1) for (let i = 1; i < ys.length; i++) dimV(ys[i - 1], ys[i], bb.x0 - fs * 2, Math.round(ys[i] - ys[i - 1]));
+    if (xs.length) dimH(xs[0] - pl, xs[xs.length - 1] + pl, bb.y0 - fs * 4, `${Math.round(xs[xs.length - 1] - xs[0] + 2 * pl)} hors tout platine`);
+    if (ys.length) dimV(ys[0] - pl, ys[ys.length - 1] + pl, bb.x0 - fs * 4, `${Math.round(ys[ys.length - 1] - ys[0] + 2 * pl)} hors tout platine`);
+    out.unshift(`<g class="g-cote">${cot.join('')}<\/g>`);
+
+    const vx = bb.x0 - fs * 5.2, vy = bb.y0 - fs * 5.2, vw = bb.x1 - vx + fs * 1.5, vh = bb.y1 - vy + fs * 1.5;
+
+    const ref = M.J.client && M.J.client.reference_interne || '';
+    return `<svg xmlns="http://www.w3.org/2000/svg" class="plan" viewBox="${fx(vx)} ${fx(vy)} ${fx(vw)} ${fx(vh)}" role="img" aria-label="Plan de la mezzanine ${esc(ref)}">${out.join('')}<\/svg>`;
+  }
+
+  const api = { parseDXF, buildPlan, renderSVG };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.MEZZ = api;
+})(this);
+</script>
+<script>// Scène 3D d'une mezzanine à partir du modèle MEZZ.buildPlan (plan en mm, Y vers le sud ; Three.js en m, Y vers le haut).
+(function (root) {
+  'use strict';
+  const K = 0.001;
+
+  // shortcut: hauteur des solives déduite de leur largeur (50 → 150, 80 → 250, relevé sur PEP2610-1250 et PEP2610-846) ; la lire si un export la donne un jour.
+  const soliveHt = w => (w <= 60 ? 150 : 250);
+
+  // Sas 1500 extrait de l'OBJ fournisseur de PEP2611-182 (tools/sas-extract.js) : Int16 [nb sommets, x y h…, triangles…] en mm,
+  // dans le repère du bloc DXF SECURITY_LOCK (x le long du bord, y vers l'intérieur, h au-dessus du plancher).
+  const SAS_1500 = 'fgET/dP/BgAT/QUABgAt/QUABgAt/dP/BgAt/dP/awQt/QUAawQT/dP/awQT/QUAawT9/M7/AAD9/AoAAABC/QoAAABC/c7/AABC/c7/BgBC/QoABgD9/M7/BgD9/AoABgAG/VIDBgAG/aIDBgA6/aIDBgA6/VIDBgA6/VIDTAU6/aIDTAUG/VIDTAUG/aIDTAXb/CADAADb/NQDAABl/dQDAABl/SADAABl/SADBgBl/dQDBgDb/CADBgDb/NQDBgAT/QMAIAQT/VEDIAQt/VEDIAQt/QMAIAQt/QMAUgQt/VEDUgQT/QMAUgQT/VEDUgQT/QMALAIT/VEDLAIt/VEDLAIt/QMALAIt/QMAXgIt/VEDXgIT/QMAXgIT/VEDXgIe/QMABgAe/VEDBgAi/VEDBgAi/QMABgAi/QMAnAAi/VEDnAAe/QMAnAAe/VEDnADTAtP/BgDTAgUABgDtAgUABgDtAtP/BgDtAtP/awTtAgUAawTTAtP/awTTAgUAawS+As7/AAC+AgoAAAADAwoAAAADA87/AAADA87/BgADAwoABgC+As7/BgC+AgoABgDGAlIDBgDGAqIDBgD6AqIDBgD6AlIDBgD6AlIDTAX6AqIDTAXGAlIDTAXGAqIDTAWbAiADAACbAtQDAAAlA9QDAAAlAyADAAAlAyADBgAlA9QDBgCbAiADBgCbAtQDBgDTAgMAIATTAlEDIATtAlEDIATtAgMAIATtAgMAUgTtAlEDUgTTAgMAUgTTAlEDUgTTAgMALALTAlEDLALtAlEDLALtAgMALALtAgMAXgLtAlEDXgLTAgMAXgLTAlEDXgLeAgMABgDeAlEDBgDiAlEDBgDiAgMABgDiAgMAnADiAlEDnADeAgMAnADeAlEDnAA//S4AFwA//e0GTQhZ/e0GTQhZ/S4AFwBZ/QcANwBZ/cYGbQg//QcANwA//cYGbQinAi4AFwCnAu0GTQjBAu0GTQjBAi4AFwDBAgcANwDBAsYGbQinAgcANwCnAsYGbQg//QgAHQQ//X4D7gRZ/X4D7gRZ/QgAHQRZ/fz/TgRZ/XIDHwU//fz/TgQ//XIDHwVZ/dACiwhZ/Y8DEQU//dACiwg//Y8DEQU//V4DBwU//Z4CgQhZ/V4DBwVZ/Z8CgQinAggAHQSnAn4D7gTBAn4D7gTBAggAHQTBAvz/TgTBAnIDHwWnAvz/TgSnAnIDHwXBAtACiwjBAo8DEQWnAtACiwinAo8DEQWnAl4DBwWnAp4CgQjBAl4DBwXBAp8CgQg//dP/CwA//QUACwBZ/QUACwBZ/dP/CwBZ/dP/ZgRZ/QUAZgQ//dP/ZgQ//QUAZgTz/9P/CwDz/wUACwANAAUACwANANP/CwANANP/ZgQNAAUAZgTz/9P/ZgTz/wUAZgSnAtP/CwCnAgUACwDBAgUACwDBAtP/CwDBAtP/ZgTBAgUAZgSnAtP/ZgSnAgUAZgRM/eL/CwBM/fb/CwC0Avb/CwC0AuL/CwC0AuL/oQC0Avb/oQBM/eL/oQBM/fb/oQA6/QAAGgA6/TIAGgBe/TIAGgBe/QAAGgBe/QAATABe/TIATAA6/QAATAA6/TIATAA6/QAAJwQ6/TIAJwRe/TIAJwRe/QAAJwRe/QAAWQRe/TIAWQQ6/QAAWQQ6/TIAWQSiAgAAJwSiAjIAJwTGAjIAJwTGAgAAJwTGAgAAWQTGAjIAWQSiAgAAWQSiAjIAWQSiAgAAGgCiAjIAGgDGAjIAGgDGAgAAGgDGAgAATADGAjIATACiAgAATACiAjIATADBAvkGogjBAvgGcAinAvgGcAinAvkGoginAp4CsgjBAp4CsgjBAp0CgAgNAPkGoggNAPgGcAjz//gGcAjz//kGogjz/54Csgjz/50CgAgNAJ4CsggNAJ0CgAhZ/fkGoghZ/fgGcAg//fgGcAg//fkGogg//Z4CsghZ/Z4CsghZ/Z0CgAi0AvkGkwi0AvgGfwhM/fgGfwhM/fkGkwhM/WMGlQhM/WIGgQi0AmMGlQi0AmIGgQjGAukGdQjGAukGQwiiAukGQwiiAukGdQiiArcGdgiiArcGRAjGArcGdgjGArcGRAjGAtwChAjGAtsCUgiiAtsCUgiiAtwChAiiAqoChQiiAqkCUwjGAqoChQjGAqkCUwhe/dwChAhe/dsCUgg6/dsCUgg6/dwChAg6/aoChQg6/akCUwhe/aoChQhe/akCUwhe/ekGdQhe/ekGQwg6/ekGQwg6/ekGdQg6/bcGdgg6/bcGRAhe/bcGdghe/bcGRAhS/ez/MgJS/fX/NAKpAvX/NAKpAuz/MgJS/fz/OwKpAvz/OwJS/f7/RAKpAv7/RAJS/fz/TAKpAvz/TAJS/fX/UwKpAvX/UwJS/ez/VQKpAuz/VQJS/eT/UwKpAuT/UwJS/d3/TAKpAt3/TAJS/dv/RAKpAtv/RAJS/d3/OwKpAt3/OwJS/eT/NAKpAuT/NAJS/ez/JwRS/fX/KQSpAvX/KQSpAuz/JwRS/fz/MASpAvz/MARS/f7/OASpAv7/OARS/fz/QQSpAvz/QQRS/fX/SASpAvX/SARS/ez/SgSpAuz/SgRS/eT/SASpAuT/SARS/d3/QQSpAt3/QQRS/dv/OASpAtv/OARS/d3/MASpAt3/MARS/eT/KQSpAuT/KQRS/csChwhS/dMCigipAtMCigipAssChwhS/doCkAipAtoCkAhS/dwCmQipAtwCmQhS/doCogipAtoCoghS/dMCqAipAtMCqAhS/csCqgipAssCqghS/cICqAipAsICqAhS/bsCogipArsCoghS/bkCmQipArkCmQhS/bsCkAipArsCkAhS/cICigipAsICighS/b4EfwhS/ccEggipAscEggipAr4EfwhS/c4EiAipAs4EiAhS/dAEkQipAtAEkQhS/c4EmgipAs4EmghS/ccEoAipAscEoAhS/b4EowipAr4EowhS/bUEoAipArUEoAhS/a8EmgipAq8EmghS/a0EkQipAq0EkQhS/a8EiAipAq8EiAhS/bUEggipArUEgggAAAEAAgAAAAIAAwAEAAUABgAFAAcABgAAAAQABgADAAQAAAABAAYABwAAAAYAAQACAAcABQABAAcAAgADAAUABAACAAUAAwAIAAkACgAIAAoACwAMAA0ADgANAA8ADgAIAAwADgALAAwACAAJAA4ADwAIAA4ACQAKAA8ADQAJAA8ACgALAA0ADAAKAA0ACwAQABEAEgAQABIAEwAUABUAFgAVABcAFgAQABQAFgATABQAEAARABYAFwAQABYAEQASABcAFQARABcAEgATABUAFAASABUAEwAYABkAGgAYABoAGwAcAB0AHgAdAB8AHgAYABwAHgAbABwAGAAZAB4AHwAYAB4AGQAaAB8AHQAZAB8AGgAbAB0AHAAaAB0AGwAgACEAIgAgACIAIwAkACUAJgAlACcAJgAgACQAJgAjACQAIAAhACYAJwAgACYAIQAiACcAJQAhACcAIgAjACUAJAAiACUAIwAoACkAKgAoACoAKwAsAC0ALgAtAC8ALgAoACwALgArACwAKAApAC4ALwAoAC4AKQAqAC8ALQApAC8AKgArAC0ALAAqAC0AKwAwADEAMgAwADIAMwA0ADUANgA1ADcANgAwADQANgAzADQAMAAxADYANwAwADYAMQAyADcANQAxADcAMgAzADUANAAyADUAMwA4ADkAOgA4ADoAOwA8AD0APgA9AD8APgA4ADwAPgA7ADwAOAA5AD4APwA4AD4AOQA6AD8APQA5AD8AOgA7AD0APAA6AD0AOwBAAEEAQgBAAEIAQwBEAEUARgBFAEcARgBAAEQARgBDAEQAQABBAEYARwBAAEYAQQBCAEcARQBBAEcAQgBDAEUARABCAEUAQwBIAEkASgBIAEoASwBMAE0ATgBNAE8ATgBIAEwATgBLAEwASABJAE4ATwBIAE4ASQBKAE8ATQBJAE8ASgBLAE0ATABKAE0ASwBQAFEAUgBQAFIAUwBUAFUAVgBVAFcAVgBQAFQAVgBTAFQAUABRAFYAVwBQAFYAUQBSAFcAVQBRAFcAUgBTAFUAVABSAFUAUwBYAFkAWgBYAFoAWwBcAF0AXgBdAF8AXgBYAFwAXgBbAFwAWABZAF4AXwBYAF4AWQBaAF8AXQBZAF8AWgBbAF0AXABaAF0AWwBgAGEAYgBgAGIAYwBkAGUAZgBlAGcAZgBgAGQAZgBjAGQAYABhAGYAZwBgAGYAYQBiAGcAZQBhAGcAYgBjAGUAZABiAGUAYwBoAGkAagBoAGoAawBsAG0AbgBtAG8AbgBoAGwAbgBrAGwAaABpAG4AbwBoAG4AaQBqAG8AbQBpAG8AagBrAG0AbABqAG0AawBwAHEAcgBwAHIAcwB0AHUAdgB1AHcAdgBzAHQAcABxAHYAdwBwAHYAcQByAHcAdQBzAHUAdAByAHUAcwB4AHkAegB4AHoAewB8AH0AfgB9AH8AfgB4AHwAfgB7AHwAeAB5AH4AfwB4AH4AeQB6AH8AfQB5AH8AegB7AH0AfAB6AH0AewCAAIEAggCAAIIAgwCEAIUAhgCFAIcAhgCAAIQAhgCDAIQAgACBAIYAhwCAAIYAgQCCAIcAhQCBAIcAggCDAIUAhACCAIUAgwCIAIkAigCJAIsAigCMAIoAiwCNAIoAjACOAIsAiQCMAIsAjgCPAIkAiACOAIkAjwCQAJEAkgCQAJIAkwCUAJUAlgCVAJcAlgCQAJQAlgCTAJQAkACRAJYAlwCQAJYAkQCSAJcAlQCRAJcAkgCTAJUAlACSAJUAkwCYAJkAmgCZAJsAmgCcAJoAmwCdAJoAnACeAJsAmQCcAJsAngCfAJkAmACeAJkAnwCgAKEAogCgAKIAowCkAKUApgClAKcApgCgAKQApgCjAKQAoAChAKYApwCgAKYAoQCiAKcApQChAKcAogCjAKUApACiAKUAowCoAKkAqgCoAKoAqwCsAK0ArgCtAK8ArgCoAKwArgCrAKwAqACpAK4ArwCoAK4AqQCqAK8ArQCpAK8AqgCrAK0ArACqAK0AqwCwALEAsgCwALIAswC0ALUAtgC1ALcAtgCwALQAtgCzALQAsACxALYAtwCwALYAsQCyALcAtQCxALcAsgCzALUAtACyALUAswC4ALkAugC4ALoAuwC8AL0AvgC9AL8AvgC4ALwAvgC7ALwAuAC5AL4AvwC4AL4AuQC6AL8AvQC5AL8AugC7AL0AvAC6AL0AuwDAAMEAwgDAAMIAwwDEAMUAxgDFAMcAxgDAAMQAxgDDAMQAwADBAMYAxwDAAMYAwQDCAMcAxQDBAMcAwgDDAMUAxADCAMUAwwDIAMkAygDIAMoAywDMAM0AzgDNAM8AzgDIAMwAzgDLAMwAyADJAM4AzwDIAM4AyQDKAM8AzQDJAM8AygDLAM0AzADKAM0AywDQANEA0gDQANIA0wDUANUA1gDVANcA1gDQANQA1gDTANQA0ADRANYA1wDQANYA0QDSANcA1QDRANcA0gDTANUA1ADSANUA0wDYANkA2gDYANoA2wDcAN0A3gDdAN8A3gDYANwA3gDbANwA2ADZAN4A3wDYAN4A2QDaAN8A3QDZAN8A2gDbAN0A3ADaAN0A2wDgAOEA4gDgAOIA4wDgAOQA5QDjAOQA4ADhAOUA5gDgAOUA4QDhAOYA4gDjAJ0A5ADiAJ0A4wDnAOgA6QDnAOkA6gDrAOwA7QDsAO4A7QDnAOsA7QDqAOsA5wDoAO0A7gDnAO0A6ADpAO4A7ADoAO4A6QDqAOwA6wDpAOwA6gDvAPAA8QDvAPEA8gDvAPMA9ADyAPMA7wDwAPQA9QDvAPQA8ADwAPUA8QDyAI0A8wDxAI0A8gD2APcA+AD2APgA+QD6APsA/AD7AP0A/AD2APoA/AD5APoA9gD3APwA/QD2APwA9wD4AP0A+wD3AP0A+AD5APsA+gD4APsA+QD+AP8AAAH+AAABAQECAQMBBAEDAQUBBAH+AAIBBAEBAQIB/gD/AAQBBQH+AAQB/wAAAQUBAwH/AAUBAAEBAQMBAgEAAQMBAQEGAQcBCAEGAQgBCQEKAQsBDAELAQ0BDAEGAQoBDAEJAQoBBgEHAQwBDQEGAQwBBwEIAQ0BCwEHAQ0BCAEJAQsBCgEIAQsBCQEOAQ8BEAEOARABEQESARMBFAETARUBFAEOARIBFAERARIBDgEPARQBFQEOARQBDwEQARUBEwEPARUBEAERARMBEgEQARMBEQEWARcBGAEWARgBGQEaARsBHAEbAR0BHAEWARoBHAEZARoBFgEXARwBHQEWARwBFwEYAR0BGwEXAR0BGAEZARsBGgEYARsBGQFwAHQAdgBxAHcAcgCNAIwAjgCNAI4AjwCNAIgAigCPAIgAjQCdAJwAngCdAJ4AnwCdAJgAmgCfAJgAnQDkAJ0A5QCdAOYA5QDiAOYAnQDzAI0A9ACNAPUA9ADxAPUAjQAeAR8BIAEgASEBHgEfASIBIwEjASABHwEiASQBJQElASMBIgEkASYBJwEnASUBJAEmASgBKQEpAScBJgEoASoBKwErASkBKAEqASwBLQEtASsBKgEsAS4BLwEvAS0BLAEuATABMQExAS8BLgEwATIBMwEzATEBMAEyATQBNQE1ATMBMgE0AR4BIQEhATUBNAE2ATcBOAE4ATkBNgE3AToBOwE7ATgBNwE6ATwBPQE9ATsBOgE8AT4BPwE/AT0BPAE+AUABQQFBAT8BPgFAAUIBQwFDAUEBQAFCAUQBRQFFAUMBQgFEAUYBRwFHAUUBRAFGAUgBSQFJAUcBRgFIAUoBSwFLAUkBSAFKAUwBTQFNAUsBSgFMATYBOQE5AU0BTAFOAU8BUAFQAVEBTgFPAVIBUwFTAVABTwFSAVQBVQFVAVMBUgFUAVYBVwFXAVUBVAFWAVgBWQFZAVcBVgFYAVoBWwFbAVkBWAFaAVwBXQFdAVsBWgFcAV4BXwFfAV0BXAFeAWABYQFhAV8BXgFgAWIBYwFjAWEBYAFiAWQBZQFlAWMBYgFkAU4BUQFRAWUBZAFmAWcBaAFoAWkBZgFnAWoBawFrAWgBZwFqAWwBbQFtAWsBagFsAW4BbwFvAW0BbAFuAXABcQFxAW8BbgFwAXIBcwFzAXEBcAFyAXQBdQF1AXMBcgF0AXYBdwF3AXUBdAF2AXgBeQF5AXcBdgF4AXoBewF7AXkBeAF6AXwBfQF9AXsBegF8AWYBaQFpAX0BfAE=';
+
+  function build(T, M, opt) {
+    opt = opt || {};
+    const col = opt.colors || {}, H = M.env.hauteur || 3000, ep = M.ep || 30, top = H - ep;
+    const g = new T.Group(), UP = new T.Vector3(0, 1, 0), mats = {};
+
+    const mat = key => {
+      const c = col[key] && col[key] !== 'GALVA' ? col[key] : 'GALVA';
+      return mats[c] || (mats[c] = c === 'GALVA'
+        ? new T.MeshStandardMaterial({ color: '#c5ccd3', metalness: 0.25, roughness: 0.5 }) // sans carte d'environnement, un métal plus réfléchissant sort noir
+        : new T.MeshStandardMaterial({ color: c, metalness: 0.1, roughness: 0.55 }));
+    };
+    const V = (x, y, h) => new T.Vector3(x * K, h * K, y * K);
+    const add = (geo, m, mtx) => {
+      const o = new T.Mesh(geo, m);
+      if (mtx) { o.matrixAutoUpdate = false; o.matrix.copy(mtx); }
+      o.castShadow = o.receiveShadow = true; g.add(o); return o;
+    };
+    const box = (w, h, d, m, x, y, z) => { const o = add(new T.BoxGeometry(w * K, h * K, d * K), m); o.position.set(x * K, y * K, z * K); return o; };
+    // Pavé de section w × h (mm) entre deux points 3D ; h reste dans le plan vertical.
+    const obox = (a, b, w, h, m) => {
+      const z = new T.Vector3().subVectors(b, a), len = z.length(); z.normalize();
+      const x = new T.Vector3().crossVectors(UP, z); if (x.lengthSq() < 1e-8) x.set(1, 0, 0); x.normalize();
+      const y = new T.Vector3().crossVectors(z, x);
+      return add(new T.BoxGeometry(w * K, h * K, len), m, new T.Matrix4().makeBasis(x, y, z).setPosition(a.clone().add(b).multiplyScalar(0.5)));
+    };
+    const rod = (a, b, d, m) => {
+      const v = new T.Vector3().subVectors(b, a), o = add(new T.CylinderGeometry(d * K / 2, d * K / 2, v.length(), 8), m);
+      o.position.copy(a).addScaledVector(v, 0.5); o.quaternion.setFromUnitVectors(UP, v.normalize()); return o;
+    };
+    // Profil C (âme + ailes + retours) : âme à la cote `web`, ailes vers sg, dessus à `top`.
+    const cProfile = (o, m) => {
+      const { ht: h, fl: f, lip, t } = o, s = new T.Shape();
+      [[0, 0], [f, 0], [f, lip], [f - t, lip], [f - t, t], [t, t], [t, h - t], [f - t, h - t], [f - t, h - lip], [f, h - lip], [f, h], [0, h]]
+        .forEach(([u, v], i) => (i ? s.lineTo(u * K, v * K) : s.moveTo(u * K, v * K)));
+      const along = o.H ? new T.Vector3(1, 0, 0) : new T.Vector3(0, 0, 1);
+      const across = (o.H ? new T.Vector3(0, 0, 1) : new T.Vector3(1, 0, 0)).multiplyScalar(o.sg);
+      const origin = o.H ? V(o.a0, o.web, o.top - h) : V(o.web, o.a0, o.top - h);
+      return add(new T.ExtrudeGeometry(s, { depth: o.len * K, bevelEnabled: false }), m, new T.Matrix4().makeBasis(across, UP, along).setPosition(origin));
+    };
+    const rail = (a, b, base, m) => {
+      const len = Math.hypot(b[0] - a[0], b[1] - a[1]); if (len < 50) return;
+      const n = Math.max(1, Math.ceil(len / 1500));
+      for (let i = 0; i <= n; i++) { const x = a[0] + (b[0] - a[0]) * i / n, y = a[1] + (b[1] - a[1]) * i / n; obox(V(x, y, base), V(x, y, base + 1100), 40, 40, m); }
+      rod(V(a[0], a[1], base + 1100), V(b[0], b[1], base + 1100), 42, m);
+      rod(V(a[0], a[1], base + 550), V(b[0], b[1], base + 550), 30, m);
+      obox(V(a[0], a[1], base + 75), V(b[0], b[1], base + 75), 8, 150, m);
+    };
+
+    // Poteaux et platines
+    for (const p of M.poles) {
+      box(p.pl || 200, 10, p.pl || 200, mat('poteaux'), p.cx, 5, p.cy);
+      box(p.w, top - 10, p.h, mat('poteaux'), p.cx, 10 + (top - 10) / 2, p.cy);
+    }
+    // Connecteur en tête de poteau : deux flasques 200 × 300 × 5 mm à 34 mm de part et d'autre du tube, parallèles aux lisses
+    // porteuses (perpendiculaires aux solives) ; les bouts de lisses viennent s'y serrer.
+    // shortcut: forme et sens relevés sur les exports 3D de NCYC (bois et caillebotis) ; revoir si un autre projet montre autre chose.
+    const flX = String(M.env.solivage).toUpperCase() !== 'HORIZONTAL';
+    for (const p of M.poles) for (const s of [-1, 1]) {
+      if (flX) box(200, 300, 5, mat('poteaux'), p.cx, top - 150, p.cy + s * (p.h / 2 + 34));
+      else box(5, 300, 200, mat('poteaux'), p.cx + s * (p.w / 2 + 34), top - 150, p.cy);
+    }
+    // Lisses à leur vraie section
+    for (const l of M.lisses) {
+      const sec = l.section.split('x').map(Number);
+      cProfile({ H: l.H, a0: l.a0, len: l.len, web: l.web, sg: l.sg, ht: l.ht, fl: l.fl, lip: sec[2] || 30, t: sec[3] || 3, top }, mat('lisses'));
+    }
+    // Solives (emprise du DXF), affleurant le dessus des lisses
+    for (const s of M.solives) {
+      const r = s.rect, h = r[2] - r[0] > r[3] - r[1];
+      cProfile({ H: h, a0: h ? r[0] : r[1], len: s.len, web: h ? r[1] : r[0], sg: 1, ht: soliveHt(s.w), fl: s.w, lip: 20, t: 2, top }, mat('solives'));
+    }
+    for (const e of M.entretoises) obox(V(e.a[0], e.a[1], top - 90), V(e.b[0], e.b[1], top - 90), 30, 100, mat('solives'));
+    // Semi-lisses en débord : même hauteur que la lisse qui les porte (exports 3D du fournisseur)
+    for (const s of M.semi) { const r = s.rect, h = (M.lisses.find(l => l.id === s.s.lisse) || {}).ht || 150; box(r[2] - r[0], h, r[3] - r[1], mat('lisses'), (r[0] + r[2]) / 2, top - h / 2, (r[1] + r[3]) / 2); }
+
+    // Croisillons câble en X entre les appuis de la lisse
+    for (const c of M.croix) {
+      const [A, B] = c.l.axis, lo = 150, hi = top - c.l.ht - 60;
+      rod(V(A[0], A[1], lo), V(B[0], B[1], hi), 10, mat('croisillons'));
+      rod(V(B[0], B[1], lo), V(A[0], A[1], hi), 10, mat('croisillons'));
+    }
+    // Jambes de force : du poteau sous la lisse jusqu'à la platine au sol (925 mm du poteau, comme sur le plan)
+    const hmax = Math.max(250, ...M.lisses.map(l => l.ht));
+    for (const { p, u } of M.jdf) {
+      const fx = p.cx + u[0] * 925, fy = p.cy + u[1] * 925;
+      obox(V(p.cx + u[0] * 50, p.cy + u[1] * 50, top - hmax - 150), V(fx, fy, 40), 60, 60, mat('poteaux'));
+      box(200, 10, 200, mat('poteaux'), fx, 5, fy);
+    }
+
+    // Garde-corps relevés dans le DXF, posés sur le plancher
+    const n0 = g.children.length;
+    for (const r of M.gc) for (let i = 1; i < r.pts.length; i++) rail(r.pts[i - 1], r.pts[i], H, mat('rambardes'));
+    g.children.slice(n0).forEach(o => { o.userData.gc = true; }); // repérés pour le modèle fournisseur, qui peut ne pas les avoir
+
+    // Escalier : limons, marches à hauteurs égales, rambardes des deux côtés
+    const gr = M.stairs3d.length ? grating(T) : null; // marches en caillebotis
+    for (const s of M.stairs3d) {
+      const P = (r, q, h) => V(s.top[0] + s.dir[0] * r + s.lat[0] * q, s.top[1] + s.dir[1] * r + s.lat[1] * q, h);
+      const st = s.steps.length ? s.steps : Array.from({ length: Math.max(1, Math.round(H / 230) - 1) }, (_, i) => (i + 1) * s.L / Math.round(H / 230));
+      const k = st.length, riser = H / (k + 1), m = mat('escaliers'), hAt = r => H * (1 - r / s.L);
+      for (let i = 0; i < k; i++) {
+        const r0 = i ? st[i - 1] : 0, h = H - (i + 1) * riser;
+        // marche en caillebotis (maille dans le repère de la marche), nez de marche plein à l'avant
+        const o = obox(P(r0 + 10, 0, h - 15), P(st[i] - 30, 0, h - 15), 2 * s.halfIn, 30, gr), pos = o.geometry.attributes.position, uv = o.geometry.attributes.uv;
+        for (let j = 0; j < pos.count; j++) uv.setXY(j, pos.getX(j) / 0.06, pos.getZ(j) / 0.038);
+        o.castShadow = false;
+        obox(P(st[i] - 30, 0, h - 15), P(st[i], 0, h - 15), 2 * s.halfIn, 30, mat('galva'));
+      }
+      for (const sg of [-1, 1]) {
+        const q = sg * (s.halfIn + 25), qr = sg * (s.halfIn + 70);
+        obox(P(0, q, H - 140), P(s.L - 60, q, 170), 10, 260, m); // pied du limon arrêté au sol
+        const n = Math.max(2, Math.ceil((s.L - 300) / 1200) + 1), rs = Array.from({ length: n }, (_, i) => 150 + i * (s.L - 300) / (n - 1));
+        for (const r of rs) obox(P(r, qr, Math.max(0, hAt(r) - 100)), P(r, qr, hAt(r) + 1000), 40, 40, m);
+        rod(P(rs[0], qr, hAt(rs[0]) + 1000), P(rs[n - 1], qr, hAt(rs[n - 1]) + 1000), 42, m);
+        rod(P(rs[0], qr, hAt(rs[0]) + 500), P(rs[n - 1], qr, hAt(rs[n - 1]) + 500), 30, m);
+      }
+    }
+
+    // Palier d'arrivée
+    if (M.landing) {
+      for (const [x, y] of M.landing.poles) { box(200, 10, 200, mat('escaliers'), x, 5, y); box(100, top - 10, 100, mat('escaliers'), x, 10 + (top - 10) / 2, y); }
+      for (const r of M.landing.beams) box(r[2] - r[0], 200, r[3] - r[1], mat('lisses'), (r[0] + r[2]) / 2, top - 100, (r[1] + r[3]) / 2);
+      for (const [a, b] of M.landing.gc) rail(a, b, H, mat('rambardes'));
+    }
+
+    // Sas de sécurité posé sur son bloc DXF : le lien client n'emporte pas l'OBJ. S'il y a un OBJ, son propre sas le remplace.
+    const sasList = [];
+    for (const s of M.sas || []) {
+      const d = new Int16Array(Uint8Array.from(atob(SAS_1500), ch => ch.charCodeAt(0)).buffer), nv = d[0], m = s.m;
+      // shortcut: sas 2300 / 3000 obtenus en écartant les extrémités du 1500 (montant central gardé), sans export pour vérifier
+      const dl = (s.L - 1500) / 2, pos = new Float32Array((d.length - 1 - nv * 3) * 3);
+      for (let t = 1 + nv * 3, j = 0; t < d.length; t++, j += 3) {
+        const v = 1 + d[t] * 3, x = d[v] + (Math.abs(d[v]) > 60 ? Math.sign(d[v]) * dl : 0), y = d[v + 1];
+        pos[j] = (m[0] * x + m[2] * y + m[4]) * K; pos[j + 1] = (H + d[v + 2]) * K; pos[j + 2] = -(m[1] * x + m[3] * y + m[5]) * K;
+      }
+      const geo = new T.BufferGeometry(); geo.setAttribute('position', new T.BufferAttribute(pos, 3)); geo.computeVertexNormals();
+      const o = add(geo, mat('accessoires')); o.name = 'SAS-' + s.L;
+      const p = sasPivot(T, o); if (p) sasList.push(p);
+    }
+    g.userData.sas = sasList;
+
+    // Plancher : caillebotis (code …T00030C…) ajouré, sinon panneau aggloméré
+    const cb = /T\d{5}C/.test(M.env.plancher || ''), floor = new T.Group();
+    // Aggloméré 2050 × 910 : côté 2050 en travers des solives, joints de bout sur l'axe d'une solive, 2e rangée décalée d'un entraxe
+    // (683,33 = 2050 / 3 ; 512,5 = 2050 / 4). Le plancher déborde de 50 mm des lisses tout autour.
+    const alongX = String(M.env.solivage).toUpperCase() === 'HORIZONTAL', ac = r => alongX ? [r[1], r[3]] : [r[0], r[2]];
+    const sc = M.solives.map(s => (ac(s.rect)[0] + ac(s.rect)[1]) / 2).sort((a, b) => a - b);
+    const gaps = sc.slice(1).map((v, i) => v - sc[i]).filter(d => d > 100).sort((a, b) => a - b);
+    const entraxe = gaps.length ? gaps[gaps.length >> 1] : 2050 / 3, deb = cb ? 0 : 50;
+    const fm = cb ? grating(T) : chipboard(T, entraxe / 2050);
+    // sous-face peinte en blanc : matière non éclairée, sinon elle sort grise (aucune lumière ne vient d'en bas)
+    const under = !cb && opt.dessous === 'blanc' ? new T.MeshBasicMaterial({ color: '#f4f3ef' }) : fm;
+    const fr = M.floor.concat(M.landing ? [M.landing.rect] : []), ox = Math.min(...fr.map(r => r[0])) * K, oz = Math.min(...fr.map(r => r[1])) * K;
+    const u0 = (sc.length ? sc[0] : Math.min(...fr.map(r => ac(r)[0])) - deb) * K; // origine des panneaux : axe de la première solive
+    const slab = r => {
+      const geo = new T.BoxGeometry((r[2] - r[0]) * K, ep * K, (r[3] - r[1]) * K);
+      geo.translate((r[0] + r[2]) / 2 * K, (top + ep / 2) * K, (r[1] + r[3]) / 2 * K);
+      const p = geo.attributes.position, uv = geo.attributes.uv;
+      for (let i = 0; i < p.count; i++) {
+        const x = p.getX(i) - ox, z = p.getZ(i) - oz;
+        if (cb) uv.setXY(i, x / 0.06, z / 0.038); // maille 30×19 dessinée au double
+        else uv.setXY(i, ((alongX ? z + oz : x + ox) - u0) / 2.05, ((alongX ? x : z) + deb * K) / 1.82); // tuile : un panneau de long, deux rangées de 910
+      }
+      const o = new T.Mesh(geo, under === fm ? fm : [fm, fm, fm, under, fm, fm]); // faces du pavé : +x −x +y −y +z −z
+      o.receiveShadow = true; o.castShadow = !cb; floor.add(o);
+    };
+    // Rectangles agrandis du débord, puis réunis en bandes sans recouvrement (sinon les faces confondues scintillent aux jonctions)
+    // Bords à moins de 60 mm fusionnés sur le plus proche du centre : les bandes au droit des poteaux dépassent de 35 à 45 mm
+    // la face des lisses et laissaient un ergot dans les angles.
+    const big = fr.map(r => [r[0] - deb, r[1] - deb, r[2] + deb, r[3] + deb]);
+    const snap = vs => {
+      const s = vs.slice().sort((a, b) => a - b), c = (s[0] + s[s.length - 1]) / 2, out = [];
+      for (const v of s) { const l = out[out.length - 1]; if (l && v - l.max < 60) { l.max = v; if (Math.abs(v - c) < Math.abs(l.v - c)) l.v = v; } else out.push({ v, max: v }); }
+      return out.map(o => o.v);
+    };
+    const xs = snap(big.flatMap(r => [r[0], r[2]])), ys = snap(big.flatMap(r => [r[1], r[3]]));
+    for (let j = 0; j + 1 < ys.length; j++) {
+      let run = null; const cy = (ys[j] + ys[j + 1]) / 2;
+      for (let i = 0; i + 1 < xs.length; i++) {
+        const cx = (xs[i] + xs[i + 1]) / 2;
+        if (big.some(r => cx > r[0] && cx < r[2] && cy > r[1] && cy < r[3])) { if (run) run[2] = xs[i + 1]; else run = [xs[i], ys[j], xs[i + 1], ys[j + 1]]; }
+        else if (run) { slab(run); run = null; }
+      }
+      if (run) slab(run);
+    }
+    g.add(floor);
+    if (opt.obj) supplier(T, M, g, floor, opt.obj, mat, top);
+    return { group: g, floor };
+  }
+
+  // Panneaux d'aggloméré 2050 × 910 à joints décalés : u = 2050 en travers des solives, v = 2 rangées de 910 dans leur sens ;
+  // la 2e rangée est décalée de la fraction s du panneau (un entraxe de solives).
+  function chipboard(T, s) {
+    const m = new T.MeshStandardMaterial({ color: '#b98f5e', roughness: 0.85 });
+    if (typeof document === 'undefined') return m;
+    const c = document.createElement('canvas'); c.width = c.height = 512;
+    const x = c.getContext('2d');
+    x.fillStyle = '#a97f52'; x.fillRect(0, 0, 512, 512); // plus foncé que l'aggloméré réel : l'éclairage le pâlit
+    for (let i = 0; i < 2500; i++) {
+      x.fillStyle = i % 2 ? 'rgba(120,85,45,.25)' : 'rgba(235,205,160,.3)';
+      x.fillRect(Math.random() * 512, Math.random() * 512, 2 + Math.random() * 3, 1 + Math.random() * 2);
+    }
+    x.fillStyle = '#4a3420';
+    x.fillRect(0, 0, 512, 4); x.fillRect(0, 254, 512, 4); // joints entre rangées
+    x.fillRect(0, 0, 4, 256); x.fillRect(Math.round((s % 1) * 512) - 2, 256, 4, 256); // joints de bout, sur l'axe d'une solive
+    const t = new T.CanvasTexture(c); t.wrapS = t.wrapT = T.RepeatWrapping; t.anisotropy = 8;
+    m.color.set('#ffffff'); m.map = t; return m;
+  }
+
+  function grating(T) {
+    const m = new T.MeshStandardMaterial({ color: '#b4bcc4', metalness: 0.3, roughness: 0.5, transparent: true, side: T.DoubleSide });
+    if (typeof document === 'undefined') { m.opacity = 0.45; return m; }
+    const c = document.createElement('canvas'); c.width = c.height = 64;
+    const x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, 64, 14); x.fillRect(0, 0, 10, 64);
+    const t = new T.CanvasTexture(c); t.wrapS = t.wrapT = T.RepeatWrapping; t.anisotropy = 8;
+    m.alphaMap = t; return m;
+  }
+
+  // Cotes en rouge : entraxes et hors tout platine au sol sur deux côtés dégagés de l'escalier, hauteurs à un poteau d'angle.
+  function dims(T, M, opt) {
+    opt = opt || {};
+    const g = new T.Group(), red = opt.color || '#d42a2a', P = M.poles, pts = [];
+    if (!P.length) return g;
+    const V = (x, y, h) => new T.Vector3(x * K, h * K, y * K), seg = (a, b) => pts.push(a, b);
+    const uq = vs => vs.sort((a, b) => a - b).filter((v, i, a) => !i || v - a[i - 1] > 1);
+    const pl = Math.max(50, ...P.map(p => (p.pl || p.w) / 2)), xs = uq(P.map(p => p.cx)), ys = uq(P.map(p => p.cy));
+    const rs = M.floor.concat(P.map(p => [p.cx - pl, p.cy - pl, p.cx + pl, p.cy + pl]));
+    const B = [Math.min(...rs.map(r => r[0])), Math.min(...rs.map(r => r[1])), Math.max(...rs.map(r => r[2])), Math.max(...rs.map(r => r[3]))];
+    const busy = M.stairs3d.map(s => {
+      const c = [-1, 1].flatMap(k => [0, s.L].map(r => [s.top[0] + s.dir[0] * r + s.lat[0] * k * s.halfOut, s.top[1] + s.dir[1] * r + s.lat[1] * k * s.halfOut]));
+      return [Math.min(...c.map(q => q[0])), Math.min(...c.map(q => q[1])), Math.max(...c.map(q => q[0])), Math.max(...c.map(q => q[1]))];
+    }).concat(M.landing ? [M.landing.rect] : []);
+    const span = Math.max(B[2] - B[0], B[3] - B[1]), th = Math.min(0.45, Math.max(0.2, span * K * 0.045)), tm = th / K; // th : hauteur du texte (m)
+    const r1 = 1.2 * tm + 250, r2 = r1 + 1.2 * tm + 250, S = r2 + 600; // rangées de cotes espacées pour que chaque texte tienne entre deux lignes
+    const free = (r, mg = 0) => !busy.some(b => b[0] - mg < r[2] && b[2] + mg > r[0] && b[1] - mg < r[3] && b[3] + mg > r[1]);
+    const sy = free([B[0], B[3], B[2], B[3] + S]) || !free([B[0], B[1] - S, B[2], B[1]]) ? 1 : -1, yE = sy > 0 ? B[3] : B[1];
+    const sx = free([B[0] - S, B[1], B[0], B[3]]) || !free([B[2], B[1], B[2] + S, B[3]]) ? -1 : 1, xE = sx < 0 ? B[0] : B[2];
+    const t = 70, h0 = 8;
+
+    // Texte posé dans le plan de la cote (sens de lecture r, normale n), juste au-dessus de la ligne, comme sur un plan.
+    const X = new T.Vector3(1, 0, 0), Y = new T.Vector3(0, 1, 0), NZ = new T.Vector3(0, 0, -1);
+    const label = (txt, p, r, n) => {
+      if (typeof document === 'undefined') return;
+      const f = '600 96px "Barlow Condensed", "Arial Narrow", sans-serif', c = document.createElement('canvas'), x = c.getContext('2d');
+      x.font = f; const tw = Math.ceil(x.measureText(txt).width) + 36;
+      let cw = 128; while (cw < tw) cw *= 2; // largeur en puissance de 2 pour les mipmaps
+      c.width = cw; c.height = 128; x.font = f; x.textAlign = 'center'; x.textBaseline = 'middle';
+      x.globalAlpha = 0.85; x.fillStyle = opt.halo || '#ffffff'; x.fillRect((cw - tw) / 2, 8, tw, 112);
+      x.globalAlpha = 1; x.fillStyle = red; x.fillText(txt, cw / 2, 68);
+      const tx = new T.CanvasTexture(c); tx.anisotropy = 8;
+      const u = new T.Vector3().crossVectors(n, r);
+      const o = new T.Mesh(new T.PlaneGeometry(th * cw / 128, th), new T.MeshBasicMaterial({ map: tx, transparent: true, depthWrite: false, side: T.DoubleSide }));
+      o.matrixAutoUpdate = false; o.matrix.makeBasis(r, u, n).setPosition(p.clone().addScaledVector(u, th * 0.7));
+      o.renderOrder = 2; g.add(o);
+    };
+    // Cote au sol parallèle à x (le long du bord yE) ou à y (le long du bord xE), avec traits de rappel depuis le bord.
+    const dimX = (x0, x1, off, txt) => {
+      const y = yE + sy * off;
+      seg(V(x0, y, h0), V(x1, y, h0));
+      for (const x of [x0, x1]) { seg(V(x - t, y + t, h0), V(x + t, y - t, h0)); seg(V(x, yE + sy * 60, h0), V(x, y + sy * 100, h0)); }
+      label(txt, V((x0 + x1) / 2, y, h0 + 1), X, Y);
+    };
+    const dimY = (y0, y1, off, txt) => {
+      const x = xE + sx * off;
+      seg(V(x, y0, h0), V(x, y1, h0));
+      for (const y of [y0, y1]) { seg(V(x - t, y + t, h0), V(x + t, y - t, h0)); seg(V(xE + sx * 60, y, h0), V(x + sx * 100, y, h0)); }
+      label(txt, V(x, (y0 + y1) / 2, h0 + 1), NZ, Y);
+    };
+    if (xs.length > 1) for (let i = 1; i < xs.length; i++) dimX(xs[i - 1], xs[i], r1, String(Math.round(xs[i] - xs[i - 1])));
+    if (ys.length > 1) for (let i = 1; i < ys.length; i++) dimY(ys[i - 1], ys[i], r1, String(Math.round(ys[i] - ys[i - 1])));
+    dimX(xs[0] - pl, xs[xs.length - 1] + pl, r2, `${Math.round(xs[xs.length - 1] - xs[0] + 2 * pl)} hors tout platine`);
+    dimY(ys[0] - pl, ys[ys.length - 1] + pl, r2, `${Math.round(ys[ys.length - 1] - ys[0] + 2 * pl)} hors tout platine`);
+
+    // Hauteurs au premier angle dégagé de l'escalier : bout opposé de la rangée en x, puis de celle en y, puis leur angle commun.
+    const xF = sx < 0 ? B[2] : B[0], yF = sy > 0 ? B[1] : B[3];
+    const cand = [[xF, yE, -sx, sy], [xE, yF, sx, -sy], [xE, yE, sx, sy]];
+    // marge de 600 mm : une cote de hauteur collée au pied de l'escalier se lit mal en vue 3D
+    const [kx, ky, ox, oy] = cand.find(([x, y, a, b]) => free([Math.min(x, x + a * 2000), Math.min(y, y + b * 2000), Math.max(x, x + a * 2000), Math.max(y, y + b * 2000)], 600)) || cand[2];
+    const c = P.reduce((a, p) => (Math.hypot(p.cx - kx, p.cy - ky) < Math.hypot(a.cx - kx, a.cy - ky) ? p : a));
+    const H = M.env.hauteur, vert = (off, h, txt) => {
+      const x = c.cx + ox * (pl + off), y = c.cy + oy * (pl + off);
+      seg(V(x, y, 0), V(x, y, h));
+      for (const z of [0, h]) seg(V(x - ox * t, y - oy * t, z - t), V(x + ox * t, y + oy * t, z + t));
+      seg(V(c.cx + ox * 60, c.cy + oy * 60, h), V(x + ox * 100, y + oy * 100, h));
+      label(txt, V(x, y, h / 2), Y, new T.Vector3(ox, 0, oy).normalize());
+    };
+    if (H) vert(350, H, `${H} sur plancher`);
+    if (M.sousLisse) vert(350 + 1.5 * tm, M.sousLisse, `${M.sousLisse} sous lisse`);
+
+    g.add(new T.LineSegments(new T.BufferGeometry().setFromPoints(pts), new T.LineBasicMaterial({ color: red })));
+    return g;
+  }
+
+  // Bâtiment PlanCoté : chaque « solide » (mur, poteau) est un polygone en plan extrudé de z0 à z1, en mm.
+  // Murs translucides pour garder la mezzanine visible depuis l'extérieur.
+  // mode : 'sol' (emprise des murs et poteaux posée au sol, comme le plan), 'opaque', sinon translucide
+  // Modèle 3D exporté par le fournisseur (OBJ, une pièce nommée par objet) à la place de notre structure.
+  // On garde notre plancher (calepinage, caillebotis, dessous blanc) et nos garde-corps si l'export n'en a pas.
+  function supplier(T, M, g, floor, obj, mat, top) {
+    const meshes = [], poles = [];
+    obj.traverse(o => { if (o.isMesh) meshes.push(o); });
+    for (const o of meshes) if (/^POLE-TUBE-FLA-POLE/.test(o.name)) { o.geometry.computeBoundingBox(); const c = o.geometry.boundingBox.getCenter(new T.Vector3()); poles.push([c.x, c.z]); }
+    // recalage sur le JSON par les centres des poteaux (l'OBJ a son propre repère, en mètres)
+    const J = M.poles.map(p => [p.cx * K, p.cy * K]), mean = a => [0, 1].map(i => a.reduce((s, v) => s + v[i], 0) / a.length);
+    if (!poles.length || poles.length !== J.length) throw new Error(`${poles.length} poteaux dans l'OBJ pour ${J.length} dans le JSON`);
+    const [jx, jz] = mean(J), [ox, oz] = mean(poles), dx = jx - ox, dz = jz - oz;
+    const off = Math.max(...J.map(([x, z]) => Math.min(...poles.map(([a, b]) => Math.hypot(a + dx - x, b + dz - z)))));
+    if (off > 0.03) throw new Error(`poteaux décalés de ${Math.round(off * 1000)} mm : ce n'est pas le même projet`);
+    // shortcut: noms de pièces relevés sur 3 exports (bois, caillebotis, sas, portillon) ; une pièce inconnue prend la couleur des lisses.
+    const part = n => /^SAS|SECURITY_LOCK|^GATE/.test(n) ? 'accessoires' : /^(POLE|CONNECTOR)/.test(n) ? 'poteaux' : /^JOIST/.test(n) ? 'solives' : /^CROSS_BRACE/.test(n) ? 'croisillons'
+      : /RAIL|GUARD|BASEBOARD|_TUBE/.test(n) ? 'rambardes' : /^STAIR/.test(n) ? 'escaliers' : 'lisses';
+    const hasGC = meshes.some(o => /RAIL|GUARD/.test(o.name) && !/^STAIR/.test(o.name));
+    let floorBot = null, gr = null, fm = null; const sas = [], gate = [];
+    floor.traverse(o => { if (o.isMesh && !fm) fm = Array.isArray(o.material) ? o.material[0] : o.material; });
+    for (const o of meshes) {
+      // Palier intermédiaire d'escalier (FLOOR-…_LANDING_FLOOR, PEP2611-184 : 600 mm sous une plateforme à 3700) : à sa hauteur à lui,
+      // on garde sa couche du milieu (30 mm) dans la matière de notre plancher ; il ne sert pas de repère de hauteur.
+      if (/^FLOOR-MID_LANDING/.test(o.name) && fm) {
+        o.material = fm; o.castShadow = false; o.receiveShadow = true;
+        const cb = /T\d{5}C/.test(M.env.plancher || ''), pos = o.geometry.attributes.position, uv = new T.BufferAttribute(new Float32Array(pos.count * 2), 2);
+        for (let j = 0; j < pos.count; j++) uv.setXY(j, pos.getX(j) / (cb ? 0.06 : 2.05), pos.getZ(j) / (cb ? 0.038 : 1.82)); // même échelle que notre plancher
+        o.geometry.setAttribute('uv', uv);
+        continue;
+      }
+      if (/^FLOOR/.test(o.name)) { // FLOOR-BOT_PART (bois) ou FLOOR-LAYER-n (caillebotis) ; le palier a son propre plancher
+        o.geometry.computeBoundingBox(); if (!/RECEPTION|LANDING/.test(o.name)) floorBot = Math.min(floorBot ?? Infinity, o.geometry.boundingBox.min.y);
+        o.parent.remove(o); o.geometry.dispose(); continue;
+      }
+      if (/^STAIR-STEP_/.test(o.name)) { // marches en caillebotis, comme le reste de l'escalier (tôle pleine sinon)
+        gr = gr || grating(T); o.material = gr; o.castShadow = false; o.receiveShadow = true;
+        const pos = o.geometry.attributes.position, uv = new T.BufferAttribute(new Float32Array(pos.count * 2), 2);
+        for (let j = 0; j < pos.count; j++) uv.setXY(j, pos.getX(j) / 0.06, pos.getZ(j) / 0.038);
+        o.geometry.setAttribute('uv', uv);
+        continue;
+      }
+      o.material = mat(part(o.name)); o.castShadow = o.receiveShadow = true;
+      if (/^SAS|SECURITY_LOCK/.test(o.name)) { const s = sasPivot(T, o); if (s) sas.push(s); }
+      else if (/^GATE/.test(o.name)) { const s = gatePivot(T, o, { x: ox, z: oz }); if (s) gate.push(s); }
+    }
+    g.userData.sas = sas; g.userData.gate = gate;
+    obj.position.set(dx, 0, dz);
+    const keep = new T.Group();
+    for (const o of g.children.slice()) { g.remove(o); if (o === floor || (o.userData.gc && !hasGC)) keep.add(o); else if (o.geometry) o.geometry.dispose(); }
+    keep.position.y = floorBot != null ? floorBot - top * K : 0; // notre plancher posé sur les solives du fournisseur (ses poteaux partent de la platine de 10 mm)
+    g.add(keep, obj);
+  }
+
+  // Sas basculant : deux cadres latéraux fixes et une partie en L (barrière de rive + cadre haut) qui pivote de 90°
+  // au droit des montants à pivot. On la sépare du maillage (un seul objet dans l'OBJ) et on la monte sur un pivot.
+  // shortcut: géométrie relevée sur un seul export (sas 1500 de PEP2611-182) ; revoir sur un sas 2300 ou 3000.
+  function sasPivot(T, o) {
+    const geo = o.geometry, pos = geo.attributes.position, nor = geo.attributes.normal, n = pos.count;
+    if (geo.index || n % 3 || !nor) return null;
+    geo.computeBoundingBox(); const b = geo.boundingBox;
+    const X = i => pos.getX(i), Y = i => pos.getY(i), Z = i => pos.getZ(i), all = [...Array(n).keys()];
+    const top = all.filter(i => Y(i) > b.min.y + 0.75 * (b.max.y - b.min.y)); // cadre haut : mobile, plus haut que les montants fixes
+    const span = f => Math.max(...top.map(f)) - Math.min(...top.map(f));
+    const [A, Pp] = span(X) > span(Z) ? [X, Z] : [Z, X]; // A le long du bord, Pp en travers
+    const a0 = Math.min(...top.map(A)) - 1e-3, a1 = Math.max(...top.map(A)) + 1e-3;
+    // Une face appartient au volume derrière elle (à l'opposé de sa normale) : la face d'un montant fixe collée à la partie mobile
+    // reste fixe. Les platines au sol (6 mm) débordent sous la partie mobile : on les garde fixes par la hauteur.
+    const NA = A === X ? i => nor.getX(i) : i => nor.getZ(i);
+    const mob = t => {
+      const c = (A(3 * t) + A(3 * t + 1) + A(3 * t + 2)) / 3 - 0.002 * NA(3 * t), h = (Y(3 * t) + Y(3 * t + 1) + Y(3 * t + 2)) / 3 - 0.002 * nor.getY(3 * t);
+      return c > a0 && c < a1 && h > b.min.y + 0.008;
+    };
+    const tri = [...Array(n / 3).keys()];
+    const idx = ts => ts.flatMap(t => [3 * t, 3 * t + 1, 3 * t + 2]), mv = idx(tri.filter(mob)), fx = idx(tri.filter(t => !mob(t)));
+    if (!mv.length || !fx.length) return null;
+    const mean = (is, f) => is.reduce((s, i) => s + f(i), 0) / is.length;
+    const fy = Math.max(...fx.map(Y)), pp = mean(fx.filter(i => Y(i) > fy - 0.1), Pp); // axe des montants à pivot
+    const s = Math.sign(mean(top, Pp) - mean(mv.filter(i => Y(i) < b.min.y + 0.3), Pp)) || 1; // de la barrière de rive vers l'intérieur
+    // Hauteur de l'axe : basculé de 90°, le cadre haut doit se poser au sol comme la barrière de rive (h' = py - distance vers l'intérieur).
+    // shortcut: déduite de cette condition, pas de la pièce ; le point où les bras se rejoignent (1,29 m) donnait un sas suspendu à 39 cm.
+    const py = Math.min(...mv.map(Y)) + Math.max(...mv.map(i => s * (Pp(i) - pp)));
+    const part = is => {
+      const g2 = new T.BufferGeometry();
+      for (const [k, at] of Object.entries(geo.attributes)) {
+        const w = at.itemSize, a = new Float32Array(is.length * w);
+        is.forEach((i, j) => { for (let c = 0; c < w; c++) a[j * w + c] = at.array[i * w + c]; });
+        g2.setAttribute(k, new T.BufferAttribute(a, w));
+      }
+      return g2;
+    };
+    const am = (a0 + a1) / 2, piv = Pp === X ? new T.Vector3(pp, py, am) : new T.Vector3(am, py, pp);
+    const mg = part(mv); mg.translate(-piv.x, -piv.y, -piv.z);
+    o.geometry = part(fx); geo.dispose();
+    const pivot = new T.Group(), m = new T.Mesh(mg, o.material);
+    m.name = o.name + '-MOBILE'; m.castShadow = m.receiveShadow = true; pivot.position.copy(piv); pivot.add(m); o.parent.add(pivot);
+    // axe = haut × intérieur : à +90° la barrière de rive monte et le cadre haut descend côté plateforme
+    return { pivot, axis: Pp === X ? new T.Vector3(0, 0, -s) : new T.Vector3(s, 0, 0) };
+  }
+
+  // Portillon à 2 vantaux : l'OBJ le donne fermé, en une seule pièce faite de tubes qui ne partagent aucun sommet.
+  // On regroupe les triangles en morceaux connexes : les morceaux courts le long de l'ouverture (tube de poteau,
+  // platine au sol) restent fixes ; les autres (cadre + lisses de chaque vantail) sont partagés au milieu et pivotent
+  // sur leur bord côté poteau (la charnière), à l'angle tourné vers la plateforme, comme en vue de dessus fournisseur.
+  // shortcut: vérifié sur un seul export (portillon 1500 mm, PEP2606-86-A) ; un portillon d'un seul tenant reste fixe.
+  function gatePivot(T, o, center) {
+    const geo = o.geometry, pos = geo.attributes.position, n = pos.count;
+    if (geo.index || n % 3) return null;
+    geo.computeBoundingBox(); const b = geo.boundingBox;
+    const X = i => pos.getX(i), Z = i => pos.getZ(i);
+    const [A, Pp] = (b.max.x - b.min.x) > (b.max.z - b.min.z) ? [X, Z] : [Z, X]; // A le long de l'ouverture
+    const nt = n / 3, root = [...Array(nt).keys()], find = t => root[t] === t ? t : (root[t] = find(root[t])), seen = new Map();
+    for (let i = 0; i < n; i++) { // triangles reliés par un sommet commun = même tube
+      const k = [X(i), pos.getY(i), Z(i)].map(v => Math.round(v * 1e4)).join(), t = (i / 3) | 0;
+      if (seen.has(k)) root[find(t)] = find(seen.get(k)); else seen.set(k, t);
+    }
+    const comps = new Map();
+    for (let t = 0; t < nt; t++) { const r = find(t); if (!comps.has(r)) comps.set(r, []); comps.get(r).push(t); }
+    const a0 = A === X ? b.min.x : b.min.z, a1 = A === X ? b.max.x : b.max.z, am = (a0 + a1) / 2;
+    const idx = ts => ts.flatMap(t => [3 * t, 3 * t + 1, 3 * t + 2]), left = [], right = [], fixed = [];
+    for (const ts of comps.values()) {
+      const as = idx(ts).map(A), lo = Math.min(...as), hi = Math.max(...as);
+      (hi - lo < (a1 - a0) * 0.25 ? fixed : (lo + hi) / 2 < am ? left : right).push(...idx(ts));
+    }
+    if (!left.length || !right.length) return null;
+    const part = is => {
+      const g2 = new T.BufferGeometry();
+      for (const [k, at] of Object.entries(geo.attributes)) {
+        const w = at.itemSize, a = new Float32Array(is.length * w);
+        is.forEach((i, j) => { for (let c = 0; c < w; c++) a[j * w + c] = at.array[i * w + c]; });
+        g2.setAttribute(k, new T.BufferAttribute(a, w));
+      }
+      return g2;
+    };
+    // ouverture vers le centre de la plateforme (pas dans le vide)
+    const gatePp = Pp === X ? (b.min.x + b.max.x) / 2 : (b.min.z + b.max.z) / 2, centerPp = Pp === X ? center.x : center.z;
+    const s = Math.sign(centerPp - gatePp) || 1, py = b.min.y;
+    const mk = (is, apiv) => {
+      const ps = is.map(Pp), ppiv = s > 0 ? Math.max(...ps) : Math.min(...ps); // charnière : face du vantail côté plateforme
+      const piv = Pp === X ? new T.Vector3(ppiv, py, apiv) : new T.Vector3(apiv, py, ppiv);
+      const g2 = part(is); g2.translate(-piv.x, -piv.y, -piv.z);
+      const pivot = new T.Group(), m = new T.Mesh(g2, o.material);
+      m.name = o.name + '-LEAF'; m.castShadow = m.receiveShadow = true; pivot.position.copy(piv); pivot.add(m); o.parent.add(pivot);
+      return pivot;
+    };
+    const leftPivot = mk(left, Math.min(...left.map(A))), rightPivot = mk(right, Math.max(...right.map(A)));
+    if (fixed.length) { const m = new T.Mesh(part(fixed), o.material); m.name = o.name + '-POTEAU'; m.castShadow = m.receiveShadow = true; o.parent.add(m); }
+    const dirPp = Pp === X ? v => v.x : v => v.z, aAxis = A === X ? new T.Vector3(1, 0, 0) : new T.Vector3(0, 0, 1);
+    const testQ = new T.Quaternion().setFromAxisAngle(new T.Vector3(0, 1, 0), 0.1);
+    const sign = dir => Math.sign(dirPp(aAxis.clone().multiplyScalar(dir).applyQuaternion(testQ))) === s ? 1 : -1;
+    const leftSign = sign(1), rightSign = sign(-1); // le vantail gauche part vers +A depuis sa charnière, le droit vers -A
+    o.parent.remove(o); geo.dispose();
+    return { left: leftPivot, right: rightPivot, leftSign, rightSign };
+  }
+
+  function building(T, B, mode) {
+    const g = new T.Group(), opaque = mode === 'opaque';
+    const wall = opaque ? new T.MeshStandardMaterial({ color: '#d3d8de', roughness: 0.9 })
+      : new T.MeshStandardMaterial({ color: '#c3c9d1', roughness: 0.9, transparent: true, opacity: 0.45, depthWrite: false, side: T.DoubleSide });
+    const area = pts => Math.abs(pts.reduce((s, p, i) => { const q = pts[(i + 1) % pts.length]; return s + p[0] * q[1] - q[0] * p[1]; }, 0)) / 2;
+    for (const s of (B && B.solids) || []) {
+      if (!Array.isArray(s.pts) || s.pts.length < 3 || !(s.z1 > s.z0) || area(s.pts) < 1) continue;
+      const shape = new T.Shape(s.pts.map(p => new T.Vector2(p[0] * K, -p[1] * K)));
+      if (mode === 'sol') { // seules les parties qui touchent le sol : les portes restent des passages
+        if (s.z0 > 0) continue;
+        const geo = new T.ShapeGeometry(shape); geo.rotateX(-Math.PI / 2); geo.translate(0, 0.004, 0);
+        g.add(new T.Mesh(geo, new T.MeshBasicMaterial({ color: /^#[0-9a-f]{6}$/i.test(s.color || '') ? s.color : '#5b636e' })));
+        continue;
+      }
+      const geo = new T.ExtrudeGeometry(shape, { depth: (s.z1 - s.z0) * K, bevelEnabled: false });
+      geo.rotateX(-Math.PI / 2); geo.translate(0, s.z0 * K, 0); // forme (x, -y) couchée au sol, extrudée vers le haut
+      const mur = s.kind === 'mur', m = mur ? wall : new T.MeshStandardMaterial({ color: /^#[0-9a-f]{6}$/i.test(s.color || '') ? s.color : '#5b636e', roughness: 0.7 });
+      const o = new T.Mesh(geo, m); o.castShadow = !mur; o.receiveShadow = true; g.add(o);
+    }
+    return g;
+  }
+
+  const api = { build, dims, building };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.MEZZ3D = api;
+})(this);
+</script>
+<script>
+const PRESETS = [];
+let CLIENT = null; // mode client (page client ou lien 3D) : un seul projet, sans données fournisseur
+const LOGO = 'data:image/jpeg;base64,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';
+const URL_PUBLIQUE = 'https://rsl-degardin.github.io/Devis_Gondoles/plans-mezzanine.html'; // page publiée qu'ouvrent les liens 3D
+function applyClient() {
+  if (!CLIENT) return;
+  document.body.classList.add('client');
+  $('h1').textContent = 'Votre plateforme de stockage';
+  $('sub').textContent = `Proposition RSL pour ${CLIENT.nom}${CLIENT.projet ? ' · projet ' + CLIENT.projet : ''}`;
+  $('brand-rsl').outerHTML = `<img class="logo" src="${LOGO}" alt="RSL">`;
+}
+const RAL = { RAL7024: '#474b4e', RAL5015: '#2271b3', RAL1028: '#f4a900', RAL7035: '#d7d7d7', RAL7016: '#383e42', RAL9005: '#0a0a0a', RAL9010: '#f1ece1', RAL9016: '#f6f6f6', RAL5010: '#0e294b', RAL3020: '#cc0605', RAL6011: '#587246', RAL2004: '#f44611', RAL1013: '#e3d9c6', RAL3000: '#a72920', RAL5018: '#058b8c', RAL7040: '#9da1aa', RAL9006: '#a5a8a6', GALVA: 'linear-gradient(135deg,#c9ced3,#9aa1a8 55%,#d6dadd)' };
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const projects = PRESETS.slice();
+let cur = 0;
+
+function model(p) {
+  if (!p.m) p.m = MEZZ.buildPlan(p.json, p.D || (p.dxf ? MEZZ.parseDXF(p.dxf) : null));
+  return p.m;
+}
+
+function renderTabs() {
+  $('tabs').innerHTML = projects.map((p, i) => `<button class="tab" role="tab" id="tab-${i}" aria-selected="${i === cur}"><b>${esc(p.json.client?.reference_client || 'Projet')}</b><small>${esc(p.json.client?.reference_interne || p.name)}</small></button>`).join('');
+  projects.forEach((p, i) => $('tab-' + i).onclick = () => {
+    cur = i; z2d = 1; c2d = null; $('sh-out').hidden = true; $('sh-nom').value = p.json.client?.reference_client || ''; $('sh-projet').value = '';
+    render();
+  });
+}
+
+function render() {
+  renderTabs();
+  $('main').hidden = !projects.length && $('devis-box').hidden; $('main').classList.toggle('vide', !projects.length);
+  if (!projects.length) { if ($('msg').hidden) { $('msg').textContent = "Importez le JSON d'un projet, puis ajoutez son DXF (boutons en haut à droite), pour afficher sa vue 3D, son plan et sa nomenclature. Sans JSON, le DXF seul affiche le plan 2D."; $('msg').hidden = false; } return; }
+  const p = projects[cur], J = p.json, c = J.client || {}, e = J.environement || {};
+  if (!$('devis-box').hidden) devisUI();
+  let M;
+  try { M = model(p); } catch (err) { $('msg').textContent = 'Lecture impossible : ' + err.message; $('msg').hidden = false; return; }
+  const notes = [];
+  if (!J.structure) notes.push("Plan importé depuis le DXF seul, sans JSON : affichage uniquement (caractéristiques et nomenclature indisponibles).");
+  else if (!p.dxf && !p.D) notes.push('Pas encore de DXF pour ce projet : ajoutez-le pour dessiner solives, entretoises, garde-corps et escalier.');
+  else if (p.dxf && M.checks[0] && !M.checks[0].ok) notes.push(`Ce DXF ne correspond pas entièrement au JSON : ${M.checks[0].val} lisses retrouvées. Vérifiez qu'il s'agit du même projet.`);
+  notes.push(...M.warn.map(w => 'Non dessiné : ' + w + '.'));
+  $('msg').textContent = notes.join(' '); $('msg').hidden = !notes.length;
+
+  const svg = drawPlan(M);
+  renderBat(p, M);
+  $('bat-wrap').hidden = mode !== '3d' || !p.bat; $('bat2d-wrap').hidden = mode === '3d' || !p.bat; // aussi au changement d'onglet
+  const fill = RAL[e.couleurs?.poteaux] || '';
+  if (fill && !fill.startsWith('linear')) svg.style.setProperty('--ral', fill);
+  $('lg-pole').style.cssText = `background:${fill && !fill.startsWith('linear') ? fill : 'var(--steel-ink)'};border:1px solid var(--ink)`;
+  $('legend').classList.toggle('dxf', svg.classList.contains('dxf'));
+
+  $('cartouche').innerHTML = CLIENT
+    ? `<h3>Votre projet</h3><div class="cart-title">${esc(CLIENT.nom)}</div><div class="cart-ref">${esc(c.reference_interne)}</div>
+      <dl>${CLIENT.projet ? `<dt>Projet</dt><dd>${esc(CLIENT.projet)}</dd>` : ''}<dt>Date</dt><dd>${esc(c.date)}</dd><dt>Code postal</dt><dd>${esc(c.code_region)}</dd><dt>Votre contact</dt><dd>${esc([c.contact?.prenom, c.contact?.nom].filter(Boolean).join(' '))}, RSL</dd></dl>`
+    : `<h3>Cartouche</h3><div class="cart-title">${esc(c.reference_client)}</div><div class="cart-ref">${esc(c.reference_interne)}</div>
+      <dl><dt>Date</dt><dd>${esc(c.date)}</dd><dt>Code postal</dt><dd>${esc(c.code_region)} ${esc(c.pays)}</dd>
+      <dt>Société</dt><dd>${esc(c.societe)}</dd><dt>Dessiné par</dt><dd>${esc([c.contact?.prenom, c.contact?.nom].filter(Boolean).join(' '))}</dd><dt>N° client</dt><dd class="mono">${esc(c.num)}</dd></dl>`;
+
+  $('carac').innerHTML = caracRows(M).map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('');
+  $('couleurs').innerHTML = colorRows(e).map(r => `<div class="sw"><i style="background:${r.css}"></i><div><span>${esc(r.name)}</span><b>${esc(r.code)}</b></div></div>`).join('');
+
+  $('checks-card').hidden = !M.checks.length;
+  $('checks').innerHTML = M.checks.map(k => `<li><span>${esc(k.label)}</span><span class="pill ${k.ok ? 'ok' : 'ko'}">${esc(k.val)}</span></li>`).join('');
+
+  if (mode === '3d') draw3D();
+
+  let g = '';
+  $('nomen').innerHTML = M.rows.map(r => {
+    const head = r.g !== g ? `<tr class="grp"><td colspan="3">${esc(g = r.g)}</td></tr>` : '';
+    return head + `<tr><td><span class="${r.mono ? 'mono' : ''}">${esc(r.el)}</span>${r.det ? `<span class="det">${esc(r.det)}</span>` : ''}</td><td class="q">${r.q ?? '—'}</td><td><span class="src ${r.src === 'DXF' ? 'dxf' : ''}">${r.src}</span></td></tr>`;
+  }).join('');
+}
+
+// ---------- Bâtiment PlanCoté : la mezzanine est placée dans le repère du bâtiment ----------
+const NS = 'http://www.w3.org/2000/svg';
+const batOk = B => !!(B && B.bounds && Array.isArray(B.solids) && typeof B.svg === 'string');
+const rotP = r => ([x, y]) => { const k = (r / 90) % 4, c = [1, 0, -1, 0][k], s = [0, 1, 0, -1][k]; return [x * c - y * s, x * s + y * c]; };
+// Emprise hors tout platine de la mezzanine (repère de la mezzanine)
+function emprise(M) {
+  const pl = Math.max(...M.poles.map(q => q.pl || q.w)) / 2;
+  return [Math.min(...M.poles.map(q => q.cx)) - pl, Math.min(...M.poles.map(q => q.cy)) - pl, Math.max(...M.poles.map(q => q.cx)) + pl, Math.max(...M.poles.map(q => q.cy)) + pl];
+}
+// Passage repère mezzanine → repère bâtiment : rotation r, puis translation (tx, ty) ; x, y = coin haut gauche de l'emprise tournée, depuis l'angle du bâtiment
+function placeOf(p, M) {
+  if (!p || !p.bat || !M.poles.length) return null;
+  const e = emprise(M), cs = [[e[0], e[1]], [e[2], e[1]], [e[0], e[3]], [e[2], e[3]]].map(rotP(p.bat.r));
+  const rx0 = Math.min(...cs.map(c => c[0])), ry0 = Math.min(...cs.map(c => c[1]));
+  const B = p.bat.data.bounds;
+  return { r: p.bat.r, tx: B.x0 + p.bat.x - rx0, ty: B.y0 + p.bat.y - ry0, w: Math.max(...cs.map(c => c[0])) - rx0, h: Math.max(...cs.map(c => c[1])) - ry0 };
+}
+function centrer(p, M, cx, cy) {
+  const B = p.bat.data.bounds, pl = placeOf(p, M);
+  p.bat.x = Math.round((cx ?? (B.x1 - B.x0) / 2) - pl.w / 2); p.bat.y = Math.round((cy ?? (B.y1 - B.y0) / 2) - pl.h / 2);
+}
+function place3D() {
+  if (!V3.place) return;
+  const pl = placeOf(projects[cur], V3.M);
+  V3.place.rotation.y = pl ? -pl.r * Math.PI / 180 : 0;
+  V3.place.position.set(pl ? pl.tx / 1000 : 0, 0, pl ? pl.ty / 1000 : 0);
+}
+// Le dessin du bâtiment vient d'un fichier ou d'un lien : on ne recopie que des formes et leurs attributs de dessin (pas de script ni de lien).
+function cleanSVG(str) {
+  const doc = new DOMParser().parseFromString(str, 'image/svg+xml'), ok = new Set(['g', 'path', 'rect', 'line', 'polyline', 'polygon', 'circle', 'ellipse']);
+  const attr = /^(d|x|y|x1|y1|x2|y2|cx|cy|r|rx|ry|width|height|points|fill|fill-rule|stroke|stroke-width|stroke-linecap|stroke-linejoin|stroke-dasharray|transform|opacity)$/;
+  const out = document.createElementNS(NS, 'g');
+  out.setAttribute('class', 'g-bat');
+  const copy = (src, dst) => { for (const c of src.children) {
+    if (!ok.has(c.localName)) continue;
+    const el = document.createElementNS(NS, c.localName);
+    for (const a of c.attributes) if (attr.test(a.name) && !/url\(|script:/i.test(a.value)) el.setAttribute(a.name, a.value);
+    dst.append(el); copy(c, el);
+  } };
+  if (doc.documentElement.localName === 'svg') copy(doc.documentElement, out);
+  return out;
+}
+function renderBat(p, M) {
+  $('bat-card').hidden = !p.bat;
+  if (!p.bat) return;
+  $('bat-name').textContent = p.bat.data.name || 'Bâtiment';
+  $('bat-x').value = p.bat.x; $('bat-y').value = p.bat.y;
+}
+const moveBat = f => { const p = projects[cur]; if (!p?.bat) return; f(p, model(p)); render(); place3D(); };
+$('bat-x').onchange = ev => moveBat(p => { p.bat.x = Math.round(+ev.target.value || 0); });
+$('bat-y').onchange = ev => moveBat(p => { p.bat.y = Math.round(+ev.target.value || 0); });
+$('bat-mid').onclick = () => moveBat((p, M) => centrer(p, M));
+$('bat-rot').onclick = () => moveBat((p, M) => { const pl = placeOf(p, M), cx = p.bat.x + pl.w / 2, cy = p.bat.y + pl.h / 2; p.bat.r = (p.bat.r + 90) % 360; centrer(p, M, cx, cy); });
+$('bat-del').onclick = () => { const p = projects[cur]; if (!p) return; p.bat = null; V3.key = null; render(); setMode(mode); };
+
+// Zoom de la vue 2D : z2d = 1 montre le plan entier ; c2d = centre visé, en coordonnées du plan. Gardé quand le plan est redessiné.
+let z2d = 1, c2d = null, drag2d = null;
+function zoomPlan(svg) {
+  if (!svg) return;
+  const base = svg.dataset.base || (svg.dataset.base = svg.getAttribute('viewBox')), [x, y, w, h] = base.split(' ').map(Number);
+  if (z2d <= 1) { z2d = 1; c2d = null; svg.setAttribute('viewBox', base); }
+  else {
+    const vw = w / z2d, vh = h / z2d, c = c2d || [x + w / 2, y + h / 2];
+    c2d = [Math.min(Math.max(c[0], x + vw / 2), x + w - vw / 2), Math.min(Math.max(c[1], y + vh / 2), y + h - vh / 2)]; // on reste sur le plan
+    svg.setAttribute('viewBox', `${c2d[0] - vw / 2} ${c2d[1] - vh / 2} ${vw} ${vh}`);
+  }
+  $('planbox').classList.toggle('zoomed', z2d > 1);
+  svg.style.touchAction = z2d > 1 ? 'none' : ''; // zoomé, le doigt déplace le plan au lieu de faire défiler la page
+}
+function zoom2D(k, at) { // at : point du plan qui reste sous le curseur
+  const svg = $('planbox').querySelector('svg');
+  if (!svg) return;
+  const [x, y, w, h] = svg.getAttribute('viewBox').split(' ').map(Number), c = c2d || [x + w / 2, y + h / 2], z = Math.min(20, Math.max(1, z2d * k));
+  c2d = at ? [at[0] + (c[0] - at[0]) * z2d / z, at[1] + (c[1] - at[1]) * z2d / z] : c;
+  z2d = z; zoomPlan(svg);
+}
+$('zin2d').onclick = () => zoom2D(1.5);
+$('zout2d').onclick = () => zoom2D(1 / 1.5);
+$('planbox').addEventListener('wheel', ev => {
+  const svg = $('planbox').querySelector('svg');
+  if (!svg) return;
+  ev.preventDefault();
+  const pt = new DOMPoint(ev.clientX, ev.clientY).matrixTransform(svg.getScreenCTM().inverse());
+  zoom2D(ev.deltaY < 0 ? 1.25 : 0.8, [pt.x, pt.y]);
+}, { passive: false });
+$('planbox').addEventListener('pointerdown', ev => {
+  const svg = $('planbox').querySelector('svg');
+  if (!svg || z2d <= 1) return;
+  drag2d = { x: ev.clientX, y: ev.clientY, c: c2d.slice(), k: 1 / svg.getScreenCTM().a };
+  svg.setPointerCapture(ev.pointerId);
+});
+$('planbox').addEventListener('pointermove', ev => {
+  if (!drag2d) return;
+  c2d = [drag2d.c[0] - (ev.clientX - drag2d.x) * drag2d.k, drag2d.c[1] - (ev.clientY - drag2d.y) * drag2d.k];
+  zoomPlan($('planbox').querySelector('svg'));
+});
+['pointerup', 'pointercancel'].forEach(t => $('planbox').addEventListener(t, () => { drag2d = null; }));
+
+// Vue 2D, tournée par quarts de tour (sens horaire) autour du centre du plan.
+let rot2d = 0;
+function drawPlan(M) {
+  $('planbox').innerHTML = MEZZ.renderSVG(M);
+  const svg = $('planbox').querySelector('svg'), p = projects[cur], pl = $('bat2d').checked ? placeOf(p, M) : null; // bâtiment masqué : mezzanine seule, sens d'origine
+  if (pl) {
+    const g = document.createElementNS(NS, 'g');
+    g.setAttribute('class', 'g-mezz'); g.setAttribute('transform', `translate(${pl.tx} ${pl.ty}) rotate(${pl.r})`);
+    g.append(...svg.childNodes);
+    p.bat.g = p.bat.g || cleanSVG(p.bat.data.svg);
+    svg.append(p.bat.g.cloneNode(true), g);
+    const [x, y, w, h] = svg.getAttribute('viewBox').split(' ').map(Number), B = p.bat.data.bounds, mg = 300;
+    const cs = [[x, y], [x + w, y], [x, y + h], [x + w, y + h]].map(rotP(pl.r)).map(([a, b]) => [a + pl.tx, b + pl.ty]);
+    const X0 = Math.min(B.x0, ...cs.map(c => c[0])) - mg, Y0 = Math.min(B.y0, ...cs.map(c => c[1])) - mg;
+    svg.setAttribute('viewBox', `${X0} ${Y0} ${Math.max(B.x1, ...cs.map(c => c[0])) + mg - X0} ${Math.max(B.y1, ...cs.map(c => c[1])) + mg - Y0}`);
+  }
+  if (rot2d) {
+    const [x, y, w, h] = svg.getAttribute('viewBox').split(' ').map(Number), cx = x + w / 2, cy = y + h / 2;
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.setAttribute('transform', `rotate(${rot2d} ${cx} ${cy})`);
+    g.append(...svg.childNodes); svg.append(g);
+    if (rot2d % 180) svg.setAttribute('viewBox', `${cx - h / 2} ${cy - w / 2} ${h} ${w}`);
+  }
+  // Textes lisibles du bas ou de la droite, comme sur un plan : retournés sur place sinon.
+  for (const t of svg.querySelectorAll('text')) {
+    const own = t.getAttribute('transform') || '', deg = +((/rotate\(\s*(-?[\d.]+)/.exec(own) || [])[1] || 0);
+    const a = ((Math.round(deg + rot2d + (pl && t.closest('.g-mezz') ? pl.r : 0)) % 360) + 360) % 360;
+    // centre approximatif du texte (le plan est caché en vue 3D, getBBox y renverrait 0)
+    const fs = +t.getAttribute('font-size') || 0, half = t.textContent.length * fs * 0.28, anc = t.getAttribute('text-anchor'), base = t.getAttribute('dominant-baseline');
+    const cx = +t.getAttribute('x') + (anc === 'start' ? half : anc === 'end' ? -half : 0);
+    const cy = +t.getAttribute('y') + (base === 'hanging' ? 0.35 : base === 'central' ? 0 : -0.35) * fs;
+    if (a >= 90 && a < 270) t.setAttribute('transform', `${own} rotate(180 ${cx} ${cy})`.trim());
+  }
+  zoomPlan(svg);
+  return svg;
+}
+
+// Caractéristiques en clair (page, page client et PDF client lisent la même liste).
+function caracRows(M) {
+  const e = M.env, P = M.poles, pl = Math.max(...P.map(q => q.pl || q.w)) / 2, n = (v, d) => v.toLocaleString('fr-FR', { minimumFractionDigits: d, maximumFractionDigits: d });
+  const ext = k => Math.max(...P.map(q => q[k])) - Math.min(...P.map(q => q[k])) + 2 * pl;
+  const surf = M.floor.reduce((s, r) => s + (r[2] - r[0]) * (r[3] - r[1]), 0) / 1e6;
+  const stab = [M.croix.length && `${M.croix.length} croisillon${M.croix.length > 1 ? 's' : ''} ${e.croisillon === 'cable' ? 'câble' : e.croisillon || ''}`.trim(), M.jdf.length && `${M.jdf.length} jambe${M.jdf.length > 1 ? 's' : ''} de force`].filter(Boolean).join(', ') || '—';
+  const esc0 = (M.J.structure?.escalier || [])[0], s0 = M.stairs3d[0], w = esc0 && /T(\d{5})/.exec(esc0.modele || '');
+  const gcml = M.gc.reduce((s, g) => s + g.len, 0) / 1000;
+  const nb = (k, un, plus) => `${k} ${k > 1 ? plus : un}`;
+  const hasJson = !!M.J.structure; // DXF importé seul : ces caractéristiques (issues du JSON) sont inconnues
+  const rows = [
+    P.length && ['Emprise au sol', `${n(ext('cx') / 1000, 2)} × ${n(ext('cy') / 1000, 2)} m hors tout platine`],
+    hasJson && ['Surface de plancher', `${n(surf, 1)} m²`],
+    hasJson && ['Hauteur sur plancher', `${e.hauteur} mm`],
+    ['Hauteur sous lisse', M.sousLisse != null ? `${M.sousLisse} mm` : '—'],
+    hasJson && ['Charge de service', `${e.charge} kg/m²`],
+    hasJson && ['Flèche maximale', `1/${e.fleche}e`],
+    hasJson && ['Plancher', `${/T\d{5}C/.test(e.plancher || '') ? 'caillebotis galvanisé' : 'panneaux aggloméré 2050 × 910'}, ép. ${M.ep} mm`],
+    hasJson && ['Structure', [nb(P.length + (M.landing ? M.landing.poles.length : 0), 'poteau', 'poteaux'), nb(M.lisses.length, 'lisse', 'lisses'), M.solives.length && nb(M.solives.length, 'solive', 'solives')].filter(Boolean).join(', ')], // palier compris ; solives seulement avec le DXF
+    ['Stabilité', stab],
+    esc0 && ['Escalier', [s0 && `${Math.round(Math.atan2(e.hauteur, s0.L) * 180 / Math.PI)}°`, w && `passage ${+w[1]} mm`, M.landing && 'avec palier'].filter(Boolean).join(', ')],
+    gcml && ['Garde-corps', `hauteur 1100 mm, ${n(gcml, 1)} ml en bord de plateforme`],
+  ];
+  if (!CLIENT && hasJson) rows.push(['Code plancher', e.plancher || '—'], ['Solivage', String(e.solivage || '').toLowerCase()]);
+  return rows.filter(Boolean);
+}
+const DESSOUS = { bois: { code: 'Bois', css: '#b98f5e' }, blanc: { code: 'Blanc', css: '#f4f3ef' } };
+// Lettre qui suit l'épaisseur dans le code plancher : A dessous bois, B dessous blanc, C caillebotis.
+// shortcut: déduit de deux exports (PEP2610-846 « 38ACA » bois, PEP2611-04 « 38BCA » blanc) ; revoir si un autre code apparaît.
+const dessousDe = e => /T\d{5}B/.test(e.plancher || '') ? 'blanc' : 'bois';
+function colorRows(e) {
+  const names = { poteaux: 'Poteaux', lisses: 'Lisses', solives: 'Solives', croisillons: 'Croisillons', escaliers: 'Escalier', rambardes: 'Garde-corps', accessoires: 'Accessoires' };
+  const rows = Object.entries(e.couleurs || {}).filter(([k]) => !CLIENT || k !== 'accessoires')
+    .map(([k, v]) => ({ name: names[k] || k, code: v === 'GALVA' ? 'Galvanisé' : v.replace(/^RAL/, 'RAL '), css: RAL[v] || 'var(--steel)' }));
+  // Dessous du plancher bois : comme le dessus par défaut, parfois peint en blanc (sans objet pour le caillebotis, ni sans JSON : code plancher inconnu)
+  if (e.plancher && !/T\d{5}C/.test(e.plancher)) rows.push({ name: 'Dessous du plancher', ...DESSOUS[dessousDe(e)] });
+  return rows;
+}
+
+// ---------- Vue 3D ----------
+const V3 = {};
+const cssVar = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const msg3D = t => { $('v3d-msg').textContent = t; $('v3d-msg').hidden = false; };
+
+function init3D() {
+  if (V3.r) return true;
+  if (typeof THREE === 'undefined' || !THREE.OrbitControls) { msg3D("La vue 3D n'a pas pu se charger : la bibliothèque 3D est indisponible. Le plan coté reste utilisable."); return false; }
+  let r;
+  try { r = new THREE.WebGLRenderer({ antialias: true }); } catch (err) { msg3D("La vue 3D a besoin de WebGL, qui n'est pas disponible sur cet appareil. Le plan coté reste utilisable."); return false; }
+  r.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
+  r.shadowMap.enabled = true; r.shadowMap.type = THREE.PCFSoftShadowMap;
+  $('v3d').prepend(r.domElement);
+  const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(38, 1, 0.05, 500), ctl = new THREE.OrbitControls(cam, r.domElement);
+  ctl.enableDamping = true; ctl.maxPolarAngle = Math.PI - 0.05; // on peut passer sous le sol : vu de dessous, le sol (face unique) devient transparent
+  const sun = new THREE.DirectionalLight('#ffffff', 0.8);
+  sun.castShadow = $('light3d').getAttribute('aria-pressed') === 'true'; sun.shadow.mapSize.set(2048, 2048); sun.shadow.bias = -0.0004;
+  const ground = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshStandardMaterial({ roughness: 1 }));
+  ground.rotation.x = -Math.PI / 2; ground.receiveShadow = true;
+  const place = new THREE.Group(); // mezzanine + cotes, placées dans le repère du bâtiment
+  scene.add(new THREE.HemisphereLight('#ffffff', '#d3d6db', 0.8), sun, sun.target, ground, place); // lumière d'en bas assez claire pour voir un dessous blanc
+  Object.assign(V3, { r, scene, cam, ctl, sun, ground, place });
+  new ResizeObserver(size3D).observe($('v3d'));
+  const loop = () => { requestAnimationFrame(loop); if (!$('v3d').hidden && V3.model) { ctl.update(); sas3D(); gate3D(); if (V3.grid) V3.grid.visible = cam.position.y > 0; r.render(scene, cam); } }; // quadrillage masqué vu de dessous
+  loop();
+  return true;
+}
+// Bascule du sas, animée vers l'état de la case (environ une demi-seconde)
+function sas3D() {
+  const S = V3.model.userData.sas, k = $('sas3d').checked ? 1 : 0;
+  if (!S || !S.length || V3.sasA === k) return;
+  V3.sasA = k > V3.sasA ? Math.min(k, V3.sasA + 0.03) : Math.max(k, V3.sasA - 0.03);
+  const e = V3.sasA * V3.sasA * (3 - 2 * V3.sasA); // départ et arrivée en douceur
+  for (const s of S) s.pivot.quaternion.setFromAxisAngle(s.axis, e * Math.PI / 2);
+}
+// Ouverture du portillon (deux vantaux à 90°), même animation que le sas
+function gate3D() {
+  const G = V3.model.userData.gate, k = $('gate3d').checked ? 1 : 0;
+  if (!G || !G.length || V3.gateA === k) return;
+  V3.gateA = k > V3.gateA ? Math.min(k, V3.gateA + 0.03) : Math.max(k, V3.gateA - 0.03);
+  const e = V3.gateA * V3.gateA * (3 - 2 * V3.gateA);
+  for (const g of G) { g.left.rotation.y = g.leftSign * e * Math.PI / 2; g.right.rotation.y = g.rightSign * e * Math.PI / 2; }
+}
+function size3D() {
+  const b = $('v3d'), w = b.clientWidth, h = b.clientHeight;
+  if (!V3.r || !w || !h) return;
+  V3.r.setSize(w, h, false); V3.cam.aspect = w / h; V3.cam.updateProjectionMatrix();
+}
+function dims3D() {
+  if (!V3.M) return;
+  if (V3.dims) { V3.place.remove(V3.dims); V3.dims.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material && o.material.map) o.material.map.dispose(); }); }
+  V3.dims = MEZZ3D.dims(THREE, V3.M, { color: cssVar('--cote3d') || '#d42a2a', halo: cssVar('--paper') || '#ffffff' });
+  V3.dims.visible = $('cot3d').checked; V3.place.add(V3.dims);
+}
+function theme3D() {
+  if (!V3.r) return;
+  dims3D(); // les étiquettes portent la couleur du thème
+  V3.scene.background = new THREE.Color(cssVar('--paper') || '#fbfcfe');
+  V3.ground.material.color.set(cssVar('--ground') || '#e2e7ee');
+  if (V3.grid) V3.scene.remove(V3.grid);
+  if (!V3.span) return;
+  const n = Math.ceil(V3.span * 3), c = cssVar('--line') || '#d4dae3';
+  V3.grid = new THREE.GridHelper(n, n, c, c); // carreaux de 1 m
+  V3.grid.position.set(Math.round(V3.c.x), 0.002, Math.round(V3.c.z)); V3.scene.add(V3.grid);
+}
+function fit3D() {
+  if (!V3.model) return;
+  V3.scene.updateMatrixWorld(true);
+  const b = new THREE.Box3().setFromObject(V3.model);
+  if (V3.dims) b.expandByObject(V3.dims); // cadrage identique avec ou sans cotes
+  if (V3.bat && V3.bat.visible) b.expandByObject(V3.bat);
+  const c = b.getCenter(new THREE.Vector3()), s = b.getSize(new THREE.Vector3());
+  const span = Math.max(s.x, s.y, s.z), d = span * 1.5;
+  Object.assign(V3, { c, span, face: null });
+  V3.ground.scale.set(span * 5, span * 5, 1); V3.ground.position.set(c.x, 0, c.z);
+  V3.cam.position.set(c.x - d * 0.6, d * 0.72, c.z + d * 0.95);
+  V3.ctl.target.set(c.x, s.y * 0.25, c.z); V3.ctl.maxDistance = span * 5; V3.ctl.minDistance = 0.5; V3.ctl.update();
+  V3.sun.position.set(c.x - span * 0.8, span * 2, c.z + span); V3.sun.target.position.copy(c);
+  const sc = V3.sun.shadow.camera; sc.left = sc.bottom = -span; sc.right = sc.top = span; sc.near = 0.1; sc.far = span * 6; sc.updateProjectionMatrix();
+  theme3D();
+}
+// Vue de face/côté : caméra à l'horizontale (hauteur du centre du modèle), par incréments de 90° autour de la plateforme.
+function faceView(i) {
+  if (!V3.model) return;
+  V3.face = ((i % 4) + 4) % 4;
+  V3.scene.updateMatrixWorld(true);
+  const b = new THREE.Box3().setFromObject(V3.model);
+  if (V3.dims && V3.dims.visible) b.expandByObject(V3.dims);
+  if (V3.bat && V3.bat.visible) b.expandByObject(V3.bat);
+  const c = b.getCenter(new THREE.Vector3()), s = b.getSize(new THREE.Vector3());
+  const d = Math.max(s.x, s.y, s.z) * 1.8, eyeY = c.y + s.y * 0.15, ang = V3.face * Math.PI / 2;
+  V3.cam.position.set(c.x + Math.sin(ang) * d, eyeY, c.z + Math.cos(ang) * d);
+  V3.ctl.target.set(c.x, eyeY, c.z); V3.ctl.update();
+}
+function bat3D(p) {
+  if (V3.bat) { V3.scene.remove(V3.bat); V3.bat.traverse(o => o.geometry && o.geometry.dispose()); V3.bat = null; }
+  const m = $('batmode').value;
+  if (p && p.bat && m !== 'masque') { V3.bat = MEZZ3D.building(THREE, p.bat.data, m); V3.scene.add(V3.bat); }
+}
+function draw3D() {
+  const p = projects[cur];
+  let M; try { M = model(p); } catch (err) { return; }
+  if (!init3D()) return;
+  if (V3.key === p) return; // déjà affiché
+  if (V3.model) { V3.place.remove(V3.model); V3.model.traverse(o => o.geometry && o.geometry.dispose()); }
+  bat3D(p);
+  const colors = Object.fromEntries(Object.entries(p.json.environement?.couleurs || {}).map(([k, v]) => [k, RAL[v] && !RAL[v].startsWith('linear') ? RAL[v] : 'GALVA']));
+  const opt = { colors, dessous: dessousDe(p.json.environement || {}) };
+  let built;
+  try { built = MEZZ3D.build(THREE, M, { ...opt, obj: p.obj && window.THREE.OBJLoader ? new THREE.OBJLoader().parse(p.obj) : null }); }
+  catch (err) { say(`3D du fournisseur ignorée : ${err.message}.`); p.obj = null; built = MEZZ3D.build(THREE, M, opt); }
+  const { group, floor } = built;
+  $('hint-est').hidden = !!p.obj;
+  Object.assign(V3, { model: group, floor, key: p, M, sasA: 0, gateA: 0 });
+  $('sas-wrap').hidden = !(group.userData.sas || []).length; // seulement si l'OBJ du fournisseur contient un sas
+  $('gate-wrap').hidden = !(group.userData.gate || []).length; // seulement si l'OBJ du fournisseur contient un portillon
+  floor.visible = $('pl3d').checked;
+  V3.place.add(group); place3D(); dims3D(); size3D(); fit3D();
+}
+
+let mode = '3d';
+try { mode = localStorage.getItem('mezz-vue') === 'plan' ? 'plan' : '3d'; } catch (err) {}
+function setMode(m) {
+  mode = m;
+  try { localStorage.setItem('mezz-vue', m); } catch (err) {}
+  $('vw-3d').setAttribute('aria-pressed', m === '3d'); $('vw-plan').setAttribute('aria-pressed', m === 'plan');
+  $('planbox').hidden = $('legend').hidden = $('rot2d').hidden = $('zin2d').hidden = $('zout2d').hidden = m === '3d';
+  $('bat-wrap').hidden = m !== '3d' || !projects[cur]?.bat; $('bat2d-wrap').hidden = m === '3d' || !projects[cur]?.bat;
+  $('sas-wrap').hidden = m !== '3d' || !V3.model?.userData.sas?.length;
+  $('gate-wrap').hidden = m !== '3d' || !V3.model?.userData.gate?.length;
+  $('v3d').hidden = $('hint3d').hidden = $('pl-wrap').hidden = $('cot-wrap').hidden = $('re3d').hidden = $('light3d').hidden = m !== '3d';
+  $('face3d').hidden = $('faceL3d').hidden = $('faceR3d').hidden = m !== '3d';
+  if (m === '3d') draw3D();
+}
+$('vw-3d').onclick = () => setMode('3d');
+$('vw-plan').onclick = () => setMode('plan');
+$('rot2d').onclick = () => { rot2d = (rot2d + 90) % 360; c2d = null; render(); };
+$('pl3d').onchange = () => { if (V3.floor) V3.floor.visible = $('pl3d').checked; };
+try { const m = localStorage.getItem('mezz-bat'); if (m && $('batmode').querySelector(`[value="${m}"]`)) $('batmode').value = m; } catch (err) {}
+try { $('bat2d').checked = localStorage.getItem('mezz-bat2d') !== '0'; } catch (err) {}
+$('bat2d').onchange = () => { try { localStorage.setItem('mezz-bat2d', $('bat2d').checked ? '1' : '0'); } catch (err) {} render(); };
+$('batmode').onchange = () => { // la caméra ne bouge pas : on compare les rendus sur place
+  if (V3.r) bat3D(projects[cur]);
+  try { localStorage.setItem('mezz-bat', $('batmode').value); } catch (err) {}
+};
+try { $('cot3d').checked = localStorage.getItem('mezz-cotes') === '1'; } catch (err) {}
+$('cot3d').onchange = () => {
+  if (V3.dims) V3.dims.visible = $('cot3d').checked;
+  try { localStorage.setItem('mezz-cotes', $('cot3d').checked ? '1' : '0'); } catch (err) {}
+};
+$('re3d').onclick = fit3D;
+$('face3d').onclick = () => faceView(0);
+$('faceL3d').onclick = () => faceView((V3.face ?? 0) - 1);
+$('faceR3d').onclick = () => faceView((V3.face ?? 0) + 1);
+// Ampoule : ombres portées affichées ou masquées (le choix est retenu sur cet appareil)
+function setShadows(on) {
+  $('light3d').setAttribute('aria-pressed', on); $('light3d').title = on ? 'Ombres affichées' : 'Ombres masquées';
+  if (V3.sun) V3.sun.castShadow = on; // three recompile les matières tout seul quand le nombre d'ombres change
+}
+try { setShadows(localStorage.getItem('mezz-ombres') !== '0'); } catch (err) {}
+$('light3d').onclick = () => {
+  const on = $('light3d').getAttribute('aria-pressed') !== 'true';
+  setShadows(on);
+  try { localStorage.setItem('mezz-ombres', on ? '1' : '0'); } catch (err) {}
+};
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change', theme3D);
+new MutationObserver(theme3D).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+
+// Import en deux temps, sans contrainte de nom : le JSON crée le projet, le DXF s'ajoute au projet affiché.
+const say = t => { $('msg').textContent = t; $('msg').hidden = false; };
+$('imp-json').onchange = async ev => {
+  const f = ev.target.files[0]; ev.target.value = '';
+  if (!f) return;
+  try {
+    const json = JSON.parse(await f.text());
+    if (!json.structure) throw new Error("ce n'est pas un export de plateforme (pas de « structure »)");
+    projects.push({ name: f.name.replace(/\.[^.]+$/, ''), json, dxf: null });
+    cur = projects.length - 1; $('msg').hidden = true; render();
+  } catch (err) { say(`${f.name} : ${err.message}`); }
+};
+$('imp-dxf').onchange = async ev => {
+  const f = ev.target.files[0]; ev.target.value = '';
+  if (!f) return;
+  const txt = await f.text();
+  if (!/SECTION/.test(txt.slice(0, 2000))) return say(`${f.name} : ce fichier n'est pas un DXF lisible (format texte attendu).`);
+  let p = projects[cur];
+  // DXF seul, sans JSON : plan 2D affiché tel quel (nomenclature et caractéristiques indisponibles, faute de poteaux/lisses connus)
+  if (!p) { projects.push(p = { name: f.name.replace(/\.[^.]+$/, ''), json: {}, dxf: null }); cur = projects.length - 1; }
+  Object.assign(p, { dxf: txt, D: null, m: null }); V3.key = null; $('msg').hidden = true; render();
+};
+$('imp-obj').onchange = async ev => {
+  const f = ev.target.files[0]; ev.target.value = '';
+  if (!f) return;
+  const p = projects[cur];
+  if (!p) return say("Importez d'abord le JSON du projet, puis ajoutez sa 3D.");
+  const txt = await f.text();
+  if (!/^o POLE-TUBE/m.test(txt)) return say(`${f.name} : ce n'est pas l'export 3D OBJ de la plateforme (aucun poteau POLE-TUBE dedans).`);
+  Object.assign(p, { obj: txt }); V3.key = null; render(); setMode('3d'); // après render : son message d'erreur éventuel reste affiché
+};
+$('imp-bat').onchange = async ev => {
+  const f = ev.target.files[0]; ev.target.value = '';
+  if (!f) return;
+  const p = projects[cur];
+  if (!p) return say("Importez d'abord le JSON de la mezzanine, puis ajoutez son bâtiment.");
+  try {
+    const B = JSON.parse(await f.text());
+    if (B.app === 'PlanCoté' && Array.isArray(B.items)) throw new Error("c'est le plan PlanCoté « réouvrable ». Dans PlanCoté, faites Exporter → « Bâtiment pour le plan gondoles » et importez ce fichier-là");
+    if (B.kind !== 'batiment' || !batOk(B)) throw new Error("ce n'est pas un bâtiment exporté par PlanCoté");
+    if (B.unit && B.unit !== 'mm') throw new Error(`unité « ${B.unit} » non prise en charge (mm attendus)`);
+    p.bat = { data: B, x: 0, y: 0, r: 0 }; centrer(p, model(p));
+    V3.key = null; $('msg').hidden = true; render(); setMode(mode);
+  } catch (err) { say(`${f.name} : ${err.message}`); }
+};
+
+// ---------- Dossier enregistré : JSON + DXF + bâtiment placé + nom pour le lien, dans un seul fichier .mezz compressé (sans la 3D .obj) ----------
+const gz = (data, Ctor) => new Response(new Blob([data]).stream().pipeThrough(new Ctor('gzip')));
+$('save').onclick = async () => {
+  const p = projects[cur];
+  if (!p) return say("Importez d'abord le JSON du projet.");
+  if (!(location.protocol === 'file:' || /github\.io$|^localhost$|^127\./.test(location.hostname)))
+    return say("Ici, le navigateur bloque l'enregistrement : ouvrez la version publiée sur GitHub pour enregistrer le dossier.");
+  const c = p.json.client || {}, b = p.bat;
+  const dos = { app: 'rsl-mezzanine', v: 1, name: p.name, json: p.json, dxf: p.dxf || null, bat: b ? { data: b.data, x: b.x, y: b.y, r: b.r } : null,
+    nom: $('sh-nom').value.trim(), projet: $('sh-projet').value.trim(), devis: p.devis || null }; // fichier gardé sur le poste : il peut porter le devis
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(await gz(JSON.stringify(dos), CompressionStream).blob());
+  a.download = [c.reference_interne || p.name, c.reference_client].filter(Boolean).join(' ').replace(/[\\/:*?"<>|]/g, '-') + '.mezz';
+  a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+};
+$('imp-mezz').onchange = async ev => {
+  const f = ev.target.files[0]; ev.target.value = '';
+  if (!f) return;
+  try {
+    const u8 = new Uint8Array(await f.arrayBuffer());
+    const d = JSON.parse(u8[0] === 0x1f && u8[1] === 0x8b ? await gz(u8, DecompressionStream).text() : new TextDecoder().decode(u8));
+    if (d.app !== 'rsl-mezzanine' || !d.json?.structure) throw new Error("ce n'est pas un dossier enregistré par cet outil");
+    const b = d.bat;
+    projects.push({ name: d.name || f.name.replace(/\.[^.]+$/, ''), json: d.json, dxf: typeof d.dxf === 'string' ? d.dxf : null,
+      bat: batOk(b?.data) ? { data: b.data, x: +b.x || 0, y: +b.y || 0, r: [0, 90, 180, 270].includes(b.r) ? b.r : 0 } : null,
+      devis: Array.isArray(d.devis?.lignes) ? { options: [], premium: 15, jours: {}, ar: {}, ...d.devis, pj: { ...DV_PJ, ...d.devis.pj }, // dossier enregistré par une version précédente
+        opts: { transport: true, premium: false, montage: true, nacelle: true, chariot: false, ...d.devis.opts } } : null });
+    cur = projects.length - 1; V3.key = null; $('msg').hidden = true; render(); setMode(mode);
+    $('sh-nom').value = d.nom || $('sh-nom').value; $('sh-projet').value = d.projet || '';
+  } catch (err) { say(`${f.name} : ${err.message}`); }
+};
+
+// ---------- Devis client : devis Word Manorga lu dans le navigateur, vente = achat / (1 - marge), export Excel (onglet WORD) pour le publipostage ----------
+// Rien ne quitte le poste : le Word est lu ici, marge et taux sont gardés dans ce navigateur (pas dans le code, public sur GitHub),
+// et clientPayload ne lit jamais p.devis.
+async function docxXML(buf) { // un .docx est un zip : on y prend word/document.xml (zip « deflate », décompressé par le navigateur)
+  const u8 = new Uint8Array(buf), dv = new DataView(buf);
+  let e = u8.length - 22; while (e >= 0 && dv.getUint32(e, true) !== 0x06054b50) e--;
+  if (e < 0) throw new Error("ce n'est pas un fichier Word (.docx)");
+  for (let n = dv.getUint16(e + 10, true), p = dv.getUint32(e + 16, true); n--;) {
+    const nl = dv.getUint16(p + 28, true), name = new TextDecoder().decode(u8.subarray(p + 46, p + 46 + nl));
+    if (name === 'word/document.xml') {
+      const off = dv.getUint32(p + 42, true), d = off + 30 + dv.getUint16(off + 26, true) + dv.getUint16(off + 28, true), raw = u8.subarray(d, d + dv.getUint32(p + 20, true));
+      return new TextDecoder().decode(dv.getUint16(p + 10, true) ? await pipeZ(raw, DecompressionStream) : raw);
+    }
+    p += 46 + nl + dv.getUint16(p + 30, true) + dv.getUint16(p + 32, true);
+  }
+  throw new Error("ce n'est pas un fichier Word (.docx)");
+}
+// Même lecture que l'ancien script manorga2xlsx.py : paires « libellé | valeur », tableau de prix, transport, heures de montage.
+function lireDevis(xml) {
+  const body = new DOMParser().parseFromString(xml, 'application/xml').getElementsByTagName('w:body')[0];
+  if (!body) throw new Error("document Word illisible");
+  const kids = (el, n) => [...el.children].filter(c => c.tagName === n);
+  const ptxt = p => [...p.getElementsByTagName('w:t')].map(t => t.textContent).join('').trim(), txt = el => [...el.getElementsByTagName('w:p')].map(ptxt).filter(Boolean).join('\n');
+  const span = c => +(kids(c, 'w:tcPr')[0]?.getElementsByTagName('w:gridSpan')[0]?.getAttribute('w:val') || 1); // cellule fusionnée : répétée, comme python-docx
+  const tables = kids(body, 'w:tbl').map(t => kids(t, 'w:tr').map(r => kids(r, 'w:tc').flatMap(c => Array(span(c)).fill(txt(c)))));
+  const paras = kids(body, 'w:p').map(ptxt).filter(Boolean), eur = s => parseFloat(String(s).replace(/[^\d.,-]/g, '').replace(',', '.'));
+  const paires = {};
+  for (const t of tables) for (const r of t) { const cs = r.filter(Boolean); if (cs.length >= 2 && cs[0] !== cs[cs.length - 1] && !(cs[0] in paires)) paires[cs[0]] = cs[cs.length - 1]; }
+  const val = lib => paires[Object.keys(paires).find(k => k.startsWith(lib))] || '', entete = (tables[0] || []).flat().join('\n');
+  const ref = (/Référence du devis\s*:\s*(\S+)/.exec(entete) || [])[1], prixT = tables.find(t => (t[0]?.[0] || '').startsWith('Installation'));
+  if (!ref || !prixT) throw new Error("ce n'est pas un devis de Manorga (référence ou tableau de prix introuvable)");
+  const lignes = []; let total = NaN;
+  for (const cs of prixT.slice(1)) {
+    if (!cs.length || !cs[0]) continue;
+    if (cs[0].startsWith('Prix total')) { total = eur(cs[cs.length - 1]); continue; }
+    lignes.push({ cat: cs[0], des: cs[1] || '', col: cs[2] || '', qte: cs[3] && cs[3] !== cs[2] && cs[3] !== cs[cs.length - 1] ? cs[3] : '', achat: eur(cs[cs.length - 1]), on: true });
+  }
+  const transport = eur(val('Frais de transport')), livre = eur(val('Prix total net H.T. livré')), somme = lignes.reduce((s, l) => s + l.achat, 0);
+  if (!(Math.abs(somme - total) < 0.02 && Math.abs(total + transport - livre) < 0.02))
+    throw new Error(`totaux incohérents (lignes ${somme.toFixed(2)} € pour un total de ${total} €) : présentation de devis non reconnue`);
+  // « Autres équipements (Non inclus dans l'offre) » : désignation | coloris | quantité (vide) | prix unitaire
+  // « Autres équipements » : dans le cadre du titre ou dans le tableau suivant (titre parfois dans son propre cadre)
+  const io = tables.findIndex(t => t !== prixT && t.some(r => r.some(c => c.startsWith('Autres équipements'))));
+  let options = (io < 0 ? [] : tables.slice(io, io + 2).flat()).map(r => r.filter(Boolean)).filter(cs => cs.length >= 2 && /€/.test(cs[cs.length - 1]) && !cs[0].startsWith('Autres équipements'))
+    .map(cs => ({ des: cs[0], col: cs.length > 2 ? cs[1] : '', pu: eur(cs[cs.length - 1]), qte: 1, on: false }));
+  const reg = devisReg(), rp = (lignes.find(l => l.cat === 'Structure')?.col || '').split('\n')[0] || 'RAL 7024', optStd = !options.length;
+  if (optStd) options = DV_OPTIONS.map(([des, col]) => ({ des, col: col || rp, pu: reg.opt?.[des] || 0, qte: 1, on: false }));
+  else devisRegSave({ ...reg, opt: { ...reg.opt, ...Object.fromEntries(options.map(o => [o.des, o.pu])) } }); // prix d'achat gardés sur ce poste
+  const prem = /([\d.,]+)\s*%/.exec(val('Frais de livraison premium'));
+  const i = paras.findIndex(p => p.startsWith('Conformité de la Plate-forme')), sec = i < 0 ? null : /sections carrés (\d+)\s*mm/.exec(paras.slice(i + 1, i + 4).join(' '));
+  return { ref, projet: ((/Nom du projet\s*:\s*(.*)/.exec(entete) || [])[1] || '').trim(), paires, lignes, transport, livre,
+    heures: +((/\d+/.exec(val('Le temps théorique')) || [])[0] || 0), section: sec ? `${sec[1]}x${sec[1]}` : '',
+    equip: tables.filter(t => t.length && t.every(r => r.length === 1)).flatMap(t => t.map(r => r[0]).filter(Boolean)),
+    options, optStd, premium: prem ? eur(prem[1]) : 15, // +15 % : supplément Manorga pour livraison à horaire garanti
+    opts: { transport: true, premium: false, montage: true, nacelle: true, chariot: false }, jours: {}, pj: { ...DV_PJ }, ar: {} };
+}
+// Colonnes de l'onglet WORD du classeur Fermisol (mêmes noms : le modèle Word de publipostage garde ses champs)
+const DV_DIMS = [['dim1', 'Longueur en tête'], ['dim2', 'Longueur au sol'], ['dim3', 'Profondeur au sol'], ['dim4', 'Profondeur en tête'], ['dim5', 'Hauteur sur plancher'],
+  ['dim6', 'Hauteur minimum sous lisses'], ['dim7', 'Hauteur minimum sous solives'], ['dim8', 'Entraxe maximal'], ['contr', 'Nombre de contreventements'],
+  ['charge', 'Charge de service'], ['roul', 'Charge roulante'], ['ch_maxi', 'Charge maximale par montants'], ['decente', 'Descente de charge']];
+// Réglage gardé dans ce navigateur : la marge (pas dans le code, public sur GitHub)
+const devisReg = () => { try { return JSON.parse(localStorage.getItem('mezz-devis') || '{}'); } catch (err) { return {}; } };
+const dvLibre = { json: {}, devis: null }; // devis importé sans projet ouvert
+const dvp = () => projects[cur] || dvLibre;
+// quantités de la structure : poteaux (palier compris) et lisses du JSON, solives du DXF ; null sans projet ouvert
+const nbStruct = p => { try { if (p !== dvLibre) { const M = model(p); if (!M.J.structure) return null; return [M.poles.length + (M.landing ? M.landing.poles.length : 0), M.lisses.length, M.solives.length]; } } catch (err) {} return null; };
+const DV_PJ = { montage: 250, nacelle: 60, chariot: 70 };
+// Options habituelles du devis Manorga (sans prix : ce sont des prix d'achat) ; coloris vide = celui des poteaux
+const DV_OPTIONS = [['Protection de montants 4 faces – Platines 200', 'RAL 1028'], ['Protection de montants 2 faces – Platines 200', 'RAL 1028'],
+  ['Platine de calage 200x200x10 mm peinte', ''], ['Platine de calage 200x200x3 mm galvanisées', 'GALVA'], ['Spray de peinture', '']]; // prix par jour proposés à chaque devis (modifiables)
+const devisRegSave = r => { try { localStorage.setItem('mezz-devis', JSON.stringify(r)); } catch (err) {} };
+const eurFr = v => v.toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €';
+const fr1 = v => v.toLocaleString('fr-FR', { maximumFractionDigits: 1 });
+const JOURS = { montage: 'Montage', nacelle: 'Nacelle', chariot: 'Chariot' };
+function devisRows(d) {
+  return [...d.lignes.map((l, i) => ({ key: String(i), cat: l.cat, des: /^Couleur des/.test(l.des) ? '' : l.des.replace(/\n/g, ', '), col: l.cat === 'Croisillon' ? 'GALVA' : l.col, qte: l.qte, achat: l.achat, on: l.on, saisie: 'achat', manorga: true })), // croisillons toujours galva (le Word y met la couleur des poteaux) // « Couleur des poteaux… » : dit par la colonne Coloris
+    { key: 'transport', cat: 'Transport', des: 'Frais de transport Manorga', achat: d.transport, on: d.opts.transport, saisie: 'achat', manorga: true },
+    { key: 'premium', cat: 'Livraison premium', des: `horaire garanti, +${fr1(d.premium)} % sur le transport`, achat: d.transport * d.premium / 100, on: d.opts.premium },
+    ...d.options.map((o, i) => ({ key: 'o' + i, cat: o.des, des: '', col: o.col, achat: o.qte * o.pu, on: o.on, saisie: 'option' })),
+    ...Object.entries(JOURS).map(([k, cat]) => ({ key: k, cat, des: k === 'montage' ? `${d.heures} h théoriques (devis Manorga), soit ${fr1(d.heures / 7)} jours pour un monteur` : k === 'nacelle' ? 'location' : 'chariot élévateur',
+      achat: (d.jours[k] || 0) * (d.pj[k] || 0) + (k === 'montage' ? 0 : d.ar[k] || 0), on: d.opts[k], saisie: 'jours' }))]; // prix × jours + transport A/R
+}
+function devisUI() {
+  const p = dvp();
+  if (p !== dvLibre && !p.devis && dvLibre.devis?.ref === p.json.client?.reference_interne) { p.devis = dvLibre.devis; dvLibre.devis = null; }
+  const d = p.devis;
+  if (!d) { $('dv-body').innerHTML = '<p class="note">Importez le devis Word reçu de Manorga.</p>'; return; }
+  const val = lib => d.paires[Object.keys(d.paires).find(k => k.startsWith(lib))] || '—';
+  const num = (attr, v, lib, step = '0.01', cls = '') => `<input type="number" step="${step}" min="0" ${attr} value="${v ?? ''}" aria-label="${esc(lib)}"${cls}>`;
+  const o = r => d.options[r.key.slice(1)];
+  // pastille de couleur + référence (« RAL 7024 », « GALVA ») ; la structure en a trois : poteaux, lisses, solives
+  const STRUCT = ['poteaux', 'lisses', 'solives'];
+  const coloris = r => (r.col || '').split(/\n|\s*\/\s*/).map(t => t.trim()).filter(t => t && t !== '-')
+    .map((t, i) => `<span class="ral"><i style="background:${RAL[t.replace(/\s+/g, '').toUpperCase()] || 'transparent'}"></i>${r.cat === 'Structure' && STRUCT[i] ? `<span class="lab">${STRUCT[i]}</span>` : ''}${esc(t)}</span>`).join('');
+  const nbs = nbStruct(p)?.map(n => n || '—'); // en face de chaque coloris de la structure
+  // champ entre deux boutons − / + ; pas : 0,5 jour pour les jours, 10 € pour les prix
+  const pm = (r, sg, pas, u) => `<button class="ghost" type="button" data-pm="${sg}${pas}" aria-label="${esc(r.cat)} : ${sg === '+' ? 'plus' : 'moins'} ${String(pas).replace('.', ',')} ${u}">${sg === '+' ? '+' : '−'}</button>`;
+  const pas = (r, champ, pas, u, cls = '') => `<span class="pas${cls}">${pm(r, '-', pas, u)}${champ}${pm(r, '+', pas, u)}</span>`;
+  const qte = r => r.saisie === 'jours' ? pas(r, num(`data-jours="${r.key}"`, d.jours[r.key], `${r.cat} : nombre de jours`, '0.5'), 0.5, 'jour') + '<span class="u">jour(s)</span>'
+    : r.saisie === 'option' ? pas(r, num(`data-qte="${r.key}"`, o(r).qte, `${r.cat} : quantité`, '1'), 1, 'unité')
+    : r.cat === 'Structure' && nbs ? nbs.map(n => `<span class="ral nb">${n}</span>`).join('') : esc(r.qte || '');
+  const prixJour = r => num(`data-pj="${r.key}"`, d.pj[r.key], `${r.cat} : prix par jour`, '1');
+  const ar = r => `<label class="ar">+ transport A/R ${num(`data-ar="${r.key}"`, d.ar[r.key], `${r.cat} : transport aller-retour`, '1')}<span class="u">€</span></label>`;
+  const pu = r => r.saisie === 'jours' ? (r.key === 'montage' ? prixJour(r) + '<span class="u">€/J/P</span>' : pas(r, prixJour(r), 10, '€') + '<span class="u">€/J</span>' + ar(r))
+    : r.saisie === 'option' ? '<span class="x">×</span>' + num(`data-pu="${r.key}"`, o(r).pu, `${r.cat} : prix unitaire`) + '<span class="u">€</span>' : '';
+  $('dv-body').innerHTML = `<p class="dv-head">Devis Manorga <b>${esc(d.ref)}</b>${d.projet ? ' · ' + esc(d.projet) : ''}</p>
+    <dl class="dv-dims">${DV_DIMS.map(([, lib]) => `<div><dt>${esc(lib)}</dt><dd>${esc(val(lib))}</dd></div>`).join('')}
+      <div><dt>Section des poteaux</dt><dd>${esc(d.section || '—')}</dd></div><div class="large"><dt>Équipements</dt><dd>${esc(d.equip.join(' / ') || 'aucun')}</dd></div></dl>
+    <div class="nomen-wrap"><table class="dv"><thead><tr><th><span class="sr">Inclure</span></th><th>Poste</th><th>Coloris</th><th style="text-align:right">Quantité</th><th class="pu">Prix unitaire</th><th style="text-align:right">Achat HT</th><th style="text-align:right">Vente HT</th></tr></thead><tbody>
+    ${devisRows(d).map(r => `<tr><td><input type="checkbox" data-on="${r.key}"${r.on ? ' checked' : ''} aria-label="Inclure : ${esc(r.cat)}"></td>
+      <td>${esc(r.cat)}${r.des ? `<span class="det">${esc(r.des)}</span>` : ''}</td>${r.saisie === 'jours' ? `<td colspan="3" class="jr"><span>${qte(r)}</span><span>${pu(r)}</span></td>` : `<td>${coloris(r)}</td><td class="q">${qte(r)}</td><td class="q pu">${pu(r)}</td>`}
+      <td class="q">${r.saisie === 'achat' ? num(`data-achat="${r.key}"`, r.achat || '', `Prix d'achat : ${r.cat}`) : `<span id="dv-a-${r.key}"></span>`}</td>
+      <td class="q" id="dv-v-${r.key}"></td></tr>` + (r.key === 'transport' ? `<tr class="st"><td></td><td colspan="2">Sous-total devis Manorga<span class="det">${d.livre ? `devis Word : ${eurFr(d.livre)}` : 'lignes Manorga et transport'}</span></td><td></td><td></td><td class="q" id="dv-sa"></td><td class="q" id="dv-sv"></td></tr>` : '')).join('')}</tbody>
+    <tfoot><tr><td></td><td colspan="2">Total HT <span class="det" id="dv-m"></span></td>
+      <td class="q" colspan="2"><label for="dv-marge" class="u">Marge sur la vente</label> <input id="dv-marge" type="number" step="0.1" min="0" max="95" value="${esc(devisReg().marge || '')}"><span class="u">%</span></td>
+      <td class="q" id="dv-ta"></td><td class="q" id="dv-tv"></td></tr></tfoot></table></div>
+    ${d.optStd ? '<p class="note">Ce devis Word n\'a pas de tableau « Autres équipements » : options habituelles proposées, prix unitaires repris du dernier devis Word qui les contenait (sinon à saisir). Vérifiez-les.</p>' : ''}
+    <p><button class="btn" id="dv-xlsx" type="button">Exporter l'Excel pour le publipostage</button></p>`;
+  $('dv-xlsx').onclick = devisXLSX;
+  devisCalc();
+}
+function devisCalc() {
+  const d = dvp().devis;
+  if (!d || !$('dv-tv')) return null;
+  const marge = parseFloat($('dv-marge')?.value) || 0, coef = marge > 0 && marge < 100 ? 1 / (1 - marge / 100) : 1, rows = devisRows(d);
+  let ta = 0, tv = 0, sa = 0, sv = 0;
+  for (const r of rows) {
+    r.vente = r.achat * coef;
+    if (r.on) { ta += r.achat; tv += r.vente; }
+    if (r.on && r.manorga) { sa += r.achat; sv += r.vente; } // sous-total à comparer au total livré du Word
+    $('dv-v-' + r.key).textContent = r.on ? eurFr(r.vente) : '—';
+    $('dv-v-' + r.key).closest('tr').classList.toggle('off', !r.on);
+    if ($('dv-a-' + r.key)) $('dv-a-' + r.key).textContent = eurFr(r.achat);
+  }
+  $('dv-ta').textContent = eurFr(ta); $('dv-tv').textContent = eurFr(tv); $('dv-sa').textContent = eurFr(sa); $('dv-sv').textContent = eurFr(sv);
+  $('dv-m').textContent = `marge ${eurFr(tv - ta)}` + (marge ? ` · coef ${coef.toFixed(4).replace('.', ',')}` : '');
+  return { rows, tv };
+}
+// boutons − / + : ajoutent ou retirent leur pas (data-pm = « +0.5 », « -10 »…), puis le même traitement qu'une saisie
+$('dv-body').addEventListener('click', ev => {
+  const b = ev.target.closest('[data-pm]'), i = b?.parentElement.querySelector('input');
+  if (!i) return;
+  i.value = Math.max(0, Math.round(((parseFloat(i.value) || 0) + parseFloat(b.dataset.pm)) * 100) / 100);
+  i.dispatchEvent(new Event('input', { bubbles: true }));
+});
+$('dv-body').addEventListener('input', ev => {
+  const d = dvp().devis, t = ev.target, v = parseFloat(t.value), n = Number.isFinite(v) ? v : 0, ds = t.dataset;
+  if (!d) return;
+  if (t.id === 'dv-marge') { devisRegSave({ ...devisReg(), marge: t.value }); devisCalc(); return; }
+  const k = ds.on ?? ds.achat ?? ds.jours ?? ds.pj ?? ds.ar ?? ds.qte ?? ds.pu, ligne = /^\d+$/.test(k || '') ? d.lignes[k] : null, opt = /^o\d+$/.test(k || '') ? d.options[k.slice(1)] : null;
+  if (ds.on != null) { if (ligne) ligne.on = t.checked; else if (opt) opt.on = t.checked; else d.opts[k] = t.checked; }
+  else if (ds.achat != null) { if (ligne) ligne.achat = n; else d.transport = n; }
+  else if (ds.jours != null) d.jours[k] = n;
+  else if (ds.pj != null) d.pj[k] = n;
+  else if (ds.ar != null) d.ar[k] = n;
+  else if (ds.qte != null) opt.qte = n;
+  else if (ds.pu != null) { opt.pu = n; const r = devisReg(); devisRegSave({ ...r, opt: { ...r.opt, [opt.des]: n } }); }
+  devisCalc();
+});
+// Excel sans bibliothèque : un .xlsx est un zip de fichiers XML. Le publipostage de Word (pilote ACE) refusait le fichier minimal
+// (« la table externe n'est pas dans le format attendu ») : on écrit les mêmes parties qu'Excel (styles, propriétés), compressées.
+async function zipXlsx(files) {
+  const enc = new TextEncoder(), T = [...Array(256)].map((_, n) => { for (let k = 0; k < 8; k++) n = n & 1 ? 0xEDB88320 ^ (n >>> 1) : n >>> 1; return n >>> 0; });
+  const crc = u => { let c = ~0; for (const x of u) c = T[(c ^ x) & 255] ^ (c >>> 8); return ~c >>> 0; };
+  const t = new Date(), heure = (t.getHours() << 11) | (t.getMinutes() << 5) | (t.getSeconds() >> 1), jour = ((t.getFullYear() - 1980) << 9) | ((t.getMonth() + 1) << 5) | t.getDate();
+  const set = (dv, champs) => champs.forEach(([o, v, w]) => w ? dv.setUint32(o, v, true) : dv.setUint16(o, v, true));
+  const parts = [], cen = []; let off = 0;
+  for (const [nom, txt] of files) {
+    const n = enc.encode(nom), d = enc.encode(txt), z = await pipeZ(d, CompressionStream), c = crc(d), h = new DataView(new ArrayBuffer(30)), e = new DataView(new ArrayBuffer(46));
+    set(h, [[0, 0x04034b50, 4], [4, 20], [8, 8], [10, heure], [12, jour], [14, c, 4], [18, z.length, 4], [22, d.length, 4], [26, n.length]]);
+    set(e, [[0, 0x02014b50, 4], [4, 20], [6, 20], [10, 8], [12, heure], [14, jour], [16, c, 4], [20, z.length, 4], [24, d.length, 4], [28, n.length], [42, off, 4]]);
+    parts.push(h, n, z); cen.push(e, n); off += 30 + n.length + z.length;
+  }
+  const fin = new DataView(new ArrayBuffer(22));
+  set(fin, [[0, 0x06054b50, 4], [8, files.length], [10, files.length], [12, cen.reduce((s, x) => s + x.byteLength, 0), 4], [16, off, 4]]);
+  return new Blob([...parts, ...cen, fin], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+}
+// Classeur d'un seul onglet « WORD » : ligne 1 les noms de champs, ligne 2 les valeurs (nombres en nombres, texte en chaînes partagées)
+function xlsxWord(f) {
+  const x = v => String(v).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])).replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g, '');
+  const col = i => { let t = ''; for (i++; i; i = (i - 1) / 26 | 0) t = String.fromCharCode(65 + (i - 1) % 26) + t; return t; };
+  const sst = [], si = t => { let i = sst.indexOf(t); if (i < 0) i = sst.push(t) - 1; return i; };
+  const cell = (v, ref) => typeof v === 'number' ? `<c r="${ref}"><v>${v}</v></c>` : v === '' || v == null ? '' : `<c r="${ref}" t="s"><v>${si(String(v))}</v></c>`;
+  const cles = Object.keys(f), rows = [cles, Object.values(f)].map((r, j) => `<row r="${j + 1}">${r.map((v, i) => cell(v, col(i) + (j + 1))).join('')}</row>`).join('');
+  const ns = 'http://schemas.openxmlformats.org/', M = `${ns}spreadsheetml/2006/main`, R = `${ns}officeDocument/2006/relationships`, CT = 'application/vnd.openxmlformats-';
+  const xml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n', iso = new Date().toISOString().replace(/\.\d+Z$/, 'Z');
+  return zipXlsx([
+    ['[Content_Types].xml', xml + `<Types xmlns="${ns}package/2006/content-types"><Default Extension="rels" ContentType="${CT}package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/>`
+      + `<Override PartName="/xl/workbook.xml" ContentType="${CT}officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="${CT}officedocument.spreadsheetml.worksheet+xml"/>`
+      + `<Override PartName="/xl/styles.xml" ContentType="${CT}officedocument.spreadsheetml.styles+xml"/><Override PartName="/xl/sharedStrings.xml" ContentType="${CT}officedocument.spreadsheetml.sharedStrings+xml"/>`
+      + `<Override PartName="/docProps/core.xml" ContentType="${CT}package.core-properties+xml"/><Override PartName="/docProps/app.xml" ContentType="${CT}officedocument.extended-properties+xml"/></Types>`],
+    ['_rels/.rels', xml + `<Relationships xmlns="${ns}package/2006/relationships"><Relationship Id="rId3" Type="${R}/extended-properties" Target="docProps/app.xml"/>`
+      + `<Relationship Id="rId2" Type="${ns}package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/><Relationship Id="rId1" Type="${R}/officeDocument" Target="xl/workbook.xml"/></Relationships>`],
+    ['docProps/app.xml', xml + `<Properties xmlns="${ns}officeDocument/2006/extended-properties" xmlns:vt="${ns}officeDocument/2006/docPropsVTypes"><Application>Microsoft Excel</Application><DocSecurity>0</DocSecurity><ScaleCrop>false</ScaleCrop>`
+      + `<HeadingPairs><vt:vector size="2" baseType="variant"><vt:variant><vt:lpstr>Feuilles de calcul</vt:lpstr></vt:variant><vt:variant><vt:i4>1</vt:i4></vt:variant></vt:vector></HeadingPairs>`
+      + `<TitlesOfParts><vt:vector size="1" baseType="lpstr"><vt:lpstr>WORD</vt:lpstr></vt:vector></TitlesOfParts><LinksUpToDate>false</LinksUpToDate><SharedDoc>false</SharedDoc><HyperlinksChanged>false</HyperlinksChanged><AppVersion>16.0300</AppVersion></Properties>`],
+    ['docProps/core.xml', xml + `<cp:coreProperties xmlns:cp="${ns}package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">`
+      + `<dc:creator>RSL</dc:creator><dcterms:created xsi:type="dcterms:W3CDTF">${iso}</dcterms:created><dcterms:modified xsi:type="dcterms:W3CDTF">${iso}</dcterms:modified></cp:coreProperties>`],
+    ['xl/workbook.xml', xml + `<workbook xmlns="${M}" xmlns:r="${R}"><fileVersion appName="xl" lastEdited="7" lowestEdited="7" rupBuild="27425"/><workbookPr/>`
+      + `<bookViews><workbookView xWindow="0" yWindow="0" windowWidth="28800" windowHeight="12300"/></bookViews><sheets><sheet name="WORD" sheetId="1" r:id="rId1"/></sheets><calcPr calcId="191029"/></workbook>`],
+    ['xl/_rels/workbook.xml.rels', xml + `<Relationships xmlns="${ns}package/2006/relationships"><Relationship Id="rId1" Type="${R}/worksheet" Target="worksheets/sheet1.xml"/>`
+      + `<Relationship Id="rId2" Type="${R}/styles" Target="styles.xml"/><Relationship Id="rId3" Type="${R}/sharedStrings" Target="sharedStrings.xml"/></Relationships>`],
+    ['xl/styles.xml', xml + `<styleSheet xmlns="${M}"><fonts count="1"><font><sz val="11"/><color theme="1"/><name val="Calibri"/><family val="2"/><scheme val="minor"/></font></fonts>`
+      + `<fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders>`
+      + `<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/></cellXfs>`
+      + `<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles><dxfs count="0"/><tableStyles count="0" defaultTableStyle="TableStyleMedium2" defaultPivotStyle="PivotStyleLight16"/></styleSheet>`],
+    ['xl/worksheets/sheet1.xml', xml + `<worksheet xmlns="${M}" xmlns:r="${R}"><dimension ref="A1:${col(cles.length - 1)}2"/><sheetViews><sheetView tabSelected="1" workbookViewId="0"/></sheetViews>`
+      + `<sheetFormatPr defaultRowHeight="15"/><sheetData>${rows}</sheetData><pageMargins left="0.7" right="0.7" top="0.75" bottom="0.75" header="0.3" footer="0.3"/></worksheet>`],
+    ['xl/sharedStrings.xml', xml + `<sst xmlns="${M}" count="${sst.length}" uniqueCount="${sst.length}">${sst.map(t => `<si><t xml:space="preserve">${x(t)}</t></si>`).join('')}</sst>`],
+  ]);
+}
+async function devisXLSX() {
+  const p = dvp(), d = p.devis, res = devisCalc();
+  if (!res) return;
+  if (!(location.protocol === 'file:' || /github\.io$|^localhost$|^127\./.test(location.hostname)))
+    return say("Ici, le navigateur bloque le téléchargement : ouvrez la version publiée sur GitHub pour exporter l'Excel.");
+  const val = lib => d.paires[Object.keys(d.paires).find(k => k.startsWith(lib))] || '', r2 = v => Math.round(v * 100) / 100; // prix arrondis au centime
+  const pl = d.lignes.find(l => l.cat === 'Plancher'), gc = Math.max(0, ...d.lignes.filter(l => l.cat === 'Garde-corps').map(l => parseFloat(l.qte.replace(',', '.')) || 0));
+  const jr = k => d.opts[k] && d.jours[k] ? d.jours[k] : '';
+  const f = { devis: d.ref, nom: d.projet || p.json.client?.reference_client || '', ...Object.fromEntries(DV_DIMS.map(([k, lib]) => [k, val(lib)])),
+    section: d.section, prix: r2(res.tv), plancher: pl ? pl.qte.replace(/\s*m²/, ' m²') : '', GC: gc || '',
+    montage_h: d.heures, montage_j: jr('montage'), nacelle_j: jr('nacelle'), chariot_j: jr('chariot'),
+    horaire_garanti: d.opts.transport && d.opts.premium ? 'oui' : '', equipements: d.equip.join(' / ') || 'aucun',
+    coloris: (d.lignes.find(l => l.cat === 'Structure')?.col || '').split('\n')[0] || 'RAL 7024' }; // coloris des poteaux
+  f.contr = parseInt(f.contr) || ''; f.decente = f.decente.replace('.', ',');
+  // quantités de la structure, colonnes toujours présentes (Word refuse un modèle dont un champ manque) ; vides sans JSON ou sans DXF
+  const [np, nl, ns] = nbStruct(p) || [];
+  Object.assign(f, { nb_poteaux: np || '', nb_lisses: nl || '', nb_solives: ns || '' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(await xlsxWord(f));
+  a.download = `Devis client ${d.ref}.xlsx`.replace(/[\\/:*?"<>|]/g, '-'); a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+}
+$('devis').onclick = () => {
+  $('devis-box').hidden = !$('devis-box').hidden; $('devis').setAttribute('aria-pressed', !$('devis-box').hidden);
+  if (!projects.length) render(); // sans projet, le bloc principal ne s'affiche que pour le devis
+  if (!$('devis-box').hidden) { devisUI(); $('devis-box').scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+};
+$('imp-docx').onchange = async ev => {
+  const f = ev.target.files[0]; ev.target.value = '';
+  if (!f) return;
+  const p = dvp();
+  try {
+    p.devis = lireDevis(await docxXML(await f.arrayBuffer())); devisUI();
+    const ref = p.json?.client?.reference_interne;
+    if (ref && p.devis.ref !== ref) say(`Attention : ce devis Word est le ${p.devis.ref}, le projet affiché est le ${ref}.`);
+  } catch (err) { say(`${f.name} : ${err.message}`); }
+};
+
+// ---------- Lien 3D client : le projet voyage compressé dans le lien (même principe que le configurateur gondoles) ----------
+const b64u = {
+  enc: u => { let t = ''; u.forEach(b => t += String.fromCharCode(b)); return btoa(t).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); },
+  dec: t => { t = t.replace(/-/g, '+').replace(/_/g, '/'); while (t.length % 4) t += '='; return Uint8Array.from(atob(t), c => c.charCodeAt(0)); },
+};
+const pipeZ = async (u8, Ctor) => new Uint8Array(await new Response(new Blob([u8]).stream().pipeThrough(new Ctor('deflate-raw'))).arrayBuffer());
+
+// Le lien part chez le client : ni compte fournisseur, ni codes articles, ni cartouche du DXF ; seulement la géométrie utile à la 3D et au plan.
+function clientPayload(p, nom, projet) {
+  const J = JSON.parse(JSON.stringify(p.json)), c = J.client || {}, env = J.environement || {}, code = s => (/T(\d{5})/.exec(s || '') || [])[1];
+  J.client = { reference_interne: c.reference_interne, date: c.date, code_region: c.code_region, contact: { prenom: c.contact?.prenom, nom: c.contact?.nom } };
+  env.plancher = (/T\d{5}[A-Z]?/.exec(env.plancher || '') || ['T00030'])[0]; // garde la lettre (dessous blanc / caillebotis), pas le reste du code article
+  (J.structure?.escalier || []).forEach(s => { s.modele = `T${code(s.modele) || '00800'}`; });
+  delete J.accessoires;
+  let dxf = null;
+  const D = p.D || (p.dxf ? MEZZ.parseDXF(p.dxf) : null);
+  if (D) {
+    const r = v => Math.round(v * 10) / 10, names = new Set();
+    const keep = o => o.type !== 'TEXT' && o.type !== 'MTEXT' && o.type !== 'POINT' && !(o.type === 'INSERT' && /_BOX$/.test(o.name || '')); // la vue 2D client montre le plan coté du DXF
+    const walk = es => es.forEach(o => { if ((o.type === 'INSERT' || o.type === 'DIMENSION') && D.blocks[o.name] && !names.has(o.name)) { names.add(o.name); walk(D.blocks[o.name]); } });
+    const slim = o => {
+      const s = { type: o.type, color: o.color, flags: o.flags, p: o.p.map(q => q.map(r)) };
+      for (const k of ['name', 'text', 'rot', 'h', 'sx', 'sy', 'width', 'attach', 'ha', 'va']) if (o[k] !== undefined) s[k] = o[k];
+      if (o.type !== 'LWPOLYLINE') for (const k of ['k10', 'k11']) if (o[k]) s[k] = o[k].map(r);
+      return s;
+    };
+    const ents = D.entities.filter(keep); walk(ents);
+    dxf = { entities: ents.map(slim), blocks: Object.fromEntries([...names].map(n => [n, D.blocks[n].filter(o => o.type !== 'POINT').map(slim)])) };
+  }
+  const bat = p.bat && { data: { name: p.bat.data.name, bounds: p.bat.data.bounds, svg: p.bat.data.svg, solids: p.bat.data.solids }, x: p.bat.x, y: p.bat.y, r: p.bat.r };
+  return { v: 1, nom, projet, json: J, dxf, bat };
+}
+// 3D du fournisseur dans le gist : compressée, en morceaux de moins de 1 Mo (au-delà, l'API GitHub tronque le contenu)
+async function modeleGist(obj) {
+  if (!obj) return {};
+  const t = b64u.enc(await pipeZ(new TextEncoder().encode(obj), CompressionStream)), files = {};
+  for (let i = 0; i * 9e5 < t.length; i++) files[`modele-${i + 1}.z64`] = { content: t.slice(i * 9e5, (i + 1) * 9e5) };
+  return files;
+}
+async function lien3D(p, nom, projet) {
+  const data = JSON.stringify(clientPayload(p, nom, projet)), tok = $('sh-tok').value.trim();
+  const base = /github\.io$/.test(location.hostname) ? location.href.split('#')[0] : URL_PUBLIQUE;
+  if (tok) { // lien court (~110 caractères) : le projet va dans un gist secret, le lien ne porte que son numéro
+    const r = await fetch('https://api.github.com/gists', { method: 'POST', headers: { Authorization: 'Bearer ' + tok, Accept: 'application/vnd.github+json' },
+      body: JSON.stringify({ description: `Mezzanine ${nom} ${projet}`.trim(), public: false, files: { 'mezzanine.json': { content: data }, ...(await modeleGist(p.obj)) } }) })
+      .catch(() => { throw new Error('GitHub injoignable depuis cette page : créez le lien depuis la page publiée sur GitHub'); });
+    if (!r.ok) throw new Error(r.status === 401 || r.status === 403 ? 'jeton GitHub refusé (il faut le droit « gist »)' : 'GitHub a répondu ' + r.status);
+    try { localStorage.setItem('mezz-gh-token', tok); } catch (err) {}
+    return `${base}#g=${(await r.json()).id}`;
+  }
+  let u8 = new TextEncoder().encode(data), tag = 'j';
+  if (window.CompressionStream) { u8 = await pipeZ(u8, CompressionStream); tag = 'v'; }
+  return `${base}#${tag}=${b64u.enc(u8)}`;
+}
+async function lireLien() {
+  const m = /^#([vj])=([\w-]+)$/.exec(location.hash), g = /^#g=([0-9a-f]{20,40})$/.exec(location.hash);
+  let d;
+  if (g) {
+    const r = await fetch('https://api.github.com/gists/' + g[1]);
+    if (!r.ok) throw new Error('gist ' + r.status);
+    const files = (await r.json()).files || {}, txt = async f => f.truncated ? (await fetch(f.raw_url)).text() : f.content;
+    d = JSON.parse(files['mezzanine.json']?.content || 'null');
+    const parts = Object.keys(files).filter(k => /^modele-\d+\.z64$/.test(k)).sort((a, b) => parseInt(a.slice(7)) - parseInt(b.slice(7)));
+    if (d && parts.length) d.obj = new TextDecoder().decode(await pipeZ(b64u.dec((await Promise.all(parts.map(k => txt(files[k])))).join('')), DecompressionStream));
+  } else if (m) {
+    let u8 = b64u.dec(m[2]);
+    if (m[1] === 'v') u8 = await pipeZ(u8, DecompressionStream);
+    d = JSON.parse(new TextDecoder().decode(u8));
+  } else return null;
+  if (!d?.json?.structure) throw new Error('lien incomplet');
+  return { client: { nom: d.nom || 'Client', projet: d.projet || '' }, project: { name: d.json.client?.reference_interne || 'Projet', json: d.json, D: d.dxf, obj: typeof d.obj === 'string' ? d.obj : null, bat: batOk(d.bat?.data) ? { data: d.bat.data, x: +d.bat.x || 0, y: +d.bat.y || 0, r: [0, 90, 180, 270].includes(d.bat.r) ? d.bat.r : 0 } : null } };
+}
+
+// ---------- Dossier client imprimable (version GitHub ou fichier local : claude.ai bloque l'impression) ----------
+// Capture de la vue 3D à une taille fixe, puis retour exact à la vue de l'utilisateur.
+function shot3D(w, h, setup) {
+  const { r, cam, ctl } = V3, size = r.getSize(new THREE.Vector2()), aspect = cam.aspect, pos = cam.position.clone(), tgt = ctl.target.clone(), dv = V3.dims && V3.dims.visible;
+  r.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix();
+  setup(); ctl.update(); r.render(V3.scene, cam);
+  const url = r.domElement.toDataURL('image/jpeg', 0.9); // lu juste après le rendu, avant que le navigateur n'efface l'image
+  r.setSize(size.x, size.y, false); cam.aspect = aspect; cam.updateProjectionMatrix();
+  cam.position.copy(pos); ctl.target.copy(tgt); ctl.update(); if (V3.dims) V3.dims.visible = dv;
+  return url;
+}
+const closer = k => V3.cam.position.sub(V3.ctl.target).multiplyScalar(k).add(V3.ctl.target);
+// Élévation en projection orthogonale, vue le long de l'axe x ou z, du côté de l'escalier quand il y en a un (sans cotes ni bâtiment).
+function elev3D(w, h, ax) {
+  const { r, M } = V3, size = r.getSize(new THREE.Vector2()), dv = V3.dims && V3.dims.visible, bv = V3.bat && V3.bat.visible;
+  if (V3.dims) V3.dims.visible = false; if (V3.bat) V3.bat.visible = false;
+  V3.scene.updateMatrixWorld(true);
+  const b = new THREE.Box3().setFromObject(V3.model), c = b.getCenter(new THREE.Vector3()), sz = b.getSize(new THREE.Vector3());
+  const s0 = M && M.stairs3d[0], st = s0 && V3.place.localToWorld(new THREE.Vector3((s0.top[0] + s0.dir[0] * s0.L / 2) / 1000, 0, (s0.top[1] + s0.dir[1] * s0.L / 2) / 1000));
+  const sg = st && st[ax] < c[ax] ? -1 : 1, k = Math.max((ax === 'z' ? sz.x : sz.z) / w, sz.y / h) * 1.08 / 2;
+  const cam = new THREE.OrthographicCamera(-k * w, k * w, k * h, -k * h, 0.1, 1000);
+  cam.position.copy(c); cam.position[ax] += sg * (sz.x + sz.z + 10); cam.lookAt(c);
+  r.setSize(w, h, false); r.render(V3.scene, cam);
+  const url = r.domElement.toDataURL('image/jpeg', 0.9);
+  r.setSize(size.x, size.y, false); if (V3.dims) V3.dims.visible = dv; if (V3.bat) V3.bat.visible = bv;
+  return url;
+}
+async function printDossier() {
+  const p = projects[cur];
+  if (!p) return;
+  if (!(location.protocol === 'file:' || /github\.io$|^localhost$|^127\./.test(location.hostname)))
+    return say("Ici, le navigateur bloque l'impression : ouvrez la version publiée sur GitHub pour imprimer ou enregistrer le dossier en PDF.");
+  const M = model(p), e = p.json.environement || {}, c = p.json.client || {};
+  const nom = CLIENT ? CLIENT.nom : ($('sh-nom').value.trim() || c.reference_client || 'Client'), projet = CLIENT ? CLIENT.projet : $('sh-projet').value.trim();
+  const btn = $('print'), label = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Préparation…';
+  try {
+    if (!init3D()) throw new Error('vue 3D indisponible');
+    draw3D();
+    const W = 1600, H = 1000;
+    const hero = shot3D(W, H, () => { fit3D(); if (V3.dims) V3.dims.visible = false; closer(0.72); });
+    const face = elev3D(1600, 860, 'z'), cote = elev3D(1600, 860, 'x');
+    const plan = $('planbox').querySelector('svg').cloneNode(true);
+    plan.setAttribute('viewBox', plan.dataset.base || plan.getAttribute('viewBox')); plan.removeAttribute('style');
+    const url = CLIENT ? location.href : (!$('sh-out').hidden && $('sh-url').value) || await lien3D(p, nom, projet); // réutilise le lien déjà créé (pas un gist de plus par impression)
+    const carac = Object.fromEntries(caracRows(M)), fr = (k, f = v => v) => esc(f(carac[k] || ''));
+    const contact = [c.contact?.prenom, c.contact?.nom].filter(Boolean).join(' ');
+    const foot = 'RSL · Rayonnages Services Lorraine · 13 allée des Grands Paquis, 54180 Heillecourt · 03 83 55 49 50 · info@rsl.eu · rsl.eu';
+    $('dossier').innerHTML = `
+<div class="page">
+  <header><img src="${LOGO}" alt="RSL"><div class="who"><div class="eyebrow">Plateforme de stockage</div><h1>${esc(nom)}</h1>
+    <div class="meta">${projet ? 'Projet ' + esc(projet) + ' · ' : ''}Réf. ${esc(c.reference_interne)} · ${esc(c.date)}</div></div></header>
+  <img class="hero" src="${hero}" alt="Vue 3D de la plateforme">
+  <div class="tiles">
+    <div class="tile"><span>Emprise au sol</span><b>${fr('Emprise au sol', v => v.replace(' hors tout platine', ''))}</b><small>hors tout platine</small></div>
+    <div class="tile"><span>Surface de plancher</span><b>${fr('Surface de plancher')}</b><small></small></div>
+    <div class="tile"><span>Hauteur sur plancher</span><b>${fr('Hauteur sur plancher')}</b><small>${fr('Hauteur sous lisse')} sous lisse</small></div>
+    <div class="tile"><span>Charge de service</span><b>${fr('Charge de service')}</b><small>flèche ${fr('Flèche maximale')}</small></div>
+  </div>
+  <div class="row">
+    <div><h2>Couleurs</h2><div class="dsw">${colorRows(e).filter(r => r.name !== 'Accessoires').map(r => `<div><i style="background:${r.css}"></i><div><span>${esc(r.name)}</span><b>${esc(r.code)}</b></div></div>`).join('')}</div></div>
+    <div class="link3d"><b>Votre plateforme en 3D</b><p>Faites-la tourner, zoomez, affichez les cotes : sur ordinateur, tablette ou téléphone.</p><a href="${esc(url)}">Ouvrir la vue 3D</a></div>
+  </div>
+  <footer><span>${esc(foot)}</span><span>1 / 2</span></footer>
+</div>
+<div class="page">
+  <div><h2>Plan coté${p.bat ? ' dans le bâtiment' : ''}</h2><div class="planimg" id="dossier-plan"></div></div>
+  <div class="duo"><figure><img src="${face}" alt="Vue de face"><figcaption>Vue de face</figcaption></figure><figure><img src="${cote}" alt="Vue de côté"><figcaption>Vue de côté</figcaption></figure></div>
+  <div><h2>Caractéristiques</h2><table>${caracRows(M).filter(([k]) => CLIENT || !/^(Code plancher|Solivage)$/.test(k)).map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')}</table></div>
+  <footer><span>Visuels indicatifs, non contractuels.${contact ? ' Votre contact : ' + esc(contact) + ', RSL.' : ''} ${esc(foot)}</span><span>2 / 2</span></footer>
+</div>`;
+    $('dossier-plan').append(plan);
+    await Promise.all([...$('dossier').querySelectorAll('img')].map(i => i.decode().catch(() => {})));
+    window.print();
+  } catch (err) { say('Le dossier n’a pas pu être préparé : ' + err.message); }
+  finally { btn.disabled = false; btn.textContent = label; }
+}
+$('print').onclick = printDossier;
+
+$('share').onclick = () => {
+  $('share-box').hidden = !$('share-box').hidden;
+  if (!$('sh-nom').value) $('sh-nom').value = projects[cur]?.json.client?.reference_client || '';
+};
+$('sh-go').onclick = async () => {
+  const p = projects[cur];
+  if (!p) return;
+  try {
+    const url = await lien3D(p, $('sh-nom').value.trim() || p.json.client?.reference_client || 'Client', $('sh-projet').value.trim());
+    $('sh-url').value = url; $('sh-open').href = url; $('sh-out').hidden = false; $('sh-copy').textContent = 'Copier';
+    if (url.length > 2000) say(`Lien de ${url.length} caractères : Outlook et certaines messageries le couperont. Saisissez un jeton GitHub pour obtenir un lien court.`);
+  } catch (err) { $('msg').textContent = 'Le lien 3D n’a pas pu être créé : ' + err.message; $('msg').hidden = false; }
+};
+try { $('sh-tok').value = localStorage.getItem('mezz-gh-token') || ''; } catch (err) {}
+$('sh-copy').onclick = async () => {
+  try { await navigator.clipboard.writeText($('sh-url').value); $('sh-copy').textContent = 'Lien copié'; }
+  catch (err) { $('sh-url').select(); $('sh-copy').textContent = 'Sélectionné : Ctrl+C pour copier'; }
+};
+
+(async () => {
+  try {
+    const s = await lireLien();
+    if (s) { projects.splice(0, projects.length, s.project); cur = 0; CLIENT = s.client; }
+  } catch (err) { $('msg').textContent = 'Ce lien 3D est invalide ou incomplet : demandez-en un nouveau à RSL.'; $('msg').hidden = false; }
+  applyClient();
+  setMode(CLIENT ? '3d' : mode);
+  render();
+  if (document.fonts) document.fonts.ready.then(() => { if (V3.M) dims3D(); }); // étiquettes des cotes dans la bonne police
+})();
+</script>
