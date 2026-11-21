@@ -2,7 +2,8 @@ from fastapi import FastAPI, Request, Form, HTTPException, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
-import sqlite3, os, io, csv, json, re
+import sqlite3, os, io, csv, json, re, html
+import urllib.request, urllib.error
 from datetime import datetime, date
 from pathlib import Path
 from reportlab.lib.pagesizes import A4
@@ -42,6 +43,9 @@ def init_db():
  existing={r['name'] for r in q.execute('PRAGMA table_info(suppliers)').fetchall()}
  for col in ['family','contact','address1','address2','postcode','city','country','phone','fax','email','siret','vat_number','notes']:
   if col not in existing: q.execute(f'ALTER TABLE suppliers ADD COLUMN {col} TEXT')
+ if 'docuseal_id' not in {r['name'] for r in q.execute('PRAGMA table_info(quotes)').fetchall()}:
+  q.execute('ALTER TABLE quotes ADD COLUMN docuseal_id INTEGER')
+  q.execute('ALTER TABLE quotes ADD COLUMN signed_pdf_url TEXT')
  c.commit(); c.close()
 
 @app.on_event('startup')
@@ -267,12 +271,46 @@ def import_status(): return {'clients':one('select count(*) n from clients')['n'
 @app.get('/health')
 def health(): return {'status':'ok','app':'RSL Gestion','version':'0.2.0'}
 
+def quote_html(qid,sign=False):
+ q=one('SELECT q.*,c.name client,c.address1,c.postcode,c.city,c.email FROM quotes q LEFT JOIN clients c ON c.id=q.client_id WHERE q.id=?',(qid,))
+ if not q: raise HTTPException(404,'Devis introuvable')
+ e=lambda v: html.escape(str(v or ''))
+ lines=rows('SELECT * FROM quote_lines WHERE quote_id=?',(qid,))
+ h=f"<html><head><meta charset='utf-8'><title>{e(q['number'])}</title><style>body{{font:14px Arial;margin:40px}}table{{width:100%;border-collapse:collapse;margin-top:30px}}td,th{{border-bottom:1px solid #ccc;padding:9px;text-align:left}}.right{{text-align:right}}</style></head><body><h1>RSL — DEVIS</h1><h2>{e(q['number'])}</h2><p>Date : {e(q['created'])}<br>Client : {e(q.get('client'))}<br>{e(q.get('address1'))} — {e(q.get('postcode'))} {e(q.get('city'))}</p><table><tr><th>Code article</th><th>Désignation</th><th>Qté</th><th>PU HT</th><th>Remise</th><th>Total HT</th></tr>"
+ for l in lines: h+=f"<tr><td>{e(l['code'])}</td><td>{e(l['designation'])}</td><td>{l['qty']:g}</td><td>{l['unit_price']:.2f} €</td><td>{l['discount']:g}%</td><td>{l['line_total']:.2f} €</td></tr>"
+ h+=f"</table><h2 class='right'>Total HT : {q['total']:.2f} €</h2><p>Validité : {e(q['validity'])}</p>"
+ if sign: h+="<p>Bon pour accord — date et signature du client :</p><date-field name='Date' role='Client' style='width:120px;height:20px;display:inline-block'></date-field><br><signature-field name='Signature' role='Client' style='width:220px;height:80px;display:inline-block'></signature-field>"
+ return q,h+"</body></html>"
+
 @app.get('/print/quote/{qid}',response_class=HTMLResponse)
 def print_quote(qid:int):
- q=one('SELECT q.*,c.name client,c.address1,c.postcode,c.city FROM quotes q LEFT JOIN clients c ON c.id=q.client_id WHERE q.id=?',(qid,))
- if not q: raise HTTPException(404,'Devis introuvable')
- lines=rows('SELECT * FROM quote_lines WHERE quote_id=?',(qid,))
- html=f"<html><head><meta charset='utf-8'><title>{q['number']}</title><style>body{{font:14px Arial;margin:40px}}table{{width:100%;border-collapse:collapse;margin-top:30px}}td,th{{border-bottom:1px solid #ccc;padding:9px;text-align:left}}.right{{text-align:right}}</style></head><body><h1>RSL — DEVIS</h1><h2>{q['number']}</h2><p>Date : {q['created']}<br>Client : {q.get('client') or ''}<br>{q.get('address1') or ''} — {q.get('postcode') or ''} {q.get('city') or ''}</p><table><tr><th>Code article</th><th>Désignation</th><th>Qté</th><th>PU HT</th><th>Remise</th><th>Total HT</th></tr>"
- for l in lines: html+=f"<tr><td>{l['code']}</td><td>{l['designation']}</td><td>{l['qty']:g}</td><td>{l['unit_price']:.2f} €</td><td>{l['discount']:g}%</td><td>{l['line_total']:.2f} €</td></tr>"
- html+=f"</table><h2 class='right'>Total HT : {q['total']:.2f} €</h2><p>Validité : {q['validity']}</p><script>window.print()</script></body></html>"
- return HTMLResponse(html)
+ q,h=quote_html(qid); return HTMLResponse(h.replace('</body>','<script>window.print()</script></body>'))
+
+# DocuSeal : DOCUSEAL_API_KEY obligatoire ; DOCUSEAL_API_URL = https://api.docuseal.eu (UE) ou https://votre-serveur/api (auto-hébergé)
+def docuseal(method,path,body=None):
+ key=os.getenv('DOCUSEAL_API_KEY')
+ if not key: raise HTTPException(500,'DOCUSEAL_API_KEY non configurée')
+ req=urllib.request.Request(os.getenv('DOCUSEAL_API_URL','https://api.docuseal.com').rstrip('/')+path,method=method,data=json.dumps(body).encode() if body is not None else None,headers={'X-Auth-Token':key,'Content-Type':'application/json'})
+ try:
+  with urllib.request.urlopen(req,timeout=30) as r: return json.load(r)
+ except urllib.error.HTTPError as err: raise HTTPException(502,f'DocuSeal : {err.code} {err.read().decode(errors="replace")[:300]}')
+ except urllib.error.URLError as err: raise HTTPException(502,f'DocuSeal injoignable : {err.reason}')
+
+@app.post('/api/quotes/{qid}/sign')
+def send_quote_for_signature(qid:int,payload:dict={}):
+ q,h=quote_html(qid,sign=True); email=(payload.get('email') or q.get('email') or '').strip()
+ if '@' not in email: raise HTTPException(400,'E-mail du client manquant')
+ sub=docuseal('POST','/submissions/html',{'name':f"Devis {q['number']}",'documents':[{'name':q['number'],'html':h,'size':'A4'}],'submitters':[{'role':'Client','email':email,'name':q.get('client') or '','external_id':q['number']}]})
+ c=db(); c.execute("UPDATE quotes SET docuseal_id=?,status='Envoyé pour signature' WHERE id=?",(sub['id'],qid)); c.commit(); c.close()
+ return {'docuseal_id':sub['id'],'email':email,'status':'Envoyé pour signature'}
+
+@app.get('/api/quotes/{qid}/sign')
+def quote_signature_status(qid:int):
+ # shortcut: l'appli tourne en local (127.0.0.1), DocuSeal ne peut pas appeler de webhook ; on interroge à la demande. Passer au webhook form.completed si l'appli est exposée.
+ q=one('SELECT docuseal_id,status FROM quotes WHERE id=?',(qid,))
+ if not q or not q['docuseal_id']: raise HTTPException(404,'Devis non envoyé à la signature')
+ sub=docuseal('GET',f"/submissions/{q['docuseal_id']}")
+ status={'completed':'Signé','declined':'Refusé','expired':'Expiré'}.get(sub.get('status'),q['status'])
+ url=sub.get('combined_document_url') or (sub.get('documents') or [{}])[0].get('url')
+ c=db(); c.execute('UPDATE quotes SET status=?,signed_pdf_url=? WHERE id=?',(status,url if status=='Signé' else None,qid)); c.commit(); c.close()
+ return {'status':status,'docuseal_status':sub.get('status'),'signed_pdf_url':url if status=='Signé' else None}
