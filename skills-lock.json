@@ -1,0 +1,12 @@
+{
+  "version": 2,
+  "skills": {
+    "docuseal-code": {
+      "source": "docusealco/docuseal-agent-skills",
+      "commit": "cd32f55842fe18799810e18350b6bbf6b316c1be",
+      "sourceType": "github",
+      "skillPath": "skills/docuseal-code/SKILL.md",
+      "computedHash": "6bf5238a28471722e29f9cc03c7d6ab20354dc9676b86b8f12b614614c724b2d"
+    }
+  }
+}
