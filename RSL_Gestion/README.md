@@ -61,3 +61,15 @@ Le menu **Fournisseurs** permet désormais de :
 Les fournisseurs créés provisoirement à partir de la colonne `N°Fournisseur` des articles sont conservés. Un import avec le même numéro enrichit leur fiche au lieu de créer un doublon.
 
 **Colonnes minimales d'import :** `N° Fournisseur` (facultatif) et `Raison Sociale` (obligatoire). Les autres colonnes reconnues sont facultatives.
+
+## Signature électronique DocuSeal
+
+Dans **Devis**, le bouton **Faire signer** envoie le devis au client par e-mail via DocuSeal (champ date + signature ajoutés en bas du devis). **Suivi signature** interroge DocuSeal et passe le devis en `Signé` / `Refusé` / `Expiré` ; le lien **PDF signé** apparaît ensuite.
+
+Configuration (variables d'environnement, avant le lancement) :
+- `DOCUSEAL_API_KEY` : clé API (https://console.docuseal.com/api). Obligatoire. Ne pas la mettre dans le dépôt.
+- `DOCUSEAL_API_URL` : `https://api.docuseal.com` par défaut ; `https://api.docuseal.eu` pour le cloud UE, `https://votre-serveur/api` en auto-hébergé.
+
+Windows : `set DOCUSEAL_API_KEY=...` avant `start_windows.bat`. Linux : `DOCUSEAL_API_KEY=... ./start_linux.sh`.
+
+L'envoi d'un document HTML nécessite un abonnement DocuSeal **Pro** (ou le Cloud Sandbox pour tester). Le statut n'est pas mis à jour automatiquement (pas de webhook, l'appli étant locale) : cliquer sur **Suivi signature**.
